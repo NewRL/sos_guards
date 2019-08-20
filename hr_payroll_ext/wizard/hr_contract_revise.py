@@ -7,6 +7,7 @@ from dateutil import relativedelta
 from openerp import tools
 from openerp import models, fields, api, _
 
+
 def strToDate(strdate):
 	return datetime.strptime(strdate, '%Y-%m-%d').date()
 
