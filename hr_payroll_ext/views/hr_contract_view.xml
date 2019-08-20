@@ -14,7 +14,7 @@
 					<!-- <field name="driver_salay"/> -->
 				    <field name="house_rent_allowance" string="House Allowance" invisible="0"/>
 				    <field name="transportation_allowance" string="Transportation"/>
-				    <!-- <field name="acomodation_allowance" string="Housing Allowance" visible="1"/> -->
+					<field name="acomodation_allowance" string="Housing Allowance" invisible="1"/>
 					<field name="mobile_allowance" string="Mobile Allowance"/>
 					<field name="fuel_allowance" string="Fuel Allowance" invisible="0"/>	
 					<field name="food_allowance" string="Food Allowance"/>
