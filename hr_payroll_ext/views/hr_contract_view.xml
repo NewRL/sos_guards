@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 	<data>
-      
 		<!-- Employment Contracts --> 
 		<record id="view_contract_form" model="ir.ui.view">
 			<field name="name">hr.contract.form.inherit</field>
@@ -94,7 +93,6 @@
 		</record>	
                  
 		<!-- Initial Contract Settings -->
-
 		<record id="view_contract_template_tree" model="ir.ui.view">
 			<field name="name">hr.contract.template.tree.payroll_period</field>
 			<field name="model">hr.contract.template</field>
@@ -106,7 +104,6 @@
 			</field>
 		</record>
 
-
 		<record id="view_contract_template_form" model="ir.ui.view">
 			<field name="name">hr.contract.template.form.payroll_period</field>
 			<field name="model">hr.contract.template</field>
@@ -117,8 +114,6 @@
 				</xpath>
 			</field>
 		</record>
-	
-		  
         
 	</data>
 </odoo>
