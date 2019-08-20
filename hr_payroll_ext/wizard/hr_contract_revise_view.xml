@@ -31,7 +31,7 @@
                             <field name="new_contract_date" string="Contract Start Date"/>
                             <field name="new_salary" string="Basic Salary"/>
                             <field name="new_transportation_allowance" string="Transportation"/>
-                            <field name="new_acomodation_allowance" string="Housing"/>
+                            <!-- <field name="new_acomodation_allowance" string="Housing"/> -->
                             <field name="new_mobile_allowance" string="Mobile"/>
                             <field name="new_food_allowance" string="Food"/>
                             <field name="new_supplementary_allowance" string="Others"/>
