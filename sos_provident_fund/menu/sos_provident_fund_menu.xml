@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+  		<menuitem id="menu_gms_payroll_pf_reports" parent="sos_payroll.menu_gms_root_payroll" name="PF Reports" sequence="110"/> 	
+			<menuitem name="Provident Fund Employee Contribution" parent="menu_gms_payroll_pf_reports" action="action_pf_employee_contribution_wizard" sequence="5" id="menu_pf_employee_contribution"/>
+			<menuitem name="Provident Fund Employee &amp; Employer Contribution" parent="menu_gms_payroll_pf_reports" action="action_pf_employer_contribution_wizard" sequence="10" id="menu_pf_employer_contribution"/>	
+  </data>
+</odoo>

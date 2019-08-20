@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<template id ="report_sale_invoice_document">
+			<t t-call="web.internal_layout">
+    	 		<div class="page">
+    	 		
+    	 			<style>
+						.tabhead{font-size:12px;}
+						.tabcol{font-size:14px;}
+					</style>
+					<br />
+					
+						<!-- First Table -->
+						 <table class="table  table-condensed">
+						 	<tr>
+						 	
+						 		<!-- First Col -->
+						 		<td width="45%"> 
+						 			<table class="table  table-condensed">
+						 				<tr>
+						 					<td style="font-size:12px; font-weight:bold;">
+						 						<img width="30%" style="max-height:125px;margin-top:15px;" class="img img-responsive" src="/sos_accounts/static/src/img/logo.png"/>
+						 						Security Organizing System Pakistan Pvt. Ltd.
+						 					</td>	 
+						 				</tr>
+						 				
+						 				<tr style="font-size:10px; text-align:left; align:left;font-weight:bold;">
+						 					<td>Customer Name &amp;amp; Address </td>
+						 				</tr>
+						 				
+						 				<tr>	
+						 					<td> <span t-esc="doc.post_id.function" /> </td>
+						 				</tr>
+						 				
+						 				<tr>	
+						 					<td><b><span t-esc="doc.post_id.name" /></b> </td>
+						 				</tr>
+						 				
+						 				<tr>	
+						 					<td> <span t-esc="doc.post_id.street" />,<span t-esc="doc.post_id.street2" />,<span t-esc="doc.post_id.postcity_id.name" /> </td>
+						 				</tr>
+						 			
+						 			</table>
+						 		</td>
+						 		<!-- End Col -->
+						 		
+						 		<!-- Second Col -->
+						 		<td width="10%">
+						 		</td>
+						 		
+						 		
+						 		<!-- Third Col -->
+						 		<td width="45%">
+						 			<table class="table  table-condensed">
+						 				<tr>
+						 					<td class="text-left">Date: </td>
+						 					<td class="text-left"><span t-field="doc.date_invoice" t-field-options='{"format": "d-MM-Y"}'/> </td>
+						 				</tr>
+						 				<tr>
+						 					<td class="text-left">Billing Month: </td>
+						 					<td class="text-left"><span t-esc="doc.for_month" /> </td>
+						 				</tr>
+						 				<tr>
+						 					<td class="text-left">Due Date: </td>
+						 					<td class="text-left"><span t-field="doc.date_due" t-field-options='{"format": "d-MM-Y"}'/> </td>
+						 				</tr>
+						 				<tr>
+						 					<td class="text-left">Invoice#: </td>
+						 					<td class="text-left"><span t-esc="doc.number" /> </td>
+						 				</tr>
+						 				<tr>
+						 					<td class="text-left">Customer ID: </td>
+						 					<td class="text-left"><span t-esc="doc.post_id.partycode" /> </td>
+						 				</tr>
+						 				
+						 				<tr>
+						 					<td colspan="2"><b>Customer Head-office</b></td>
+						 				</tr>
+						 				
+						 				<tr>
+						 					<t  t-if="doc.post_id.headoffice">
+						 					<td>
+						 						<span t-esc="doc.post_id.headoffice.name" />
+						 					</td>	
+						 					</t>	
+						 				</tr>
+						 				<tr>
+						 					<t  t-if="doc.post_id.headoffice">
+						 					<td>
+						 						<span t-esc="doc.post_id.headoffice.street" />, <span t-esc="doc.post_id.headoffice.street2" />, <span t-esc="doc.post_id.headoffice.city.name" />
+						 					</td>
+						 					</t>	
+						 				</tr>
+						 				
+						 			</table>
+						 		</td>
+								<!-- End Third Col  -->
+						 		
+						 	</tr>
+						 	<tr>
+						 	 	<td class="text-left" width="40%">
+						 	 		<t  t-if="doc.post_id.ftn">
+						 				NTN/FTN:<span t-esc="doc.post_id.ftn" />
+						 			</t>
+						 	 	</td>
+						 	 	<td class="text-left" width="20%">
+						 	 		<t  t-if="doc.post_id.project_id.id == 30">
+						 				<b>Sale Tax Invoice</b>
+						 			</t>
+						 	 	</td>
+						 	 	
+						 	 	<td class="text-left" width="40%">
+						 	 		<t  t-if="doc.post_id.strn">
+						 				STRN:<span t-esc="doc.post_id.strn" />
+						 			</t>
+						 	 	</td>
+						 	</tr>
+						 	
+						 </table>
+						 <!-- End First Table -->
+						 
+
+						 <div class="col-xs-12 pull-right" style="padding-left:0px; padding-right:0px; page-break-inside: avoid;">
+						 <!-- Second Table -->
+						  <table class="table table-bordered" width="100%" style="border:1px solid black;">
+						  	<thead>
+						  		<tr>
+						  			<th class="text-center" style="background-color:#FFEBCD;" width="30%">Description </th>
+									<th class="text-center" style="background-color:#FFEBCD;" width="10%">Guards</th>
+									<th class="text-center" style="background-color:#FFEBCD;" width="10%">Days</th>
+									<th class="text-center" style="background-color:#FFEBCD;" width="20%">Particulars</th>
+									<th class="text-center" style="background-color:#FFEBCD;" width="10%">RATE P/G </th>
+									<th class="text-center" style="background-color:#FFEBCD;" width="10%">RATE P/D </th>
+									<th class="text-center" style="background-color:#FFEBCD;" width="10%">TOTAL</th>
+						  		</tr>
+						  	</thead>
+						  	<tbody>
+						  		<t t-foreach="doc.invoice_line_ids" t-as="line">
+						  			<t  t-if="line.quantity > 0">
+						  				<tr>
+						  					<td class="text-center"> <span t-esc="line.name" /> </td>
+						  					<td class="text-center"><span t-esc="line.guards and '{0:,.0f}'.format(int(line.guards)) or '-'" /> </td>
+						  					<td class="text-center"><span t-esc="line.quantity and '{0:,.0f}'.format(int(line.quantity)) or '-'" /> </td>
+						  					<td class="text-center"> </td>
+						  					<td class="text-center"><span t-esc="line.guardrate and '{0:,.0f}'.format(int(line.guardrate)) or '-'" /> </td>
+						  					<td class="text-center"><span t-esc="line.price_unit and '{0:,.0f}'.format(int(line.price_unit)) or '-'" /> </td>
+						  					<td class="text-center"><span t-esc="line.price_subtotal and '{0:,.0f}'.format(int(line.price_subtotal)) or '-'" /> </td>
+						  				</tr>
+						  			</t>
+						  		</t>
+						  		
+						  	<!-- Tax -->
+						  		<t  t-if="doc.amount_tax > 0">
+						  			<t t-foreach="doc.tax_line_ids" t-as="tax">
+							  			<tr>
+							  				<td class="text-center"> <span t-esc="tax.name" /></td>
+							  				<td colspan="5" class="text-center"> </td>
+							  				<td class="text-center"><span t-esc="tax.amount and '{0:,.0f}'.format(int(tax.amount)) or '-'" /> </td>
+							  			</tr>
+							  			
+							  		</t>	
+						  		</t>
+						  		
+						  		<tr style="height:120px;">
+						  			<td colspan="7"> </td>
+						  		</tr>
+						  	</tbody>
+						  </table>
+						 </div>
+						  
+						 
+						  <div class="row" style="font-size:12px; font-weight:bold;">
+						  	 <div class="col-xs-4"> Payment Term: Online/P.O</div>
+						  	 <div class="col-xs-4"> NTN No: 2679920-7</div>
+						  	 <div class="col-xs-2" style="text-align:center;"> TOTAL:</div>
+						  	 <div class="col-xs-2" style="text-align:center;"> <span t-esc="doc.amount_total and '{0:,.0f}'.format(int(doc.amount_total)) or '-'" /></div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:10px;">
+						  	<div class="col-xs-4" style="font-size:12px; font-weight:bold; text-align:left; align:left;">Bank Name: <span style="margin-left:10px;" t-esc="doc.post_id.bank" /></div>
+						  	<div class="col-xs-8" style="font-size:12px; font-weight:bold; text-align:right; align:right;"> <!-- <span  t-esc="doc.amount_in_word(doc.amount_total)" /> --> </div>
+						  </div>
+						  
+						   <div class="row" style="margin-top:10px;">
+						  		<div class="col-xs-6" style="font-size:12px; font-weight:bold; text-align:left; align:left;"> Account No:<span style="margin-left:10px;" t-esc="doc.post_id.bankacc" /></div>
+						  </div>
+						  
+						   <div class="row" style="margin-top:20px;">
+						  		<div class="col-xs-8" style="font-size:13px; font-weight:bold; text-align:center; align:left; border:1px solid; margin-top:2px;"> EXEMPTION FROM OPERATION OF SECTION 153(1)(b) OF I.T. ORD,2001</div>
+						  		<div class="col-xs-8" style="font-size:11px; font-weight:bold; text-align:left; align:left; border:1px solid;">
+						  			SOS PAKISTAN (PVT.) LTD. holding the NTN:2679920-7 is exempt from operation 
+						  			of Section 153(1)(b) of the  I.T. Ordinance, 2001 by the virtue of Exemption
+						  			Certificate issued by the Commissioner Inland Revenue Corporate Zone, RTO
+						  			Multan in terms of section 159 of the I.T. Ordinance,2001
+						  		</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:15px;">
+						  	<div class="col-xs-12" style="font-size:14px; text-align:center; align:left;">
+						  		Make all cheque payable to SOS Pakistan Pvt. Ltd. 
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:10px;">
+						  	<div class="col-xs-12" style="font-size:16px; font-weight:bold; text-align:center; align:left;">
+						  		Thank-you For Your Business
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:10px;">
+						  	<div class="col-xs-12" style="font-size:14px; font-weight:bold; text-align:center; align:left;">
+						  		If you have any questions concerning this invoice, Contact us : 061-6528155,152 
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:12px; text-align:center; align:left;">
+						  		Address: 1131-C mumtazabad , Multan 
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:12px; text-align:center; align:left;">
+						  		Email: accounts@sospakistan.com 
+						  	</div>
+						  </div>
+						  
+						  
+						  <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:12px; text-align:center; align:left;">
+							--------------------------------------------------------------------------------------------------------------------------------------
+						  	</div>
+						  </div>
+						  
+						   <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:12px; text-align:right; align:right; margin-right:25px;">
+						  		Please return this slip along with your payment 	
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:12px; text-align:left; align:left;">
+						  		SOS Pakistan Pvt. Ltd.<br />
+						  		Address: 1131-c mumtazabad , Multan<br />
+						  		Email: accounts@sospakistan.com <br /> 	
+						  	</div>
+						  </div>
+						  
+						  
+						  <div class="row" style="margin-top:2px;">
+						  	<div class="col-xs-12" style="font-size:10px; font-weight:bold; text-align:right; align:right; margin-right:25px;">
+						  		Total Amount: <span style="margin-left:20px;" t-esc="doc.amount_total and '{0:,.0f}'.format(int(doc.amount_total)) or '-'" />	
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:10px; font-weight:bold; text-align:left; align:left;">
+						  		 <span t-esc="doc.post_id.bank" />
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:10px; font-weight:bold; text-align:left; align:left;">
+						  		 <span t-esc="doc.post_id.bankacc" />
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:10px; font-weight:bold; text-align:left; align:left;">
+						  		 <span t-esc="doc.post_id.phone" />
+						  	</div>
+						  </div>	
+						  
+						  <div class="row" style="margin-top:5px;">
+						  	<div class="col-xs-12" style="font-size:10px; font-weight:bold; text-align:left; align:left;">
+						  		Invoice #: <span t-esc="doc.number" />
+						  	</div>
+						  </div>
+						  
+						  <div class="row" style="margin-top:2px;">
+						  	<div class="col-xs-12" style="font-size:10px; font-weight:bold; text-align:left; align:left;">
+						  		Customer ID: <span t-esc="doc.post_id.partycode" />
+						  	</div>
+						  </div>
+				</div>
+			</t>
+		</template>
+		
+		
+	<template id="report_sale_invoice">
+    	<t t-call="web.html_container">
+    	    <t t-foreach="docs" t-as="doc">
+            	<t t-call="sos_accounts.report_sale_invoice_document"/>
+        	</t>
+    	</t>
+	</template>
+	
+	</data>
+</odoo>
