@@ -118,7 +118,3 @@ class hr_holidays(models.Model):
 
 		unlink_ids.unlink()
 		return res
-
-	
-	
-	
