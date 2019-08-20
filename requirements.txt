@@ -1,1 +1,1 @@
-ranking
+import ranking
