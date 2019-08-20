@@ -17,7 +17,7 @@
                             <field name="old_contract_date" string="Contract Start Date" readonly="1"/>
                             <field name="old_salary" string="Basic Salary" readonly="1"/>
                             <field name="old_transportation_allowance" string="Transportation" readonly="1"/>
-                            <field name="old_acomodation_allowance" string="Housing" readonly="1"/>
+                            <!-- <field name="old_acomodation_allowance" string="Housing" readonly="1"/>-->
                             <field name="old_mobile_allowance" string="Mobile" readonly="1"/>
                             <field name="old_food_allowance" string="Food" readonly="1"/>
                             <field name="old_supplementary_allowance" string="Others" readonly="1"/>

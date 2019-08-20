@@ -21,7 +21,7 @@ class HRContractRevise(models.TransientModel):
 			return contract_id.id
 		return True
 	
-	@api.depends('new_salary','new_transportation_allowance','new_acomodation_allowance','new_mobile_allowance','new_food_allowance','new_supplementary_allowance')
+	#@api.depends('new_salary','new_transportation_allowance','new_acomodation_allowance','new_mobile_allowance','new_food_allowance','new_supplementary_allowance')
 	@api.multi
 	def _get_gross_salary(self):
 		for rec in self:
@@ -48,7 +48,7 @@ class HRContractRevise(models.TransientModel):
 	new_designation = fields.Many2one('hr.job',string='New Designation')
 	new_salary = fields.Float('New Salary')
 	new_transportation_allowance = fields.Float('Transportation Allowance')
-	#new_acomodation_allowance = fields.Integer('Housing Allowance')
+	new_acomodation_allowance = fields.Integer('Housing Allowance')
 	new_mobile_allowance = fields.Integer('Mobile Allowance')
 	new_food_allowance = fields.Integer('Food Allowance')
 	new_supplementary_allowance = fields.Float('Other Allowance')
