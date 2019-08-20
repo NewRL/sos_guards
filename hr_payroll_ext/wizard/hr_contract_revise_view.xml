@@ -10,14 +10,14 @@
 					<sheet>
                     <group>
                         <group string="Old Contract Information">
-                        	 <field name="contract_id" options="{'no_quick_create':True,'no_create_edit':True}" invisible="1"/>
+                            <field name="contract_id" options="{'no_quick_create':True,'no_create_edit':True}" invisible="1"/>
                             <field name="employee_id" options="{'no_quick_create':True,'no_create_edit':True}" readonly="1"/>
                             <field name="old_department_id" string="Department" options="{'no_quick_create':True,'no_create_edit':True}" readonly="1"/>
                             <field name="old_designation" string="Designation" readonly="1"/>
                             <field name="old_contract_date" string="Contract Start Date" readonly="1"/>
                             <field name="old_salary" string="Basic Salary" readonly="1"/>
                             <field name="old_transportation_allowance" string="Transportation" readonly="1"/>
-                           <!-- <field name="old_acomodation_allowance" string="Housing" readonly="1"/>-->
+                            <field name="old_acomodation_allowance" string="Housing" readonly="1"/>
                             <field name="old_mobile_allowance" string="Mobile" readonly="1"/>
                             <field name="old_food_allowance" string="Food" readonly="1"/>
                             <field name="old_supplementary_allowance" string="Others" readonly="1"/>
@@ -31,7 +31,7 @@
                             <field name="new_contract_date" string="Contract Start Date"/>
                             <field name="new_salary" string="Basic Salary"/>
                             <field name="new_transportation_allowance" string="Transportation"/>
-                            <!-- <field name="new_acomodation_allowance" string="Housing"/> -->
+                            <field name="new_acomodation_allowance" string="Housing"/>
                             <field name="new_mobile_allowance" string="Mobile"/>
                             <field name="new_food_allowance" string="Food"/>
                             <field name="new_supplementary_allowance" string="Others"/>
