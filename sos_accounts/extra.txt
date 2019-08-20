@@ -1,0 +1,200 @@
+ 
+<!-- Customers -->
+
+<record model="ir.ui.view" id="sos_customer_tree_view">
+	<field name="name">sos.customer.tree.view</field>
+	<field name="model">res.partner</field>
+	<field name="type">tree</field>
+	<field name="arch" type="xml">
+		<tree string="Customers" version="7.0">
+			<field name="name"/>
+			<!-- <field name="accountno" placeholder="Account No..." groups="base.group_no_one"/> -->
+			<field name="project_id" />
+			<field name="startdate" />
+			<field name="guardrate" />
+			<field name="seniorguardrate" />
+			<field name="active" />
+		</tree>
+	</field>
+</record>
+
+<record model="ir.ui.view" id="sos_customer_form_view">
+	<field name="name">sos.customer.form.view</field>
+	<field name="model">res.partner</field>
+	<field name="type">form</field>
+	<field name="arch" type="xml">	
+		<form string="Customers" version="7.0">
+			<sheet>
+				<div class="oe_title">
+				   <label for="name" class="oe_edit_only"/>
+				   <h1>
+					   <field name="name"/>
+				   </h1>
+				   <label for="project_id" class="oe_edit_only"/>
+				   <field name="project_id"  attrs="{'required':1}"/>
+
+				   <label for="center_id" class="oe_edit_only"/>
+				   <field name="center_id"  attrs="{'required':1}"/>
+				 </div>				   
+				 <div class="oe_right oe_button_box" name="button_box">
+				   <!-- Put here related buttons -->
+			     </div>
+
+				<group>
+					<group>
+
+						<label for="street" string="Address"/>
+						<div>
+							<field name="street" placeholder="Street..."/>
+							<field name="street2"/>
+							<div class="address_format">
+								<field name="city" placeholder="City" style="width: 60%%"/>									
+								<field name="zip" placeholder="ZIP" style="width: 30%%"/>
+							</div>
+							<field name="country_id" placeholder="Country" class="oe_no_button" options='{"no_open": True}'/>
+						</div>
+						<field name="website" widget="url" placeholder="e.g. www.aarsol.com"/>
+					</group>
+					<group>
+						<field name="function" placeholder="e.g. Sales Director"/>
+						<field name="phone" placeholder="e.g. +32.81.81.37.00"/>
+						<field name="mobile"/>
+						<field name="fax"/>
+						<field name="email" widget="email"/>
+						<!-- <field name="title" domain="[('domain', '=', 'contact')]"
+							options='{"no_open": True}' attrs="{'invisible': [('is_company','=', True)]}" /> -->
+					</group>
+				</group>
+
+
+				<group>
+					<group>						
+						<field name="guards"  attrs="{'required':1}"/>
+						<field name="cur_guards" readonly="1"/>
+						<field name="startdate" groups="base.group_no_one"/>  							
+						<field name="active" />
+  						<field name="is_post"/>  
+					</group>
+					<group>						
+						<field name="guardrate" groups="hr.group_hr_guard_attendance"/>
+						<field name="guardarmedrate" groups="hr.group_hr_guard_attendance"/>
+						<field name="seniorguardrate" groups="hr.group_hr_guard_attendance"/>
+						<field name="supervisorrate" groups="hr.group_hr_guard_attendance"/>  							
+  						<field name="paidon" groups="base.group_no_one"/>
+					</group>  					
+				</group>
+
+				<notebook>
+					
+					<page string="Contacts">
+						<field name="address_id" mode="kanban">
+							<kanban>
+								<field name="color"/>
+								<field name="name"/>								
+								<field name="email"/>
+								<field name="parent_id"/>								
+								<field name="profession"/>
+								<field name="phone"/>
+								<field name="street"/>
+								<field name="street2"/>
+								<field name="zip"/>
+								<field name="city"/>
+								<field name="country_id"/>
+								<field name="mobile"/>								
+								<templates>
+									<t t-name="kanban-box">
+										<div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click oe_semantic_html_override">											
+											<div class="oe_dropdown_toggle oe_dropdown_kanban">
+												<span class="oe_e">i</span>
+												<ul class="oe_dropdown_menu">
+													<t t-if="widget.view.is_action_enabled('edit')"><li><a type="edit">Edit...</a></li></t>
+													<t t-if="widget.view.is_action_enabled('delete')"><li><a type="delete">Delete</a></li></t>
+													<li><ul class="oe_kanban_colorpicker" data-field="color"/></li>
+												</ul>
+											</div>
+											
+												<div class="oe_module_desc">
+													<div class="oe_kanban_content">
+														<b><field name="name"/></b><br/>
+														<i><field name="profession" /></i><br/>
+														<t title="Mobile"><field name="mobile" />
+														<br /></t>
+
+														<br/>
+														<div class="oe_kanban_right">
+															<img t-att-src="kanban_image('sos.partneraddress', 'image', record.id.value)" t-att-title="record.id.value" width="48" height="48" class="oe_kanban_avatar"/>
+														</div>
+
+														<div style="font-size: 10px;">
+															<t t-if="record.street.raw_value" title="Street"><field name="street"/><br/></t>			
+															<t t-if="record.street2.raw_value" title="Street2"><field name="street2"/><br/></t>			
+															<t t-if="record.city.raw_value" title="City"><field name="city"/><br/></t>			
+														</div>
+														<div class="oe_kanban_footer_left" style="margin-top:5px;">
+															<field name="category_ids"/>
+														</div>
+													</div>
+												</div>											
+										</div>
+									</t>
+								</templates>
+							</kanban>
+						</field>
+					</page>						
+					
+					<page string="Account Settings">
+						<group>
+							<group>
+								<field name="partycode" />
+								<field name="ntn" />
+								<field name="stno" />
+							</group>
+
+							<group>
+								<field name="bank" />
+								<field name="bankacc" />
+							</group>
+						</group>
+
+						
+					</page>
+					
+				</notebook>						
+			</sheet>
+		</form>
+	</field>
+</record>
+
+<record id="sos_customer_action" model="ir.actions.act_window">
+	<field name="name">Customers</field>
+	<field name="res_model">res.partner</field>
+	<field name="view_type">form</field>
+	<field name="view_mode">tree,form</field>	
+	<field name="domain">[('is_post','=',True)]</field>
+	<field name="help" type="html">
+		<p class="oe_view_nocontent_create">
+			Click to create a new Post.
+	</p>
+	</field>
+</record> 
+
+<record id="sos_customer_action_view1" model="ir.actions.act_window.view">
+	<field eval="1" name="sequence"/>
+	<field name="view_mode">tree</field>
+	<field name="view_id" ref="sos_customer_tree_view"/>
+	<field name="domain">[('is_post','=',True)]</field>
+	<field name="act_window_id" ref="sos_customer_action"/>
+</record>
+
+<record id="sos_customer_action_view2" model="ir.actions.act_window.view">
+	<field eval="2" name="sequence"/>
+	<field name="view_mode">form</field>
+	<field name="view_id" ref="sos_customer_form_view"/>
+	<field name="domain">[('is_post','=',True)]</field>
+	<field name="act_window_id" ref="sos_customer_action"/>
+</record>
+
+<menuitem id="account.menu_account_customer" name="Customers"
+			parent="account.menu_finance_receivables" action="sos_customer_action" sequence="100"/>
+
+
