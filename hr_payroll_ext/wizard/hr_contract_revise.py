@@ -7,7 +7,6 @@ from dateutil import relativedelta
 from openerp import tools
 from openerp import models, fields, api, _
 
-
 def strToDate(strdate):
 	return datetime.strptime(strdate, '%Y-%m-%d').date()
 
@@ -22,7 +21,7 @@ class HRContractRevise(models.TransientModel):
 			return contract_id.id
 		return True
 	
-	#@api.depends('new_salary','new_transportation_allowance','new_acomodation_allowance','new_mobile_allowance','new_food_allowance','new_supplementary_allowance')
+	@api.depends('new_salary','new_transportation_allowance','new_acomodation_allowance','new_mobile_allowance','new_food_allowance','new_supplementary_allowance')
 	@api.multi
 	def _get_gross_salary(self):
 		for rec in self:
@@ -38,7 +37,7 @@ class HRContractRevise(models.TransientModel):
 	old_designation = fields.Many2one('hr.job', related='contract_id.job_id' ,string='Old Designation')
 	old_salary = fields.Float('Old Salary', related='contract_id.wage')
 	old_transportation_allowance = fields.Float('Old Transportation Allowance', related='contract_id.transportation_allowance')
-	#old_acomodation_allowance = fields.Integer('Old Housing Allowance', related='contract_id.acomodation_allowance')
+	old_acomodation_allowance = fields.Integer('Old Housing Allowance', related='contract_id.acomodation_allowance')
 	old_mobile_allowance = fields.Integer('Old Mobile Allowance', related='contract_id.mobile_allowance')
 	old_food_allowance = fields.Integer('Old Food Allowance', related='contract_id.food_allowance')
 	old_supplementary_allowance = fields.Float('Old Other Allowance', related='contract_id.supplementary_allowance')
@@ -74,7 +73,7 @@ class HRContractRevise(models.TransientModel):
 			'date_start' : self.new_contract_date,
 			'schedule_pay' : 'monthly',
 			'journal_id' : self.contract_id.journal_id.id,
-			#'acomodation_allowance' : self.new_acomodation_allowance or 0,
+			'acomodation_allowance' : self.new_acomodation_allowance or 0,
 			'transportation_allowance' : self.new_transportation_allowance or 0,
 			'supplementary_allowance' : self.new_supplementary_allowance or 0,
 			'mobile_allowance' : self.new_mobile_allowance or 0,
