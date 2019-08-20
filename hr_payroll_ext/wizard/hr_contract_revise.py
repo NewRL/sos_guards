@@ -37,7 +37,7 @@ class HRContractRevise(models.TransientModel):
 	old_designation = fields.Many2one('hr.job', related='contract_id.job_id' ,string='Old Designation')
 	old_salary = fields.Float('Old Salary', related='contract_id.wage')
 	old_transportation_allowance = fields.Float('Old Transportation Allowance', related='contract_id.transportation_allowance')
-	old_acomodation_allowance = fields.Integer('Old Housing Allowance', related='contract_id.acomodation_allowance')
+	#old_acomodation_allowance = fields.Integer('Old Housing Allowance', related='contract_id.acomodation_allowance')
 	old_mobile_allowance = fields.Integer('Old Mobile Allowance', related='contract_id.mobile_allowance')
 	old_food_allowance = fields.Integer('Old Food Allowance', related='contract_id.food_allowance')
 	old_supplementary_allowance = fields.Float('Old Other Allowance', related='contract_id.supplementary_allowance')
