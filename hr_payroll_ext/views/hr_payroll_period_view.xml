@@ -124,7 +124,7 @@
 								<field name="job_id"/>		                
 								<field name="wage"/>
 								<field name="house_rent_allowance" string='HRA'/>
-								<field name="acomodation_allowance" string='RAA'/>
+								<!-- <field name="acomodation_allowance" string='RAA'/> -->
 								<field name="mobile_allowance" string='MA'/>
 								<field name="transportation_allowance" string='TA'/>
 								<field name="state"/>               
@@ -148,7 +148,7 @@
 				    <field name="job_id"/>		                
 				    <field name="wage"/>
 				    <field name="house_rent_allowance" string='HRA'/>
-				    <field name="acomodation_allowance" string='RAA'/>
+				    <!--<field name="acomodation_allowance" string='RAA'/>-->
 				    <field name="mobile_allowance" string='MA'/>
 				    <field name="transportation_allowance" string='TA'/>
 				    <field name="state"/>                    

@@ -68,7 +68,7 @@ class hr_contract(models.Model):
 	mobile_allowance = fields.Integer("Mobile Allowance")
 	fuel_allowance = fields.Integer("Fuel Allowance")
 	food_allowance = fields.Integer("Food/Laundary Allowance")
-	acomodation_allowance = fields.Integer("Rental Acomodation Allowance")
+	#acomodation_allowance = fields.Integer("Rental Acomodation Allowance")
 	md_house_allowance = fields.Integer("MD House Allowance")
 	gossi_deduction = fields.Float('GOSI Deduction', compute='_compute_gossi_deduction')
 	gross_salary = fields.Float(compute='_get_gross_salary', string="Gross Salary", store=False)
