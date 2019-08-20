@@ -56,14 +56,14 @@ class hr_contract(models.Model):
 			rec.gross_salary = gross_salary
 			
 			
-	#@api.depends('wage','house_rent_allowance')
-	#@api.multi
-	#def _compute_gossi_deduction(self):
-	#	for rec in self:
-	#		if rec.employee_id.country_id.id == 194:
-	#			rec.gossi_deduction = (rec.wage + rec.acomodation_allowance) * .1
-	#		else:
-	#			rec.gossi_deduction = 0
+	@api.depends('wage','house_rent_allowance')
+	@api.multi
+	def _compute_gossi_deduction(self):
+		for rec in self:
+			if rec.employee_id.country_id.id == 194:
+				rec.gossi_deduction = (rec.wage + rec.acomodation_allowance) * .1
+			else:
+				rec.gossi_deduction = 0
 					
 	mobile_allowance = fields.Integer("Mobile Allowance")
 	fuel_allowance = fields.Integer("Fuel Allowance")
