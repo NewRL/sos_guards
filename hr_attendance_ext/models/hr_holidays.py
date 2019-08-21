@@ -7,6 +7,7 @@ import itertools
 from odoo import models, fields, api, _
 from odoo.exceptions import except_orm, Warning, RedirectWarning, UserError
 
+
 class Holidays(models.Model):
 	_inherit = 'hr.leave'
 	
@@ -18,9 +19,7 @@ class Holidays(models.Model):
 		states={'draft': [('readonly', False)], 'confirm': [('readonly', False)]}, track_visibility='onchange')
 	date_to = fields.Date('End Date', readonly=True, copy=False,
 		states={'draft': [('readonly', False)], 'confirm': [('readonly', False)]}, track_visibility='onchange')
-		
-            
-	
+
 	@api.onchange('date_from')
 	def _onchange_date_from(self):
 		""" If there are no date set for date_to, automatically set one 8 hours later than
@@ -40,11 +39,8 @@ class Holidays(models.Model):
 		else:
 			self.number_of_days_temp = 0
 	
-	
-	
 	def _get_number_of_days(self, date_from, date_to, employee_id):
 		""" Returns a float equals to the timedelta between two dates given as string."""
-		
 		from_dt = fields.Datetime.from_string(date_from)
 		to_dt = fields.Datetime.from_string(date_to)
 
@@ -57,18 +53,14 @@ class Holidays(models.Model):
 		#return math.ceil(time_delta.days + float(time_delta.seconds) / 86400)
 		return math.ceil(time_delta.days + 1)
 
-
 	@api.multi
 	def action_confirm(self):
 		super(Holidays, self).action_confirm()
 		for holiday in self:			
 			if self.number_of_days >= 0:
 				raise UserError(_('Warning!\nNumber of Leave days are not valid.'))
-				
-				
+
 	@api.multi
 	def action_approve(self):
 		for holiday in self:
 			holiday.state='confirm'
-			
-			
