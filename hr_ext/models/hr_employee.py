@@ -74,9 +74,7 @@ class hr_employee(models.Model):
 	def _compute_age(self):
 		for rec in self:			
 			if rec.birthday:
-				start = datetime.strptime(rec.birthday,OE_DFORMAT)
-				end = datetime.strptime(time.strftime(OE_DFORMAT),OE_DFORMAT)	
-				delta = end - start
+				delta = date.today() - rec.birthday
 				rec.age = parse_date(delta)
 	
 	@api.one
