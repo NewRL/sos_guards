@@ -37,7 +37,8 @@ def get_analytic_size():
 	"""Return analytic size (from config)
 	:return: an int (default to 5)
 	"""
-	return int(config.get_misc('analytic', 'analytic_size', 5))
+	#return int(config.get_misc('analytic', 'analytic_size', 5))
+	return 10
 
 
 class _dimension_meta(orm.MetaModel):
