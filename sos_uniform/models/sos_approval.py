@@ -13,13 +13,13 @@ from odoo.tools import float_compare
 import odoo.addons.decimal_precision as dp
 from odoo.exceptions import UserError
 
+
 class sos_general_approval(models.Model):		
 	_name = "sos.general.approval"
 	_description = "SOS General Approval"
 	_inherit = ['mail.thread']
 	_order = "id desc"
-	
-	
+
 	@api.onchange('approval_lines')
 	def _compute_total(self):
 		for line in self.approval_lines:
@@ -30,19 +30,18 @@ class sos_general_approval(models.Model):
 		if self.state == 'coordinator':
 			self.status = 'Approval is Just Entered by the Coordinator'
 		elif self.state == 'paid':
-			self.status = 'Your Approval is in Account Department From ' + self.date
+			self.status = 'Your Approval is in Account Department From ' + str(self.date)
 		elif self.state == 'done':
 			self.status = 'Your Approval Completed'	
 		elif self.state == 'reject':
-			self.status = 'Your Approval is Rejected By ' + self.state + ' on ' + self.date 	
+			self.status = 'Your Approval is Rejected By ' + self.state + ' on ' + str(self.date)
 		else:	
-			self.status = 'Your approval is Waiting the Response from ' + self.state + ' Still ' + self.date		
+			self.status = 'Your approval is Waiting the Response from ' + self.state + ' Still ' + str(self.date)
 	
 	name = fields.Char(string='Approval Number', readonly=True)
 	employee_id = fields.Many2one('hr.employee', string = "Requested By",domain=[('is_guard','=',False),('active','=',True)], required=True, index= True, readonly=True, states={'coordinator': [('readonly', False)]})
 	center_id = fields.Many2one(related='employee_id.center_id', string='Center',store=True, index=True, readonly=True, states={'coordinator': [('readonly', False)]})
-	
-	
+
 	date = fields.Date(string='Requested Date' ,required=True, default=lambda self: datetime.today().strftime('%Y-%m-%d'), readonly=True, states={'coordinator': [('readonly', False)]})
 	requested_date = fields.Date(string='Requested Date' ,required=True, default=lambda self: datetime.today().strftime('%Y-%m-%d'), readonly=True, states={'coordinator': [('readonly', False)]})
 	approved_date = fields.Date(string='Approved Date',readonly=True, states={'coordinator': [('readonly', False)]})
