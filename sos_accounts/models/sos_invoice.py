@@ -248,8 +248,8 @@ class account_invoice(models.Model):
 				partner_id = p.id
 				post = self.env['sos.post'].search([('partner_id', '=', partner_id)])
 				guard_recs = self.env['sos.post.jobs'].search([('post_id', '=', post.id)])
-				ds = datetime.strptime(self.date_from, '%Y-%m-%d')
-				dt = datetime.strptime(self.date_to, '%Y-%m-%d')
+				ds = self.date_from
+				dt = self.date_to
 				month_days = ((dt-ds).days)+1
 				for_month = dt.strftime('%B-%Y')
 

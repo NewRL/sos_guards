@@ -31,6 +31,7 @@
 # © 2017 Bernard K Too<bernard.too@optima.co.ke>
 from num2words import num2words
 from odoo import models, fields, api, _
+import pdb
 
 
 class InvoiceTemplates(models.Model):
@@ -39,8 +40,11 @@ class InvoiceTemplates(models.Model):
     @api.multi
     @api.onchange('partner_id')
     def onchange_partner_style(self):
-        self.style = self.partner_id.style or self.env.user.company_id.df_style or self.env.ref(
-            'professional_templates.df_style_for_all_reports')
+        if self.partner_id:
+            self.style = self.partner_id.style or self.env.user.company_id.df_style or self.env.ref(
+                'professional_templates.df_style_for_all_reports')
+        else:
+            self.style = self.env['report.template.settings'].search([('id', '=', 1)])
 
     @api.model
     def create(self, vals):
