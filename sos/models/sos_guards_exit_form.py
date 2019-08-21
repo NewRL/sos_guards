@@ -51,21 +51,22 @@ class SOSGuardsExitForm(models.Model):
 			joining_post = self.env['sos.guard.post'].search([('employee_id','=',rec.employee_id.id)], order='fromdate', limit=1)
 			rec.joining_post = joining_post.post_id.id or False
 		
-	@api.one
+	@api.multi
 	@api.depends('salary','salary_amt','security','security_amt')
-	def _get_security_info_JSON(self):
-		self.security_widget = json.dumps(False)
-		info = {'title': _('Less Payment'), 'outstanding': False, 'content': []}
-		lines = self.env['guards.payslip.line'].search([('employee_id','=',self.employee_id.id),('code','=', 'GSD')], order='date_from')
-		if lines:
-			for line in lines:
-				info['content'].append({
-					'name': line.slip_id.name,
-					'date': line.slip_id.date_from,
-					'ref': line.name or '',
-					'amount': line.total and abs(line.total) or 0,
-				})
-			self.security_widget = json.dumps(info)					
+	def get_security_info_json(self):
+		for rec in self:
+			rec.security_widget = json.dumps(False)
+			info = {'title': _('Less Payment'), 'outstanding': False, 'content': []}
+			lines = self.env['guards.payslip.line'].search([('employee_id','=',rec.employee_id.id),('code','=', 'GSD')], order='date_from')
+			if lines:
+				for line in lines:
+					info['content'].append({
+						'name': line.slip_id.name,
+						'date': str(line.slip_id.date_from),
+						'ref': line.name or '',
+						'amount': line.total and abs(line.total) or 0,
+					})
+				rec.security_widget = json.dumps(info)
 
 	name = fields.Char('Name')
 	center_id = fields.Many2one('sos.center', string='Center',required=True, index=True, readonly=True, states={'draft': [('readonly', False)]},track_visibility='onchange')
@@ -105,7 +106,7 @@ class SOSGuardsExitForm(models.Model):
 	state = fields.Selection([('draft','Draft'),('store','Store'),('accounts', 'Accounts'),('disburse','Disburse'),('close','Close') ],'Status',default='draft', track_visibility='onchange')
 	remarks = fields.Text('Remarks',compute='compute_remarks', store=True)
 	#uniform_return_id = fields.Many2one('sos.uniform.return', string='Uniform Return Ref.')
-	security_widget = fields.Text(compute='_get_security_info_JSON')
+	security_widget = fields.Text(compute='get_security_info_json')
 	
 	@api.multi
 	def _check_guard_code(self):
