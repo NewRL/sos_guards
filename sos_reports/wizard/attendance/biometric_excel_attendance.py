@@ -34,8 +34,7 @@ except ImportError:
 class BiometricExcelAttendance(models.TransientModel):
 	_name = "biometric.excel.attendance"
 	_description = "BioMetric Excel Attendance Report"
-	
-	
+
 	start_date = fields.Date("Date From", required=True, default=lambda *a: str(datetime.now() + relativedelta.relativedelta(day=1))[:10])
 	end_date = fields.Date("Date To",required=True, default=lambda *a: str(datetime.now() + relativedelta.relativedelta(day=1))[:10])
 	project_ids = fields.Many2many('sos.project', string='Filter on Projects', help="""Only selected Projects will be printed. Leave empty to print all Projects.""")
@@ -119,7 +118,7 @@ class BiometricExcelAttendance(models.TransientModel):
 				row += 1
 				col = 0
 				
-				dt = datetime.strptime(att.name,"%Y-%m-%d %H:%M:%S")
+				dt = datetime.strptime(str(att.name),"%Y-%m-%d %H:%M:%S")
 				dt = dt + relativedelta.relativedelta(hours=5)
 				dtAtt = datetime.strftime(dt,'%d-%m-%Y %H:%M:%S')
 				
@@ -161,11 +160,3 @@ class BiometricExcelAttendance(models.TransientModel):
 			'res_id': wiz_id.id,
 			'target': 'new'
 		}
-		
-	
-	
-	
-	
-	
-	
-	
