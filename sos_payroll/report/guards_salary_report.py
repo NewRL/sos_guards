@@ -8,14 +8,14 @@ from dateutil import tz
 from odoo import tools
 from operator import itemgetter
 
+
 class ReportGuardsSalary(models.AbstractModel):
 	_name = 'report.sos_payroll.report_guardsalary'
 	
 	def get_date_formate(self,sdate):
 		ss = datetime.datetime.strptime(sdate,'%Y-%m-%d')
 		return ss.strftime('%d %b %Y')
-		
-		
+
 	def _get_projects_posts(self, project_ids,data,active=True):
 		date_from = data['date_from']
 		date_to = data['date_to']		
@@ -23,12 +23,9 @@ class ReportGuardsSalary(models.AbstractModel):
 
 		dom = [('project_id', 'in', project_ids),'|',('active','=',True),'&',('enddate' ,'>=',date_from ),('enddate', '<=', date_to)]
 		post_ids = posts_obj.search(dom)
-		return post_ids		
-		
-
+		return post_ids
 	
 	def get_posts(self,data):
-		
 		date_from = data['date_from']
 		date_to = data['date_to']
 		p_obj = self.env['sos.post']
@@ -46,11 +43,9 @@ class ReportGuardsSalary(models.AbstractModel):
 		if not post_ids:
 			project_ids= data['project_ids'] and data['project_ids']
 			if project_ids:
-				post_ids = self._get_projects_posts(project_ids,data,False)	
-				
+				post_ids = self._get_projects_posts(project_ids,data,False)
 		return post_ids
-		
-		
+
 	def post_salary_lines(self, post_id, data):
 		salary_line_obj = self.env['guards.payslip.line']
 		date_start = data['date_from']
@@ -60,34 +55,28 @@ class ReportGuardsSalary(models.AbstractModel):
 		salary_line_ids = salary_line_obj.search(search_period, order='employee_id')
 		if not salary_line_ids:
 			return []
-				
 		lines = self.get_salary_lines(salary_line_ids.ids, 'post')
-		
 		for line in lines:
 			if line['paid_leaves_post'] and line['paid_leaves_post'] != post_id:
 				line['paid_leaves'] = 0
-					
 		return lines
-		
-		
-	
+
 	def get_salary_lines(self, salary_line_ids, ord_by):
 		if not salary_line_ids:
-			return []		
-			
+			return []
 		if not isinstance(salary_line_ids, list):
 			salary_line_ids = [salary_line_ids]
-				
+
 		monster ="""SELECT t.employee_id, emp.code, t.post_id, emp.name as emp_name,partner.name, pl.number,t.slip_id, pl.paid, pl.bankacctitle,pl.bankacc,pl.accowner,
 			t.rate,sum(t.quantity) as quantity, sum(t.total) as total,gc.name as contract_name, b.name as bank_name,pl.abl_incentive_amt as incentive,pl.paid_leaves,paid_leaves_post
-	 		FROM guards_payslip_line t 
-	 		LEFT JOIN hr_employee emp on (t.employee_id=emp.id)
-	 		LEFT JOIN sos_post post on (t.post_id=post.id)
+			FROM guards_payslip_line t 
+			LEFT JOIN hr_employee emp on (t.employee_id=emp.id)
+			LEFT JOIN sos_post post on (t.post_id=post.id)
 			LEFT JOIN res_partner partner on (post.partner_id = partner.id)
-	 		LEFT JOIN guards_payslip pl on (t.slip_id=pl.id)
-	 		LEFT JOIN guards_contract gc on (pl.contract_id=gc.id)
-	 		LEFT JOIN sos_bank b on (pl.bank=b.id)
-	 		WHERE t.id in %s"""
+			LEFT JOIN guards_payslip pl on (t.slip_id=pl.id)
+			LEFT JOIN guards_contract gc on (pl.contract_id=gc.id)
+			LEFT JOIN sos_bank b on (pl.bank=b.id)
+			WHERE t.id in %s"""
 	
 		if ord_by == 'guard':
 			monster += """ group by t.employee_id,emp.code,t.post_id,emp.name,partner.name,pl.number,t.slip_id,pl.paid, pl.bankacctitle,pl.bankacc,pl.accowner,t.rate,gc.name,b.name,pl.abl_incentive_amt,pl.paid_leaves,pl.paid_leaves_post  order by emp.name"""
@@ -101,10 +90,8 @@ class ReportGuardsSalary(models.AbstractModel):
 			self.env.cr.rollback()
 			raise
 		return res or []
-		
-		
+
 	def get_other_salary_lines(self,slip_id,code=False,post_id=False):
-			
 		payslip_line_obj = self.env['guards.payslip.line']
 		slip_id = slip_id
 		code = code
@@ -131,7 +118,7 @@ class ReportGuardsSalary(models.AbstractModel):
 	
 	
 	@api.model
-	def	get_report_values(self, docids, data=None):
+	def	_get_report_values(self, docids, data=None):
 		line_ids = []
 		res = {}
 		
