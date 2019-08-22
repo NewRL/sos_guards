@@ -30,7 +30,7 @@ class sos_appointmentdate_wizard(models.TransientModel):
 		## Zegum = 83 For Appoinment change
 		## Akamal = 39 For Cnic Change
 		
-		if self.env.user.id in (1,5,10,29,83,39):
+		if self.env.user.id in (125,5,10,29,83,39):
 			if self.appointmentdate:
 				employee_id = self.env['hr.employee'].browse(self._context.get('active_id',False))
 				old_appdate = employee_id.appointmentdate
