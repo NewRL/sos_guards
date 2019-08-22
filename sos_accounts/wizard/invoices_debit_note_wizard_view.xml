@@ -50,9 +50,8 @@
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
-	<!--
-	<menuitem action="action_invoices_debit_note_wizard" id="menu_invoices_debit_note_wizard" parent="menu_account_customer"  sequence="64" groups="sos.group_superusers,account.group_account_user,account.group_account_invoice"/>	
--->
-<!-- SARFRAZ -->
+
+	    <menuitem action="action_invoices_debit_note_wizard" id="menu_invoices_debit_note_wizard" parent="menu_account_customer"  sequence="64" groups="sos.group_superusers,account.group_account_user,account.group_account_invoice"/>
+
     </data>
 </odoo>

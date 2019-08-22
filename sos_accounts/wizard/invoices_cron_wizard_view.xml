@@ -44,11 +44,8 @@
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
-		
-	<!--
+
 	<menuitem action="action_invoices_cron_wizard" id="menu_invoices_cron_wizard" parent="menu_account_customer"  sequence="62" groups="base.group_no_one,sos.group_superusers"/>
-	-->
-	<!-- SARFRAZ -->	
 
     </data>
 </odoo>
