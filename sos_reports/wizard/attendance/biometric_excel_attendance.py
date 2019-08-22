@@ -142,8 +142,7 @@ class BiometricExcelAttendance(models.TransientModel):
 				col +=1
 				
 				i +=1 
-	
-		
+
 		file_data = io.BytesIO()
 		workbook.save(file_data)
 		wiz_id = self.env['sos.advice.report.save.wizard'].create({
