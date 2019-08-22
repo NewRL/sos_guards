@@ -11,6 +11,9 @@ from odoo.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMA
 def str_to_datetime(strdate):
 	return datetime.datetime.strptime(strdate, tools.DEFAULT_SERVER_DATE_FORMAT)
 
+def strToDate(strdate):
+    return datetime.strptime(strdate, '%Y-%m-%d').date()
+
 class hr_guard_terminate(models.TransientModel):
 	_name ='hr.guard.terminate'
 	_description = 'Guards Termination from Current Post'
@@ -45,7 +48,7 @@ class hr_guard_terminate(models.TransientModel):
 				last_day = str(datetime.now() + relativedelta.relativedelta(day=31))[:10]
 				
 				#Terminate Within the given Month
-				if data.todate >= first_day and data.todate <= last_day:
+				if (data.todate >= strToDate(first_day)) and (data.todate <= strToDate(last_day)):
 					#guard_post_ids = duty_pool.search([('employee_id', '=', data.employee_id.id),('todate', '=', False)], limit=1, order='fromdate desc')			
 					guard_post_ids = duty_pool.search([('employee_id', '=', data.employee_id.id),('todate', '=', False)], order='fromdate desc')
 					for guard_post_id in guard_post_ids:
