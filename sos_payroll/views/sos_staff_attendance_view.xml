@@ -152,9 +152,8 @@
 			<field name="act_window_id" ref="open_view_sos_staff_attendance"/>
 		</record>	
 		
-		<!--
 		<menuitem name="Staff Attendance" parent="sos_payroll.staff_attendance_main_menu" action="open_view_sos_staff_attendance" sequence="5" id="menu_sos_staff_attendance"/>
-	--> <!-- SARFRAZ -->
+	
 	</data>
 </odoo>
 
