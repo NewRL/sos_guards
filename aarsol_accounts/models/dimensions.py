@@ -114,8 +114,9 @@ class AccountMove(models.Model):
 	_order = 'date desc, name desc, id desc'
 
 	@api.multi
-	def post(self):
-		invoice = self._context.get('invoice', False)
+	def post(self, invoice=False):
+		if not invoice:
+			invoice = self._context.get('invoice', False)
 		self._post_validate()
 		
 		dimension_ok = True		

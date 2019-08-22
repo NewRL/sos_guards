@@ -117,8 +117,9 @@ class AccountMove(models.Model):
 		return res
 
 	@api.multi
-	def post(self):
-		invoice = self._context.get('invoice', False)
+	def post(self, invoice=False):
+		if not invoice:
+			invoice = self._context.get('invoice', False)
 		self._post_validate()
 		
 		for move in self:
