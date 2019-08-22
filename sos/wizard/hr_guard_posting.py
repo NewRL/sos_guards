@@ -12,7 +12,8 @@ def str_to_datetime(strdate):
 	return datetime.datetime.strptime(strdate, tools.DEFAULT_SERVER_DATE_FORMAT)
 
 def strToDate(strdate):
-    return datetime.strptime(strdate, '%Y-%m-%d').date()
+	return datetime.strptime(strdate, '%Y-%m-%d').date()
+
 
 class hr_guard_terminate(models.TransientModel):
 	_name ='hr.guard.terminate'
