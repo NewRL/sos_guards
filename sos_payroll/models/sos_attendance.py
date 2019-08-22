@@ -419,7 +419,6 @@ class sos_guard_attendance1(models.Model):
 			
 		if employee_id:
 			#For Double Duty
-			pdb.set_trace()
 			second_shift = str(fields.Date.today()) + ' 20:00:00'
 			n1 = localDate(self, strToDatetime(vals['name'])).strftime("%Y-%m-%d %H:%M:%S")
 		
