@@ -419,7 +419,8 @@ class sos_guard_attendance1(models.Model):
 			
 		if employee_id:
 			#For Double Duty
-			second_shift = fields.Date.today() + ' 20:00:00'
+			pdb.set_trace()
+			second_shift = str(fields.Date.today()) + ' 20:00:00'
 			n1 = localDate(self, strToDatetime(vals['name'])).strftime("%Y-%m-%d %H:%M:%S")
 		
 			att_id = self.env['sos.guard.attendance1'].search([('employee_id','=',employee_id.id),('action','in',['Normal','in']),('name','<=',vals['name'])], order='id desc', limit=1)
@@ -444,7 +445,7 @@ class sos_guard_attendance1(models.Model):
 				
 				#if Staff then shift starts from 9:00 a.m
 				else:
-					dt1 = fields.Date.today() + ' 09:15:00'	
+					dt1 = str(fields.Date.today()) + ' 09:15:00'
 			
 				dt2 = vals['name'] or False
 				if dt2:
