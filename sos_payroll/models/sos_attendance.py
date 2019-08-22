@@ -427,6 +427,7 @@ class sos_guard_attendance1(models.Model):
 			if att_id and second_shift <= n1:
 				att_id.current_action = 'double'
 				result =att_id
+
 		
 			#Create new Record
 			else:
