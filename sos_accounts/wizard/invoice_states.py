@@ -4,9 +4,9 @@ from datetime import datetime
 from dateutil import relativedelta
 from odoo import api, fields, models
 
-
 def str_to_datetime(strdate):
 	return datetime.datetime.strptime(strdate, tools.DEFAULT_SERVER_DATE_FORMAT)
+
 
 class invoice_checked(models.TransientModel):
 	_name ='invoice.checked'
@@ -20,6 +20,7 @@ class invoice_checked(models.TransientModel):
 			if rec.state == 'draft':
 				rec.write({'state' :'checked','checked_by' : self.env.user.id})
 		return {'type': 'ir.actions.act_window_close'}
+
 
 class invoice_approved(models.TransientModel):
 	_name ='invoice.approved'
@@ -48,7 +49,6 @@ class invoice_recompute(models.TransientModel):
 			if rec.invoice_type == 'days':
 				rec.invoice_type =  'hours'
 				rec.invoice_type = 'days'
-				
 		return {'type': 'ir.actions.act_window_close'}
 
 
