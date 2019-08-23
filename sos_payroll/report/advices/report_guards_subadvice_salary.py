@@ -96,8 +96,8 @@ class guards_subadvice_salary_report(models.AbstractModel):
 			'from_name': '', 'to_name': ''
 		}
 		run_slip = payslip_run_pool.search([('id','=',batch_id)])		
-		from_date = datetime.strptime(run_slip.date_start, '%Y-%m-%d').date()
-		to_date =  datetime.strptime(run_slip.date_end, '%Y-%m-%d').date()
+		from_date = run_slip.date_start
+		to_date =  run_slip.date_end
 		res['from_name']= from_date.strftime('%d')+'-'+from_date.strftime('%B')+'-'+from_date.strftime('%Y')
 		res['to_name']= to_date.strftime('%d')+'-'+to_date.strftime('%B')+'-'+to_date.strftime('%Y')
 		return res
