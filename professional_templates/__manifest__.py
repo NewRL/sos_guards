@@ -178,7 +178,7 @@
         'carrier/picking_report.xml',
 
         'data/res_currency_data.xml',
-        #'data/default_style.xml',	#SARFRAZ
+       #'data/default_style.xml',	#SARFRAZ
     ],
     # only loaded in demonstration mode
     'demo': [
