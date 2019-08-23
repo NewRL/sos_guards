@@ -51,9 +51,9 @@ class invoices_cron(models.Model):
 			partner_id = cron_invoice.post_id.partner_id.id
 			post = self.env['sos.post'].search([('partner_id', '=', partner_id)])
 			guard_recs = self.env['sos.post.jobs'].search([('post_id', '=', cron_invoice.post_id.id)])
-			ds = datetime.strptime(cron_invoice.date_from, '%Y-%m-%d')
-			dt = datetime.strptime(cron_invoice.date_to, '%Y-%m-%d')
-			month_days = ((dt-ds).days)+1
+			ds = cron_invoice.date_from
+			dt = cron_invoice.date_to
+			month_days = (dt-ds).days +1
 			for_month = dt.strftime('%B-%Y')
 
 			res = {
