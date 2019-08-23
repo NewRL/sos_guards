@@ -430,10 +430,10 @@ class sos_guard_attendance1(models.Model):
 			#Create new Record
 			else:
 				vals['employee_id'] = employee_id.id
-				vals['device_id'] = (device_id and device_id.id) or False
-				vals['project_id'] = (device_id.project_id and device_id.project_id.id) or (employee_id.project_id and employee_id.project_id.id) or False
-				vals['center_id'] = (device_id.center_id and device_id.center_id.id) or (employee_id.center_id and employee_id.center_id.id) or False
-				vals['post_id'] = (device_id.post_id and device_id.post_id.id) or (employee_id.current_post_id and employee_id.current_post_id.id) or False
+				vals['device_id'] = device_id and device_id.id or False
+				vals['project_id'] = device_id.project_id and device_id.project_id.id or False
+				vals['center_id'] = device_id.center_id and device_id.center_id.id or False
+				vals['post_id'] = device_id.post_id and device_id.post_id.id or False
 				vals['department_id'] = employee_id.department_id and employee_id.department_id.id or False
 				vals['action'] = vals.get('action','in')
 				vals['current_action'] = 'present'
@@ -476,8 +476,7 @@ class sos_guard_attendance1(models.Model):
 				raise UserError(('You can not delete the Verified Records.'))	
 			else:
 				res = super(sos_guard_attendance1, rec).unlink()
-			return res     
-	
+			return res
 
 	@api.onchange('employee_id')
 	def onchange_employee(self):

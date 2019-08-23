@@ -28,7 +28,7 @@
 		'views/account_info_log_view.xml',
 		'views/report_bankaccounts.xml',
 	#	'views/hr_employee_cron.xml',
-	#	'views/sos_hr_contract_ext_view.xml',	#SARFRAZ
+		'views/sos_hr_contract_ext_view.xml',	#SARFRAZ
 		'views/sos_rejoin_guards_view.xml',
 		
 		'views/report_guards_jointermination.xml',

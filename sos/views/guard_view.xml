@@ -44,7 +44,7 @@
 					<field name="is_guard" />
 					<field name="code" readonly="1"/>
 					<field name="cnic_expiry"/>
-					  <field name="birthday"/>
+					<field name="birthday"/>
 				</group>
 
 				<group>
