@@ -23,9 +23,9 @@
 		#'report/general_ledger.xml',
 		#'report/ledger_summary.xml',
 
-		#'report/journal_entry/reports.xml',		
-		#'report/journal_entry/aarsol_jv_template.xml',
-		#'report/journal_entry/journal_data.xml',
+		'report/journal_entry/reports.xml',
+		'report/journal_entry/aarsol_jv_template.xml',
+		'report/journal_entry/journal_data.xml',
 		
 #		'report/journal_entry/res_company_view.xml',
 #		'report/journal_entry/account_journal_entry_view.xml',
