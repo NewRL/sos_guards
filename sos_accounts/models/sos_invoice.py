@@ -474,7 +474,8 @@ class account_invoice_line(models.Model):
 #			'account_analytic_id': line.account_analytic_id.id,
 #			'taxes': line.invoice_line_tax_id,
 #		}
-#
+
+
 	@api.onchange('guardrate')
 	def _onchange_guardrate(self):
 		for_month = self.invoice_id.date_invoice or False
@@ -482,9 +483,9 @@ class account_invoice_line(models.Model):
 			return
 
 		if self.invoice_id.date_from and self.invoice_id.date_to:
-			ds = datetime.strptime(self.invoice_id.date_from, '%Y-%m-%d')
-			dt = datetime.strptime(self.invoice_id.date_to, '%Y-%m-%d')
-			month_days = ((dt-ds).days)+1
+			ds = self.invoice_id.date_from
+			dt = self.invoice_id.date_to
+			month_days = (dt-ds).days + 1
 		else:
 			year,month,day = for_month[:4], for_month[5:7], for_month[8:]
 			month_days = monthrange(int(year),int(month))[1]
