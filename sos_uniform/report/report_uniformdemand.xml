@@ -96,7 +96,7 @@
 												<td style="border:1px solid"> <span t-esc="line.action" /> </td>
 											</tr>
 										</t>
-										<tr style="border:1px solid;font-size:12px;">
+										<tr style="border:1px solid;font-size:13px;">
 											<td style="border:1px solid">Remarks: </td>
 											<td colspan="6" style="border:1px solid"> <span t-esc="doc.remarks" /> </td>
 										</tr>
