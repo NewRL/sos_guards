@@ -31,19 +31,19 @@
                                     <t t-set="div_style" t-value="'width:auto; padding-left:10px; padding-right:10px; float:left; margin-left:25px;'"></t>
                                     <div t-if="o.ref" t-attf-style="{{div_style}}">
                                         <strong>Reference:</strong>
-                                        <p style="font-size:14px" t-field="o.ref"/>
+                                        <p style="font-size:12px" t-field="o.ref"/>
                                     </div>
                                     <div t-if="o.journal_id" t-attf-style="{{div_style}}">
                                         <strong>Journal:</strong>
-                                        <p style="font-size:14px" t-field="o.journal_id"/>
+                                        <p style="font-size:12px" t-field="o.journal_id"/>
                                     </div>
                                     <div t-if="o.partner_id" t-attf-style="{{div_style}}">
                                         <strong>Partner:</strong>
-                                        <p style="font-size:14px" t-field="o.partner_id"/>
+                                        <p style="font-size:12px" t-field="o.partner_id"/>
                                     </div>
                                      <div t-if="o.date" t-attf-style="{{div_style}}">
                                          <strong>Date:</strong>
-                                        <p style="font-size:14px" t-field="o.date"/>
+                                        <p style="font-size:12px" t-field="o.date"/>
                                     </div>
                                 </div> <!--end of wrapper2-->
                                 <t t-call="aarsol_accounts.journal_data"/>
