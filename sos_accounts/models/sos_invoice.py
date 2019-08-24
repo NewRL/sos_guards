@@ -18,13 +18,11 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-
 class account_invoice(models.Model):
 	_name = "account.invoice"
 	_inherit = "account.invoice"
 	_description = "SOS Invoice"
 	_order = "number desc, id desc"
-	
 	
 	## Over Method For Rounding ##
 	@api.one
@@ -67,15 +65,13 @@ class account_invoice(models.Model):
 		self.residual = abs(residual)
 		digits_rounding_precision = self.currency_id.rounding
 		if float_is_zero(self.residual, precision_rounding=digits_rounding_precision):
-		    self.reconciled = True
+			self.reconciled = True
 		else:
-		    self.reconciled = False	
-
+			self.reconciled = False
 	
 	@api.one	
 	def _check_duration(self):
 		return self.date_to < self.date_from
-
 	state = fields.Selection([
 		('draft','Draft'),
 		('proforma', 'Pro-forma'),
@@ -169,8 +165,7 @@ class account_invoice(models.Model):
 					line.amount_residual = abs(total) * sign
 					digits_rounding_precision = self.currency_id.rounding
 					if float_is_zero(line.amount_residual, digits_rounding_precision):
-					    line.reconciled = True
-
+						line.reconciled = True
 			invoice._compute_residual()
 			
 			for line in invoice.payment_move_line_ids:
@@ -181,7 +176,6 @@ class account_invoice(models.Model):
 			invoice.pm_total = pm_total			
 			invoice.to_be_processed = False
 
-	
 	@api.multi
 	def test_recompute(self):		
 		for invoice in self:		
@@ -213,8 +207,7 @@ class account_invoice(models.Model):
 					line.amount_residual = abs(total) * sign
 					digits_rounding_precision = self.currency_id.rounding
 					if float_is_zero(line.amount_residual, digits_rounding_precision):
-					    line.reconciled = True
-
+						line.reconciled = True
 			invoice._compute_residual()
 			
 			for line in invoice.payment_move_line_ids:
@@ -287,9 +280,7 @@ class account_invoice(models.Model):
 
 	@api.onchange('invoice_line_ids')
 	def _onchange_invoice_line_ids(self):
-			
 		taxes_grouped = self.get_taxes_values()
-		
 		if self.type == 'out_invoice' and self.post_id.insurance:
 			no_guards = 0
 			for line in self.invoice_line_ids:
@@ -311,9 +302,8 @@ class account_invoice(models.Model):
 
 	@api.model
 	def _prepare_refund(self, invoice, date_invoice=None, date=None, description=None, journal_id=None):
-        
-		values = super(account_invoice, self)._prepare_refund(invoice, date_invoice, date, description, journal_id)		
-		#if invoice['type'] == 'in_invoice':        
+		values = super(account_invoice, self)._prepare_refund(invoice, date_invoice, date, description, journal_id)
+		#if invoice['type'] == 'in_invoice':
 		for field in ['post_id', 'project_id', 'center_id', 'for_month', 'period_id','date_from','date_to']:
 			if invoice._fields[field].type == 'many2one':
 				values[field] = invoice[field].id
@@ -322,7 +312,6 @@ class account_invoice(models.Model):
 		values['parent_id'] = invoice.id
 		return values
 
-	    
 	@api.multi
 	def invoice_check(self):
 		for rec in self:
@@ -349,7 +338,7 @@ class account_invoice(models.Model):
 						to_reconcile_ids.setdefault(line.account_id.id, []).append(line.id)
 					if line.reconciled:
 						line.remove_move_reconcile()
-                    
+
 				for tmpline in invoice.move_id.line_ids:
 					if tmpline.account_id.id == invoice.account_id.id:
 						to_reconcile_lines += tmpline
@@ -382,19 +371,15 @@ class account_invoice(models.Model):
 #			'project_id': line.get('project_id', False),
 #			'center_id': line.get('center_id', False),	
 #		}
-#
 
 
 	@api.multi
 	def finalize_invoice_move_lines(self, move_lines):
 		move_lines = super(account_invoice, self).finalize_invoice_move_lines(move_lines)
-		
 		for move_line in move_lines:			
 			if move_line[2]['name'] == '/' and self.for_month:
 				move_line[2]['name'] = 'Invoice for ' + self.for_month
-			
 		return move_lines
-
 
 	@api.multi
 	@api.returns('self')
@@ -406,18 +391,15 @@ class account_invoice(models.Model):
 			values.update({'inv_type':'credit'})
 			new_invoices += self.create(values)
 		return new_invoices
-		
 	
 	def amount_in_word(self, amount_total):
 		number = '%.2f' % amount_total
 		number = round(amount_total)
 		units_name = 'PKR'
 		lst = str(number).split('.')
-		
 		#start_word = english_number(int(list[0]))
 		start_word =  self.currency_id.with_context(lang=self.partner_id.lang or 'es_ES').amount_to_text(int(lst[0])).upper()
 		return ' '.join(filter(None, [start_word, units_name]))
-		
 
 	@api.multi
 	def action_invoice_open(self):
@@ -430,13 +412,11 @@ class account_invoice(models.Model):
 
 		to_open_invoices.action_date_assign()
 		to_open_invoices.action_move_create()
-		return to_open_invoices.invoice_validate()			
-		
+		return to_open_invoices.invoice_validate()
 		
 class account_invoice_line(models.Model):
 	_name = "account.invoice.line"
 	_inherit = "account.invoice.line"
-	
 	
 	@api.one
 	@api.depends('price_unit', 'discount', 'invoice_line_tax_ids', 'quantity',
@@ -452,7 +432,6 @@ class account_invoice_line(models.Model):
 			price_subtotal_signed = self.invoice_id.currency_id.compute(price_subtotal_signed, self.invoice_id.company_id.currency_id)
 		sign = self.invoice_id.type in ['in_refund', 'out_refund'] and -1 or 1
 		self.price_subtotal_signed = price_subtotal_signed * sign
-	
 
 	orig_invoice_id = fields.Integer(string='Invoice Ref.')
 	post_id = fields.Many2one('sos.post', string='Partner Ref.', related='invoice_id.post_id', store=True, readonly=True)
@@ -474,7 +453,6 @@ class account_invoice_line(models.Model):
 #			'account_analytic_id': line.account_analytic_id.id,
 #			'taxes': line.invoice_line_tax_id,
 #		}
-
 
 	@api.onchange('guardrate')
 	def _onchange_guardrate(self):
@@ -526,7 +504,6 @@ class account_invoice_line(models.Model):
 #		return res
 
 
-
 class sos_post(models.Model):
 	_inherit = 'sos.post'
 
@@ -547,7 +524,6 @@ class sos_post(models.Model):
 		for invoice in invoices:
 			total = total + invoice.residual
 		self.aged_balance = round(total)
-	
 	
 	invoice_ids = fields.One2many('account.invoice', 'post_id', string='Invoices', readonly=True)
 	invoices_count = fields.Integer('Invoices Count',compute='_invoices_count')

@@ -59,6 +59,4 @@ class AccountCheckbookLine(models.Model):
 	check_number = fields.Char('Check Number')
 	used_date = fields.Date('Used Date')
 	description = fields.Char()
-	state = fields.Selection([('draft', 'Draft'), ('active', 'In Use'), ('used', 'Used')],string='State',default='draft',copy=False)			
-        
-        
+	state = fields.Selection([('draft', 'Draft'), ('active', 'In Use'), ('used', 'Used')],string='State',default='draft',copy=False)

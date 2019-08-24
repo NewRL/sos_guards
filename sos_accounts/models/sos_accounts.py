@@ -113,7 +113,7 @@ MAP_INVOICE_TYPE_PAYMENT_SIGN = {
 class account_move(models.Model):
 	_name = 'account.move'
 	_inherit = 'account.move'
-    	 
+
 	post_id = fields.Many2one('sos.post',related='line_ids.post_id', string="Post", store=True)
 	date = fields.Date("Financial Date",required=True, states={'posted': [('readonly', True)]}, index=True, default=fields.Date.context_today)
 	entry_date = fields.Date("Entry Date",states={'posted': [('readonly', True)]}, index=True, default=fields.Date.context_today)
@@ -139,7 +139,8 @@ class account_move_line(models.Model):
 	post_id = fields.Many2one('sos.post', 'Post', readonly=True)		
 	date = fields.Date(related='move_id.date', string='Financial Date', index=True, store=True, copy=False)
 	entry_date = fields.Date(related='move_id.entry_date', string='Entry Date', index=True, store=True, copy=False)
-	
+
+
 class account_journal(models.Model):
 	_name = "account.journal"
 	_inherit = "account.journal"
@@ -223,9 +224,7 @@ class account_payment(models.Model):
 		res['domain']['journal_id'] = self.payment_type == 'inbound' and [('at_least_one_inbound', '=', True)] or [('at_least_one_outbound', '=', True)]
 		res['domain']['journal_id'].append(('type', 'in', ('bank', 'cash','deduction')))		
 		return res
-	
-	
-		
+
 		
 class account_multi_partner_payments(models.Model):
 	_name = "account.multi.partner.payments"
@@ -366,7 +365,8 @@ class account_multi_partner_payments_line(models.Model):
 	amount_residual = fields.Integer(compute='_compute_balance', string='Residual Amount', store=True)
 	multi_partner_payments_id = fields.Many2one('account.multi.partner.payments')
 	post_id = fields.Many2one('sos.post', related='invoice_id.post_id',string='Partner')
-	
+
+
 class account_bank_statement(models.Model):
 	_name = "account.bank.statement"
 	_inherit = "account.bank.statement"
@@ -374,8 +374,6 @@ class account_bank_statement(models.Model):
 	entry_date = fields.Date(required=True, string="Entry Date",states={'confirm': [('readonly', True)]}, copy=False, default=fields.Date.context_today)
 	combine_entries = fields.Boolean('Combine Journal Entries',default=True)
 	combined_narration = fields.Text('Narration')
-	
-	
 	
 	@api.model
 	def create(self, vals):
@@ -607,13 +605,11 @@ class account_bank_statement(models.Model):
 #			self.write(cr, uid, [st.id], {'name': st_number,'balance_end_real': st.balance_end}, context=context)
 #			self.message_post(cr, uid, [st.id], body=_('Statement %s confirmed, journal items were created.') % (st_number,), context=context)
 #		return self.write(cr, uid, ids, {'state':'confirm'}, context=context)
-#		
-#
+
 
 class account_bank_statement_line(models.Model):
 	_name = "account.bank.statement.line"
 	_inherit = "account.bank.statement.line"
-	
 
 	center_id = fields.Many2one('sos.center', 'Center',default=19)	
 	entry_date = fields.Date(required=True, string="Entry Date",default=lambda self: self._context.get('date', fields.Date.context_today(self)))
@@ -677,18 +673,12 @@ class account_bank_statement_line(models.Model):
 #			for key in res.keys():
 #				vals[key].update(res[key])
 #		return vals
-#
-
 
 
 class Followers(models.Model):
 	_inherit = 'mail.followers'
-	
 
 	_sql_constraints = [
 		('mail_followers_res_partner_res_model_id_uniq', 'unique(id,res_model,res_id,partner_id)', 'Error, a partner cannot follow twice the same object.'),
 		('mail_followers_res_channel_res_model_id_uniq', 'unique(id,res_model,res_id,channel_id)', 'Error, a channel cannot follow twice the same object.'),
-		
 	]
-	
-	

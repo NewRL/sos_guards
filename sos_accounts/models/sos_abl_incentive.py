@@ -17,21 +17,20 @@ class SOSABLIncentive(models.Model):
 	_order = 'id desc'
 	_description = 'ABL Incentives'
 	_inherit = ['mail.thread']
-	_track = {
-		}
-	
-	@api.one
+
+	@api.multi
 	@api.depends('line_ids')
 	def _get_total(self):
-		total = 0
-		for line in self.line_ids:
-			total = line.amount + total
-		self.total_amount = total
+		for rec in self:
+			total = 0
+			for line in rec.line_ids:
+				total = line.amount + total
+			rec.total_amount = total
 	
-	@api.one	
+	@api.multi
 	def unlink(self):
 		if self.state != 'draft':
-			raise UserError(('You can not delete record which are not in draft state.'))		
+			raise UserError('You can not delete record which are not in draft state.')
 	
 	name = fields.Char('Description',track_visibility='always')	
 	project_id = fields.Many2one('sos.project','Project', default=26,track_visibility='always')	
@@ -47,58 +46,56 @@ class SOSABLIncentive(models.Model):
 	note = fields.Text('Note')
 	date_from = fields.Date('Date From', required=True,default=lambda *a: str(datetime.now() + relativedelta.relativedelta(day=1))[:10])
 	date_to = fields.Date('Date To', required=True,default=lambda *a: str(datetime.now() + relativedelta.relativedelta(day=31))[:10])
-	
-		
-	@api.one	
-	def incentive_validate(self):
-		if self.received_amount == self.total_amount:
-			self.write({'state':'validate'})			
-		else:
-			raise UserError(('Received Amount and Total Amount Does not Match. Please Check it.'))	
 
-		
-	@api.one	
+	@api.multi
+	def incentive_validate(self):
+		for rec in self:
+			if rec.received_amount == rec.total_amount:
+				rec.write({'state':'validate'})
+			else:
+				raise UserError('Received Amount and Total Amount Does not Match. Please Check it.')
+
+	@api.multi
 	def incentive_done(self):
 		move_obj = self.env['account.move']
 		move_line_obj = self.env['account.move.line']
-		
 		move_lines=[]
-		for line in self.line_ids:
-			move_lines.append((0,0,{
-				'name': self.name,
-				'debit': line.amount,
-				'credit': 0.0,
-				'account_id': self.debit_account_id.id or 65,	#Allied Bank				
-				'journal_id': 1,  	#Sales Journal			
-				'date': self.date,
-				'project_id': self.project_id.id,
-				'a5_id': line.partner_id.analytic_code_id.id,					
-				'd_bin': '0000010000',
-			}))
-			
-		move_lines.append((0,0,{
-			'name': self.name,
-			'debit': 0.0,
-			'credit': self.total_amount,
-			'account_id': self.credit_account_id.id or 169,	#32014 ABL incentives Payable				
-			'journal_id': 1,  	#Sales Journal			
-			'date': self.date,
-			'project_id': self.project_id.id,				
-		}))
+		for rec in self:
+			for line in rec.line_ids:
+				move_lines.append((0,0,{
+					'name': rec.name,
+					'debit': line.amount,
+					'credit': 0.0,
+					'account_id': rec.debit_account_id.id or 65,	#Allied Bank
+					'journal_id': 1,  	#Sales Journal
+					'date': rec.date,
+					'project_id': rec.project_id.id,
+					'a5_id': line.partner_id.analytic_code_id.id,
+					'd_bin': '0000010000',
+				}))
 
-		move = {
-			'ref': 'ABL Incenvtive-' + str(self.id),
-			'name': self.name,
-			'journal_id': self.journal_id.id or 1,  # Stock Journal
-			'date': self.date,
-			'narration': self.name + ":Incentives:" + self.date,
-			'state': 'posted',
-			'line_ids': move_lines,					
-		}																
-		move_id = move_obj.sudo().create(move)		
-			
-		self.write({'state':'done','move_id':move_id.id})
-			  
+			move_lines.append((0,0,{
+				'name': rec.name,
+				'debit': 0.0,
+				'credit': rec.total_amount,
+				'account_id': rec.credit_account_id.id or 169,	#32014 ABL incentives Payable
+				'journal_id': 1,  	#Sales Journal
+				'date': rec.date,
+				'project_id': rec.project_id.id,
+			}))
+
+			move = {
+				'ref': 'ABL Incenvtive-' + str(rec.id),
+				'name': rec.name,
+				'journal_id': rec.journal_id.id or 1,  # Stock Journal
+				'date': rec.date,
+				'narration': rec.name + ":Incentives:" + rec.date,
+				'state': 'posted',
+				'line_ids': move_lines,
+			}
+			move_id = move_obj.sudo().create(move)
+			rec.write({'state':'done','move_id':move_id.id})
+
 	
 class SOSABLIncentiveLines(models.Model):
 	_name = 'sos.abl.incentive.lines'
