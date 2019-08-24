@@ -53,15 +53,19 @@
 			<field name="inherit_id" ref="account.view_account_journal_form"/>
 			<field name="arch" type="xml">
 			<data>	
-				<xpath expr="//field[@name='inbound_payment_method_ids']" position="replace">
-					<field name="inbound_payment_method_ids" widget="many2many_checkboxes" attrs="{'invisible': [('type', 'not in', ['bank', 'cash','deduction'])]}"/>					
+				<xpath expr="//page[@name='advanced_settings']/group[1]/group[2]" position="replace">
+					<group string="Payment Method Types" attrs="{'invisible': [('type', 'not in', ['bank', 'cash','deduction'])]}">
+                        <field name="inbound_payment_method_ids" widget="many2many_checkboxes"/>
+                        <field name="outbound_payment_method_ids" widget="many2many_checkboxes"/>
+                    </group>
+					
 				</xpath>	      
 			   
 			</data>
 			</field>
 		</record> 
 
-		<!-- SARFRAZ
+		
 		<record id="sos_view_move_form" model="ir.ui.view">
 			<field name="name">sos_view_move_form</field>
 			<field name="model">account.move</field>
@@ -78,7 +82,7 @@
 			</data>
 			</field>
 		</record> 
--->
+
 		<record id="sos_view_move_tree" model="ir.ui.view">
 			<field name="name">sos.account.move.tree</field>
 			<field name="model">account.move</field>

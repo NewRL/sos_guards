@@ -4,7 +4,7 @@
 	'category': 'Security Guards System',
 	'license': 'AGPL-3',
 	'description': "This module Inherits the Accounting Behaviors for SOS",
-	'author': 'Farooq',
+	'author': 'Muhammad Farooq Arif',
 	'website': 'http://www.aarsolerp.com/',
 	'depends': ['account','account_asset','asset','sos'],
 	'init_xml': [],
