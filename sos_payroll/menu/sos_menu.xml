@@ -56,8 +56,7 @@
 			<menuitem action="act_posts_payslip_cron_view" id="menu_posts_payslips_cron" parent="menu_gms_root_payroll"  sequence="62"/>
 			<menuitem action="action_guards_payslips_cron_wizard" id="menu_guards_payslips_cron_wizard" parent="menu_gms_root_payroll"  sequence="63" groups="base.group_no_one,account.group_account_invoice"/>
 			<menuitem action="act_guards_salary_difference_view" id="menu_guards_salary_difference" parent="menu_gms_root_payroll"  sequence="65" groups="base.group_no_one,account.group_account_invoice"/>
-	
-		
+
        		
 			<menuitem action="action_sos_salary_report" name="Guards Salary" id="menu_sos_guards_salary_report" parent="menu_gms_payroll_reports" sequence="100" groups="account.group_account_invoice,sos.group_coordinator" />	
 			
