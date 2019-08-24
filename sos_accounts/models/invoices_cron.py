@@ -14,14 +14,9 @@ import odoo.addons.decimal_precision as dp
 from odoo.tools.safe_eval import safe_eval as eval
 DATETIME_FORMAT = "%Y-%m-%d"
 
-
-
-
-
 class invoices_cron(models.Model):
 	_name = 'invoices.cron'
 	_description = 'Invoices Cron Jobs'
-	
 	_order = 'id desc'
 		
 	post_id = fields.Many2one('sos.post','Post')
@@ -39,7 +34,6 @@ class invoices_cron(models.Model):
 		emp_pool = self.env['hr.employee']
 		invoice_pool = self.env['account.invoice']
 		invoice_ids = self.env['account.invoice']
-		
 		cron_draft_invoices = self.search([('state','=','draft')],limit=nlimit)		
 		
 		for cron_invoice in cron_draft_invoices:
@@ -136,16 +130,4 @@ class invoices_cron(models.Model):
 			
 			invoice.tax_line_ids = tax_lines
 			invoice.invoice_line_ids = invoice_lines
-
-		
 			cron_invoice.write({'state':'generate','invoice_id':invoice.id})
-			
-
-
-
-		
-		
-		
-
-
-

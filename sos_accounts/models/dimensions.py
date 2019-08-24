@@ -41,87 +41,6 @@ class SOSRegion(models.Model, metaclass = MetaAnalytic):
 		'rel_name' : 'code',		
 	}
 
-
-# Remark By Sarfraz, moved to the AARSOL ACCOUNTS dimensions.py
-
-#class AccountBankStatementLine(models.Model):
-#	_name = "account.bank.statement.line"
-#	_inherit = "account.bank.statement.line"
-#	__metaclass__ = MetaAnalytic
-#	_analytic = True
-
-	
-#	@api.one
-#	@api.depends('d_bin')
-#	def _get_d_bin(self):
-#		if self.d_bin:
-#			self.H10_id = int(self.d_bin[0:1])
-#			self.H9_id = int(self.d_bin[1:2])
-#			self.H8_id = int(self.d_bin[2:3])
-#			self.H7_id = int(self.d_bin[3:4])
-#			self.H6_id = int(self.d_bin[4:5])
-#			self.H5_id = int(self.d_bin[5:6])
-#			self.H4_id = int(self.d_bin[6:7])
-#			self.H3_id = int(self.d_bin[7:8])
-#			self.H2_id = int(self.d_bin[8:9])
-#			self.H1_id = int(self.d_bin[9:10])
-#
-#	d_bin = fields.Char("Binary Dimension")
-#	H1_id = fields.Integer(compute='_get_d_bin')
-#	H2_id = fields.Integer(compute='_get_d_bin')
-#	H3_id = fields.Integer(compute='_get_d_bin')
-#	H4_id = fields.Integer(compute='_get_d_bin')
-#	H5_id = fields.Integer(compute='_get_d_bin')
-#	H6_id = fields.Integer(compute='_get_d_bin')
-#	H7_id = fields.Integer(compute='_get_d_bin')
-#	H8_id = fields.Integer(compute='_get_d_bin')
-#	H9_id = fields.Integer(compute='_get_d_bin')
-#	H10_id = fields.Integer(compute='_get_d_bin')
-#
-#
-#	def format_field_name(self, ordering, prefix='a', suffix='id'):
-#		"""Return an analytic field's name from its slot, prefix and suffix."""
-#		return '{pre}{n}_{suf}'.format(pre=prefix, n=ordering, suf=suffix)
-#																					
-#	@api.onchange('account_id')
-#	def _onchange_account_id(self):		
-#		if self.account_id:
-#			dimensions = self.account_id.nd_ids
-#			
-#			structures = self.env['analytic.structure'].search([('nd_id','in',dimensions.ids)])
-#			used = [int(structure.ordering) for structure in structures]
-#			
-#			number = 0
-#			size = int(config.get_misc('analytic', 'analytic_size', 10))
-#			for n in xrange(1, size + 1):
-#				#src = self.format_field_name(n,'H','id')
-#				if n in used:
-#					src_data = 1
-#					number += math.pow(2,n-1)
-#				#else:
-#				#	src_data = 0
-#
-#			self.d_bin = bin(int(number))[2:].zfill(10)		
-#
-#	def fast_counterpart_creation(self):
-#		for st_line in self:
-#			# Technical functionality to automatically reconcile by creating a new move line
-#			vals = {
-#				'name': st_line.name,
-#				'debit': st_line.amount < 0 and -st_line.amount or 0.0,
-#				'credit': st_line.amount > 0 and st_line.amount or 0.0,
-#				'account_id': st_line.account_id.id,
-#			}
-#		
-#			size = int(config.get_misc('analytic', 'analytic_size', 10))
-#			for n in xrange(1, size + 1):
-#				fld = self.format_field_name(n,'a','id')
-#				vals.update({fld:eval('st_line.'+fld).id})
-#			vals.update({'d_bin':st_line.d_bin})
-#
-#			st_line.process_reconciliation(new_aml_dicts=[vals])
-#
-
 class AccountAssetDepreciationLine(models.Model):
 	_name = 'account.asset.depreciation.line'
 	_inherit = 'account.asset.depreciation.line'
@@ -199,13 +118,3 @@ class AccountAssetDepreciationLine(models.Model):
 		if post_move and created_moves:
 			created_moves.post()
 		return [x.id for x in created_moves]
-
-
-
-
-
-
-
-
-
-			
