@@ -159,6 +159,21 @@ class account_abstract_payment(models.AbstractModel):
 	entry_date = fields.Date(string='Entry Date', default=fields.Date.context_today, required=True, copy=False)
 	journal_id = fields.Many2one('account.journal', string='Payment Method', required=True, domain=[('type', 'in', ('bank', 'cash','deduction'))])
 
+	def _compute_journal_domain_and_types(self):
+		journal_type = ['bank', 'cash','deduction']
+		domain = []
+		if self.currency_id.is_zero(self.amount) and self.has_invoices:
+			# In case of payment with 0 amount, allow to select a journal of type 'general' like
+			# 'Miscellaneous Operations' and set this journal by default.
+			journal_type = ['general']
+			self.payment_difference_handling = 'reconcile'
+		else:
+			if self.payment_type == 'inbound':
+				domain.append(('at_least_one_inbound', '=', True))
+			else:
+				domain.append(('at_least_one_outbound', '=', True))
+		return {'domain': domain, 'journal_types': set(journal_type)}
+
 
 class account_register_payments(models.TransientModel):
 	_name = "account.register.payments"
@@ -174,7 +189,8 @@ class account_payment(models.Model):
 	multi_partner = fields.Boolean("Multi Partner")
 	multi_payment_id = fields.Many2one('account.multi.partner.payments',"Multi-Partner Payment")
 	entry_date = fields.Date(string='Entry Date', default=fields.Date.context_today, required=True, copy=False)
-	journal_id = fields.Many2one('account.journal', string='Payment Method', required=True, domain=[('type', 'in', ('bank', 'cash','deduction'))])
+	#journal_id = fields.Many2one('account.journal', string='Payment Method3', required=True,
+	#							 domain=[('type', 'in', ('bank', 'cash', 'deduction'))])
 
 	def _get_move_vals(self, journal=None):
 		""" Return dict to create the payment move"""
