@@ -141,16 +141,16 @@ class account_move_line(models.Model):
 	entry_date = fields.Date(related='move_id.entry_date', string='Entry Date', index=True, store=True, copy=False)
 
 
-class account_journal(models.Model):
+class AccountJournal(models.Model):
 	_name = "account.journal"
 	_inherit = "account.journal"
-		
-	type = fields.Selection([('deduction', 'Deduction'),('sale', 'Sale'),('sale_refund','Sale Refund'), ('purchase', 'Purchase'), ('purchase_refund','Purchase Refund'), ('cash', 'Cash'), ('bank', 'Bank and Checks'), ('general', 'General'), ('situation', 'Opening/Closing Situation')], 'Type', size=32, required=True,
-			 help="Select 'Sale' for customer invoices journals."\
-			 " Select 'Purchase' for supplier invoices journals."\
-			 " Select 'Cash' or 'Bank' for journals that are used in customer or supplier payments."\
-			 " Select 'General' for miscellaneous operations journals."\
-			" Select 'Opening/Closing Situation' for entries generated for new fiscal years.")
+
+	type = fields.Selection([('deduction', 'Deduction'),('sale', 'Sale'),('sale_refund','Sale Refund'), ('purchase', 'Purchase'), ('purchase_refund','Purchase Refund'), ('cash', 'Cash'), ('bank', 'Bank and Checks'), ('general', 'General'), ('situation', 'Opening/Closing Situation')], 'Type', required=True, help="Select 'Sale' for customer invoices journals.\n" \
+								 " Select 'Purchase' for supplier invoices journals.\n"\
+								 " Select 'Cash' or 'Bank' for journals that are used in customer or supplier payments.\n"\
+								 " Select 'General' for miscellaneous operations journals.\n"\
+								 " Select 'Opening/Closing Situation' for entries generated for new fiscal years.")
+
 
 class account_abstract_payment(models.AbstractModel):
 	_name = "account.abstract.payment"
@@ -159,11 +159,13 @@ class account_abstract_payment(models.AbstractModel):
 	entry_date = fields.Date(string='Entry Date', default=fields.Date.context_today, required=True, copy=False)
 	journal_id = fields.Many2one('account.journal', string='Payment Method', required=True, domain=[('type', 'in', ('bank', 'cash','deduction'))])
 
+
 class account_register_payments(models.TransientModel):
 	_name = "account.register.payments"
 	_inherit = 'account.register.payments'
 
 	entry_date = fields.Date(string='Entry Date', default=fields.Date.context_today, required=True, copy=False)
+
 
 class account_payment(models.Model):
 	_name = "account.payment"
@@ -195,15 +197,11 @@ class account_payment(models.Model):
 	@api.multi
 	def multi_post(self):
 		for rec in self:
-			
 			if rec.state != 'draft':
 				raise UserError(_("Only a draft payment can be posted. Trying to post a payment in state %s.") % rec.state)
-
 			if any(inv.state != 'open' for inv in rec.invoice_ids):
 				raise ValidationError(_("The payment cannot be processed because the invoice is not open!"))
-
 			rec.name = rec.multi_payment_id.name
-
 			# Create the journal entry
 			amount = rec.amount * (rec.payment_type in ('outbound', 'transfer') and 1 or -1)
 			move = rec._create_payment_entry(amount)
@@ -326,7 +324,6 @@ class account_multi_partner_payments(models.Model):
 				if not pl.invoice_id:
 					cnt +=1
 					mgs = mgs + "\n "+ str(cnt) +":-"  +"\n Payment Line " + str(pl.id) + " does not have the Invoice Reference." + "\n Original Amount is :" + str(pl.amount_original) + " \n Amount Paid : " + str(pl.amount_paid)
-			
 			raise UserError(_("There are Lines in the Payment that do not have the Proper Data Formating \n or Missing Some Information, Detail is Below %s \n\n Solution:- \n Delete that Record from your Payment.\n There Should be Invoice Reference for each Line.") % (mgs,))		
 		
 		for line in payments:
@@ -346,6 +343,7 @@ class account_multi_partner_payments(models.Model):
 				
 		return {'type': 'ir.actions.act_window_close'}
 
+
 class account_multi_partner_payments_line(models.Model):
 	_name = "account.multi.partner.payments.line"
 	_description = 'Multi Partner Payment Lines'
@@ -356,7 +354,6 @@ class account_multi_partner_payments_line(models.Model):
 		if self.invoice_id:
 			self.amount_original = self.invoice_id.residual
 			self.amount_residual = self.invoice_id.residual	- self.amount_paid		
-				
 
 	invoice_id = fields.Many2one('account.invoice','Invoice')
 	reconcile = fields.Boolean('Full Reconcile')
