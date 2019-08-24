@@ -1,14 +1,13 @@
-
 import time
 from datetime import datetime
 from dateutil import relativedelta
 import pdb
-from openerp import api, fields, models
+from odoo import api, fields, models
+
 
 class StaffArrearWizard(models.TransientModel):
-
-	_name ='staff.arrear.wizard'
-	_description = 'Staff Arrears'
+	_name = "staff.arrear.wizard"
+	_description = "Staff Arrears"
 	
 	employee_id = fields.Many2one('hr.employee', 'Employee')
 	center_id = fields.Many2one('sos.center',related='employee_id.center_id', string='Center',readonly=False, store=True)
@@ -16,7 +15,6 @@ class StaffArrearWizard(models.TransientModel):
 	state = fields.Selection([('draft','Draft'),('confirm','Confirm'),],'Status', default='draft')
 	line_ids = fields.One2many('staff.arrear.lines.wizard','arrear_id','Arrear Lines')
 
-	
 	@api.multi
 	def generate_entries(self):
 		salary_input_obj = self.env['hr.salary.inputs']
@@ -36,7 +34,6 @@ class StaffArrearWizard(models.TransientModel):
 
 
 class StaffArrearLinesWizard(models.TransientModel):
-
 	_name ='staff.arrear.lines.wizard'
 	_description = 'Staff Arrear Lines'
 	

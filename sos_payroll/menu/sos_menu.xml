@@ -46,11 +46,9 @@
         	<menuitem action="act_view_guards_payslip" id="menu_guards_payslip" parent="menu_gms_root_payroll" groups="account.group_account_invoice,sos.group_coordinator" sequence="10"/> 
 			<menuitem action="act_view_guards_payslip_line" id="menu_guards_payslip_line" parent="menu_gms_root_payroll" groups="account.group_account_invoice" sequence="20"/> 
 			<menuitem id="menu_guards_arrears" name="Arrears / Fine" parent="menu_gms_root_payroll" action="act_guards_arrears_view" groups="account.group_account_invoice,sos.group_regional_manager" sequence="30"/>
-			
-			<!--	
+
 			<menuitem action="action_guards_payslip_run" id="menu_guards_payslip_run" parent="menu_gms_root_payroll"  sequence="40" groups="account.group_account_invoice"/>		
 			<menuitem action="action_view_guards_bank_advice_tree" id="guards_menu_payment_advice" parent="menu_gms_root_payroll"  sequence="50" groups="account.group_account_invoice"/>
-			--> <!-- SARFRAZ-->
 			<menuitem action="act_guards_payslip_audit_view" id="menu_guards_payslips_audit" parent="menu_gms_root_payroll"  sequence="55"/>
 		
 
@@ -70,16 +68,11 @@
 				<menuitem action="action_sos_guards_security_deposit" id="menu_guards_security_deposit" parent="menu_gms_payroll_reports"  sequence="116"/>
 				<menuitem action="action_sos_guards_mbl_deduction" id="menu_guards_mbl_deduction" parent="menu_gms_payroll_reports"  sequence="120"/>
 				<menuitem action="action_guards_no_contract_wizard" id="menu_guards_no_contract" parent="menu_gms_payroll_reports"  sequence="122"/>	
-		
-		
+
 		<menuitem parent="sos.menu_gms_configuration" id="sos_advances_mi" name="Advances" sequence="112" action="sos_advances_action" /> 
 		<menuitem parent="sos.menu_gms_configuration" id="sos_project_salary_pending_mi" name="Pending Salary" sequence="113" action="act_project_salary_pending_view" /> 
-		<menuitem parent="sos.menu_gms_configuration" id="sos_guards_leave_policy_mi" name="Guards Leaves Policy" sequence="115" action="act_view_guards_leave_policy" /> 
-		
-		<!-- this menu is already in the hr_payroll_ext module -->
-		<!-- <menuitem name="Staff Arrears / Fines" action="act_hr_salary_inputs_view" id="menu_hr_salary_inputs" sequence="20" parent="hr.menu_hr_main" groups="account.group_account_invoice"/>
-		-->
-		
+		<menuitem parent="sos.menu_gms_configuration" id="sos_guards_leave_policy_mi" name="Guards Leaves Policy" sequence="115" action="act_view_guards_leave_policy" />
+
 		<!-- New Menu -->
 		<menuitem id="staff_attendance_main_menu" name="Attendances" parent="hr.menu_hr_root" sequence="50" groups="hr.group_hr_manager"/>
 		

@@ -18,7 +18,7 @@
 		'views/sos_replacement_view.xml',
 		'views/report_gcontributionregister.xml',
 		'views/guards_payroll_view.xml',
-		#'views/guards_payroll_run_view.xml', #SARFRAZ
+		'views/guards_payroll_run_view.xml',
 		# 'views/guards_payroll_workflow.xml',
 		'views/guards_arrears_view.xml',
 		'views/guards_payslip_cron_view.xml',
@@ -84,7 +84,7 @@
 		'wizard/guards_no_contract_wizard_view.xml',
 		
 		'wizard/staff/calculate_month_attendance_view.xml',
-		#'wizard/staff/staff_arrears_wizard_view.xml',	#SARFRAZ
+		'wizard/staff/staff_arrears_wizard_view.xml',
 		
 		'report/attendance/report_guardattendance.xml',
 		'report/attendance/report_postsattendance_register.xml',

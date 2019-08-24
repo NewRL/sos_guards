@@ -6,7 +6,6 @@
             <field name="model">staff.arrear.wizard</field>
             <field name="arch" type="xml">
             <form string="Employee Arreas Wizard">
-                <label string="This wizard will Generate Arrears/Fine Entries."/>
                 <footer>
                     <button name="generate_entries" string="Generate Slips Cron" type="object" class="oe_highlight"/>
                     <button string="Cancel" class="oe_link" special="cancel" />
@@ -48,8 +47,8 @@
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
-    
+
     <menuitem action="action_staff_arrear_wizard" id="menu_staff_arrear_wizard" parent="hr.menu_hr_main"  sequence="20"/>
-		
+
     </data>
 </odoo>
