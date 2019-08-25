@@ -269,6 +269,7 @@ class hr_payslip_loan(models.Model):
 	contract_id = fields.Many2one('hr.contract', 'Contract', required=True, help="The contract for which applied this input")
 	employee_id = fields.Many2one('hr.employee', 'Employee', required=True, help="The Employe for which applied this input")
 
+
 class hr_employee(models.Model):
 	_name = 'hr.employee'
 	_inherit = 'hr.employee'

@@ -22,14 +22,18 @@ import math
 def strToDate(strdate):
 	return datetime.strptime(strdate, '%Y-%m-%d').date()
 
+
 def strToDatetime(strdatetime):
 	return datetime.strptime(strdatetime, '%Y-%m-%d %H:%M:%S')
-	
+
+
 def dateToStr(ddate):
 	return ddate.strftime('%Y-%m-%d')
 
+
 def datetimeToStr(ddate):
 	return ddate.strftime('%Y-%m-%d %H:%M:%S')
+
 
 def utcDate(self, ddate):
 	user = self.env.user
@@ -37,6 +41,7 @@ def utcDate(self, ddate):
 	local_date = local_tz.localize(ddate, is_dst=False)
 	utc_date = local_date.astimezone(utc)
 	return utc_date			
+
 
 def localDate(self, utc_dt):
 	user = self.env.user
@@ -52,6 +57,7 @@ def add_months(sourcedate, months):
 	day = min(sourcedate.day, calendar.monthrange(year, month)[1])
 	return datetime(year, month, day)
 
+
 class hr_payslip(models.Model):
 	_name = 'hr.payslip'
 	_inherit = ['hr.payslip','mail.thread', 'mail.activity.mixin', 'portal.mixin']
@@ -65,18 +71,18 @@ class hr_payslip(models.Model):
 		]
 		return self.env['account.journal'].search(domain, limit=1)
 		
-	@api.one
+	@api.multi
 	@api.depends('line_ids','line_ids.total')	
 	def _calculate_total(self):
-		total = 0 
-		line_ids = self.env['hr.payslip.line'].search([('slip_id', '=', self.id), ('code', '=', 'NET')])
-		for line in line_ids:
-			if line.total:
-				total += line.total 
-			else:
-				total += float(line.quantity) * line.amount 
-		
-		self.total = total	
+		for rec in self:
+			total = 0
+			line_ids = self.env['hr.payslip.line'].search([('slip_id', '=', rec.id), ('code', '=', 'NET')])
+			for line in line_ids:
+				if line.total:
+					total += line.total
+				else:
+					total += float(line.quantity) * line.amount
+			rec.total = total
 
 	journal_id = fields.Many2one('account.journal', 'Salary Journal',states={'draft': [('readonly', False)]}, readonly=True, required=True,default=_default_journal)
 	date_from = fields.Date('Date From', readonly=True, states={'draft': [('readonly', False)]}, required=True,default=lambda *a: time.strftime('%Y-%m-01'))
@@ -118,7 +124,8 @@ class hr_payslip(models.Model):
 		}
 		if (not employee_id) or (not date_from) or (not date_to):
 			return res
-		ttyme = datetime.fromtimestamp(time.mktime(time.strptime(date_from, "%Y-%m-%d")))
+
+		ttyme = date_from
 		employee = self.env['hr.employee'].browse(employee_id)
 		locale = self.env.context.get('lang') or 'en_US'
 		res['value'].update({
@@ -179,9 +186,8 @@ class hr_payslip(models.Model):
 		date_from = self.date_from
 		date_to = self.date_to
 		contract_id = self.contract_id or False
-		
-		ttyme = datetime.fromtimestamp(time.mktime(time.strptime(date_to, "%Y-%m-%d")))
-		self.name = _('Salary Slip of %s for %s') % (employee_id.name, tools.ustr(ttyme.strftime('%B-%Y')))
+
+		self.name = _('Salary Slip of %s for %s') % (employee_id.name, tools.ustr(date_to.strftime('%B-%Y')))
 		self.company_id = employee_id.company_id
 		self.bank_id = employee_id.bank_id and employee_id.bank_id.id or False
 		self.bankacctitle = employee_id.bankacctitle and employee_id.bankacctitle or ''
@@ -208,7 +214,7 @@ class hr_payslip(models.Model):
 		self.struct_id = self.contract_id.struct_id
 		if self.contract_id.journal_id:
 			self.journal_id = self.contract_id.journal_id
-		
+
 		#computation of the salary input
 		contract_ids = self.env['hr.contract'].search([('id','in',cont_ids)])
 		worked_days_line_ids = self.get_worked_day_lines(contract_ids, date_from, date_to)
@@ -228,26 +234,21 @@ class hr_payslip(models.Model):
 			self.input_line_ids = input_lines
 		return
 
-
+	@api.multi
 	def process_sheet(self):
 		move_pool = self.env['account.move']
-		hr_payslip_line_pool = self.env['hr.payslip.line']
 		precision = self.env['decimal.precision'].precision_get('Payroll')
-		timenow = time.strftime('%Y-%m-%d')
-		
 		model_rec = self.env['ir.model'].search([('model','=','hr.payslip.line')])
 		auto_entries = self.env['auto.dimensions.entry'].search([('model_id','=',model_rec.id),('active','=',True)],order='sequence')
-	
-		
+
 		for slip in self:
 			line_ids = []
 			debit_sum = 0.0
 			credit_sum = 0.0
 			date = slip.date_to
-			credit_combine_entry = 0
 			company_id = slip.company_id.id
 
-			name = _('Being Charge of Salary %s') % (slip.number)
+			name = (_('Being Charge of Salary %s') % (slip.number))
 			move = {
 				'narration': name,
 				'ref': slip.number,
@@ -260,8 +261,6 @@ class hr_payslip(models.Model):
 				amt = abs(slip.credit_note and -line.total or line.total)
 				if float_is_zero(amt, precision_digits=precision):
 					continue
-
-				#company_id = line.company_id.id
 				debit_account_id = line.salary_rule_id.account_debit.id
 				credit_account_id = line.salary_rule_id.account_credit.id
 
@@ -282,7 +281,6 @@ class hr_payslip(models.Model):
 					line_ids.append(debit_line)
 					debit_sum += debit_line[2]['debit'] - debit_line[2]['credit']
 
-																																						
 				if credit_account_id:
 					credit_line = (0, 0, {
 						'name': _('%s %s') % (line.name,slip.number),
@@ -299,23 +297,24 @@ class hr_payslip(models.Model):
 					line_ids.append(credit_line)
 					credit_sum += credit_line[2]['credit'] - credit_line[2]['debit']
 					
-		for move_line in line_ids:
-			number = 0
-			nd_ids = eval("self.env['account.account'].browse(move_line[2].get('account_id')).nd_ids")
-			if nd_ids:
-				for auto_entry in auto_entries:
-					if auto_entry.dimension_id in nd_ids:
-						if auto_entry.src_fnc:
-							move_line[2].update({auto_entry.dst_col.name : eval(auto_entry.src_fnc)})
-						else:
-							move_line[2].update({auto_entry.dst_col.name : eval('self.'+auto_entry.src_col.name).id})
+			for move_line in line_ids:
+				number = 0
+				nd_ids = eval("self.env['account.account'].browse(move_line[2].get('account_id')).nd_ids")
+				if nd_ids:
+					for auto_entry in auto_entries:
+						if auto_entry.dimension_id in nd_ids:
+							if auto_entry.src_fnc:
+								move_line[2].update({auto_entry.dst_col.name : eval(auto_entry.src_fnc)})
+							else:
+								move_line[2].update({auto_entry.dst_col.name : eval('self.'+auto_entry.src_col.name).id})
 
-						ans = self.env['analytic.structure'].search([('model_name','=','account_move_line'),('nd_id','=',auto_entry.dimension_id.id)])	
-						number += math.pow(2,int(ans.ordering)-1)			
-				move_line[2].update({'d_bin' : bin(int(number))[2:].zfill(10)})	
-			
+							ans = self.env['analytic.structure'].search([('model_name','=','account_move_line'),('nd_id','=',auto_entry.dimension_id.id)])
+							number += math.pow(2,int(ans.ordering)-1)
+					move_line[2].update({'d_bin' : bin(int(number))[2:].zfill(10)})
+
 			move.update({'line_ids': line_ids})
 			move_id = move_pool.create(move)
+			#move_id.action_post() need to check
 			slip.write({'move_id': move_id.id, 'date' : date,'state': 'done'})
 			
 	@api.multi
@@ -597,12 +596,12 @@ class hr_payslip(models.Model):
         
 	def _partial_period_factor(self, payslip, contract):
 
-		dpsFrom = datetime.strptime(payslip.date_from, OE_DATEFORMAT).date()
-		dpsTo = datetime.strptime(payslip.date_to, OE_DATEFORMAT).date()
-		dcStart = datetime.strptime(contract.date_start, OE_DATEFORMAT).date()
+		dpsFrom = payslip.date_from
+		dpsTo = payslip.date_to
+		dcStart = contract.date_start
 		dcEnd = False
 		if contract.date_end:
-			dcEnd = datetime.strptime(contract.date_end, OE_DATEFORMAT).date()
+			dcEnd = contract.date_end
 
 		# both start and end of contract are out of the bounds of the payslip
 		if dcStart <= dpsFrom and (not dcEnd or dcEnd >= dpsTo):
@@ -706,7 +705,7 @@ class hr_payslip(models.Model):
 	def compute_sheet(self):
 		for payslip in self:
 			# Changed the Number Style
-			ttyme = strToDate(payslip.date_from)
+			ttyme = payslip.date_from
 			number = _('Slip-%s-%s') % (tools.ustr(ttyme.strftime('%y%m')),payslip.employee_id.code)
 			
 			#delete old payslip lines
@@ -719,8 +718,8 @@ class hr_payslip(models.Model):
 
 			
 			# Added these two writes for inputs and attendance
-			start_date = strToDate(payslip.date_from)
-			end_date = strToDate(payslip.date_to)
+			start_date = payslip.date_from
+			end_date = payslip.date_to
 			
 			start_date1 = start_date + relativedelta.relativedelta(months=-1,day=21)
 			end_date1 = start_date + relativedelta.relativedelta(day=21,minutes=-1)
@@ -970,7 +969,6 @@ class hr_payslip(models.Model):
 				return self.get_worked_day_lines_attendance(contract_ids, date_from, date_to)
 			elif attendance_policy in ('bio_month','monthly'):
 				return self.get_worked_day_lines_monthly_attendance(contract_ids, date_from, date_to)
-				
 
 	def get_worked_day_lines_monthly_attendance(self, contract_ids, date_from, date_to):
 		res = []		
@@ -993,10 +991,10 @@ class hr_payslip(models.Model):
 					'contract_id': contract.id,
 				},
 			}
-			
+
 			leaves = {}
-			day_from = datetime.strptime(date_from,"%Y-%m-%d")
-			day_to = datetime.strptime(date_to,"%Y-%m-%d")
+			day_from = date_from
+			day_to = date_to
 			
 			attendance_ids =self.env['hr.employee.month.attendance'].search([('employee_id','=', contract.employee_id.id),('date','>=',date_from),('date','<=',date_to)])
 				#('date','>=',date_from),('date','<=',date_to),('slip_id','=',False)])
@@ -1189,10 +1187,8 @@ class hr_payslip_line(models.Model):
 	@api.depends('quantity','amount','rate')
 	def _calculate_total(self):
 		self.total = round(float(self.quantity) * self.amount * self.rate / 100,0)
-        
+
 	date_from = fields.Date(related='slip_id.date_from', store=True)
 	date_to = fields.Date(related='slip_id.date_to', store=True)
 	payslip_run_id = fields.Char('Payslip Batches', related='slip_id.payslip_run_id.name', store=True)
 	total = fields.Float(compute='_calculate_total', string='Total',store=True )
-	
-    
