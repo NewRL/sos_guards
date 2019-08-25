@@ -469,8 +469,7 @@ class payroll_advice(models.Model):
 		else:
 			message = ''
 		return message							
-	
-	
+
 	#For SOS Staff (Sarfraz)
 	@api.multi
 	def send_payslip_email(self):					
@@ -479,8 +478,7 @@ class payroll_advice(models.Model):
 				for slip in rec.batch_id.slip_ids:
 					if not slip.send_email:
 						slip.send_payslip_email()
-				rec.send_email = True		
-											
+				rec.send_email = True
 
 	@api.multi
 	def confirm_sheet(self):		
