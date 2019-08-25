@@ -192,3 +192,10 @@ class hr_attendance(models.Model):
             self.state, self.employee_id.name, self.check_in, self.check_out))
         res = super(hr_attendance, self).write(vals)
         return res
+
+
+class res_company(models.Model):
+    _inherit = 'res.company'
+
+    attendance_policy = fields.Selection([('none','No Attendance'),('daily','Daily Attendance'),('monthly','Monthly Attendance'),
+                                          ('overtime','Overtime'),('bio_month','Bio Device with Monthly Counting')], 'Attendance Policy' , default='monthly')
