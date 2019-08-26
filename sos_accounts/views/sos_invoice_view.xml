@@ -40,6 +40,19 @@
 		<field name="inherit_id" ref="account.invoice_form"/>
 		<field name="arch" type="xml">
 			<data>
+				<xpath  expr="//header/button[@name='action_invoice_open']" position="replace">
+					<button name="action_invoice_open" string="Approve"  attrs="{'invisible':['|',('type', '!=', 'out_refund'),('state', '!=', 'draft')]}" class="oe_highlight" groups="account.group_account_finance_manager"/>
+				</xpath>
+
+				<xpath expr="//header/button[@name='action_invoice_open']" position="before">
+					<button name="invoice_check" string="Checked"   attrs="{'invisible':['|',('type', 'in', ('in_invoice','in_refund')),('state', '!=', 'draft')]}" type="object" groups="sos.group_account_auditor,account.group_account_manager" class="oe_highlight"/>
+					<button name="invoice_draft" states="checked" string="Turn to Draft" type="object"  groups="account.group_account_manager,account.group_account_user,sos.group_account_auditor"/>
+					<button name="test_recompute" string="Test..." type="object"/>
+				</xpath>
+
+				<xpath expr="//header/field[@name='state']" position="replace">
+					<field name="state" widget="statusbar" nolabel="1" statusbar_visible="draft,checked,open,paid"/>
+				</xpath>
 				<xpath expr="/form/sheet/group[1]/group[1]" position="replace">
 					<group>
 						<field name="post_id"/>
