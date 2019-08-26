@@ -3,6 +3,7 @@ from odoo import tools
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
+
 class SOSInvoiceDraftwizard(models.TransientModel):
 	_name = 'sos.invoice.draft.wizard'
 	_description = 'Invoices Draft Wizard'
@@ -19,7 +20,7 @@ class SOSInvoiceDraftwizard(models.TransientModel):
 	
 	@api.one
 	def invoice_status(self):
-		if self.env.user.id in (1,10):
+		if self.env.user.id in (1,125,10):
 			invoice_id = self.invoice_id or False
 			
 			if invoice_id and invoice_id.move_id and invoice_id.state == 'open':
