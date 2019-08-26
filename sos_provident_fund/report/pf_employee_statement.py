@@ -10,6 +10,7 @@ from operator import itemgetter
 from dateutil.relativedelta import relativedelta
 from odoo.exceptions import UserError
 
+
 class ReportPFEmployeeStatement(models.AbstractModel):
 	_name = 'report.sos_provident_fund.report_pf_employeestatement'
 	_description = 'PF Employee Statement Report'
@@ -26,7 +27,7 @@ class ReportPFEmployeeStatement(models.AbstractModel):
 		total = 0
 		
 		if employee_id:
-			emp = self.env['hr.employee'].search([('id','=',employee_id)])
+			emp = self.env['hr.employee'].search([('id','=',employee_id),'|',('current','=',True),('current','=',False)])
 			personal_info = ({
 				'name': emp.name,
 				'ref': emp.code,
@@ -38,8 +39,8 @@ class ReportPFEmployeeStatement(models.AbstractModel):
 			if data_recs:
 				for rec in data_recs:
 					sub_total = sub_total + abs(rec.amount)
-				total = total + (sub_total*2)	
-		
+				total = total + (sub_total*2)
+
 		report = self.env['ir.actions.report']._get_report_from_name('sos_provident_fund.report_pf_employeestatement')
 		return {
 			"doc_ids": self._ids,

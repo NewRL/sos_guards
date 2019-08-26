@@ -40,10 +40,9 @@ class ReportPFEmployerContribution(models.AbstractModel):
 				
 				project = self.env['sos.project'].search([('id','=',project_id)])
 				post_ids = self.env['sos.post'].search([('project_id','=', project_id),'|',('active','=',True),'&',('enddate' ,'>=', data['form']['date_from'] ),('enddate', '<=',  data['form']['date_to'])])
-				emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids)])
+				emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids),'|',('current','=',True),('current','=',False)])
 				
 				if emp_ids:
-					
 					#Detail
 					self.env.cr.execute("""select e.code as emp_code,e.name as guard_name,g.cnic as cnic,g.current as status,sum(abs(pl.amount)) as amount from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
 					where pl.code='GPROF' and pl.date_from >=%s and pl.date_to <=%s and pl.slip_id = p.id and pl.employee_id in %s and pl.employee_id = e.id and e.guard_id = g.id group by e.code,e.name,g.cnic,g.current""" ,(date_from,date_to,tuple(emp_ids.ids),))
@@ -68,10 +67,9 @@ class ReportPFEmployerContribution(models.AbstractModel):
 				recs = False
 				center = self.env['sos.center'].search([('id','=',center_id)])
 				post_ids = self.env['sos.post'].search([('center_id','=', center_id),'|',('active','=',True),'&',('enddate' ,'>=', data['form']['date_from'] ),('enddate', '<=',  data['form']['date_to'])])
-				emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids)])
+				emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids),'|',('current','=',True),('current','=',False)])
 				
 				if emp_ids:
-					
 					#Detail
 					self.env.cr.execute("""select e.code as emp_code,e.name as guard_name,g.cnic as cnic,g.current as status,sum(abs(pl.amount)) as amount from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
 					where pl.code='GPROF' and pl.date_from >=%s and pl.date_to <=%s and pl.slip_id = p.id and pl.employee_id in %s and pl.employee_id = e.id and e.guard_id = g.id group by e.code,e.name,g.cnic,g.current""" ,(date_from,date_to,tuple(emp_ids.ids),))
@@ -95,10 +93,9 @@ class ReportPFEmployerContribution(models.AbstractModel):
 				emp_ids = False
 				recs = False
 				post = self.env['sos.post'].search([('id','=',post_id)])
-				#post_ids = self.env['sos.post'].search([('id','=', post_ids)])
-				emp_ids = self.env['hr.employee'].search([('current_post_id','=',post_id)])
+				emp_ids = self.env['hr.employee'].search([('current_post_id','=',post_id),'|',('current','=',True),('current','=',False)])
+
 				if emp_ids:
-					
 					#Detail
 					self.env.cr.execute("""select e.code as emp_code,e.name as guard_name,g.cnic as cnic,g.current as status,sum(abs(pl.amount)) as amount from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
 					where pl.code='GPROF' and pl.date_from >=%s and pl.date_to <=%s and pl.slip_id = p.id and pl.employee_id in %s and pl.employee_id = e.id and e.guard_id = g.id group by e.code,e.name,g.cnic,g.current""" ,(date_from,date_to,tuple(emp_ids.ids),))			
@@ -116,13 +113,12 @@ class ReportPFEmployerContribution(models.AbstractModel):
 							'total' : total,
 							})
 						data_recs.append(project_line)
-				
-		
+
 		elif guard_ids:
 			for guard_id in guard_ids:
 				emp_ids = False
 				recs = False
-				emp_id = self.env['hr.employee'].search([('id','=',guard_id)])
+				emp_id = self.env['hr.employee'].search([('id','=',guard_id),'|',('current','=',True),('current','=',False)])
 				
 				#Detail
 				self.env.cr.execute("""select e.code as emp_code,e.name as guard_name,g.cnic as cnic,g.current as status,sum(abs(pl.amount)) as amount from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
@@ -141,11 +137,9 @@ class ReportPFEmployerContribution(models.AbstractModel):
 						'total' : total,
 						})
 					data_recs.append(project_line)
-		
 		else:
-			raise UserError(_("You must select any of the input"))	
-			
-			
+			raise UserError(_("You must select any of the input"))
+
 		res = data_recs		
 		report = self.env['ir.actions.report']._get_report_from_name('sos_provident_fund.report_pf_employercontribution')
 		return {
@@ -157,4 +151,3 @@ class ReportPFEmployerContribution(models.AbstractModel):
 			"recs": data_recs or False,
 			"get_date_formate" : self.get_date_formate,
 		}
-		
