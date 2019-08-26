@@ -213,10 +213,15 @@ class account_payment(models.Model):
 	@api.multi
 	def multi_post(self):
 		for rec in self:
+			mgs = ""
 			if rec.state != 'draft':
 				raise UserError(_("Only a draft payment can be posted. Trying to post a payment in state %s.") % rec.state)
 			if any(inv.state != 'open' for inv in rec.invoice_ids):
-				raise ValidationError(_("The payment cannot be processed because the invoice is not open!"))
+				op_invoices = self.env['account.invoice'].search([('state','!=','open'),('id','in',rec.invoice_ids.ids)])
+				for op_invoice in op_invoices:
+					mgs = mgs + '\n' + " Invoice : " + op_invoice.number + " \n State : " + op_invoice.state
+				raise UserError(_('Following Invoices are not in the Open State. %s') % (mgs,))
+
 			rec.name = rec.multi_payment_id.name
 			# Create the journal entry
 			amount = rec.amount * (rec.payment_type in ('outbound', 'transfer') and 1 or -1)
