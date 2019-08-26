@@ -10,6 +10,7 @@ from dateutil.relativedelta import relativedelta
 from odoo.exceptions import UserError
 
 
+
 class ReportPFEmployerContribution(models.AbstractModel):
 	_name = 'report.sos_provident_fund.report_pf_employercontribution'
 	_description = 'PF Employer Contribution'
