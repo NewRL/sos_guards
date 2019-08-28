@@ -233,8 +233,8 @@ class hr_employee(models.Model):
 		today = date.today()
 		for employee in self:
 			if employee.cnic_expiry_date:
-				start = datetime.strptime(time.strftime(OE_DFORMAT),OE_DFORMAT)				
-				end = datetime.strptime(employee.cnic_expiry_date, OE_DFORMAT)
+				start = fields.Date.today()
+				end = employee.cnic_expiry_date
 				delta = end - start					
 				employee.cnic_days_to_expire = delta.days or 0		
 				
