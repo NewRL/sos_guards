@@ -36,7 +36,5 @@
             action="action_invoices_status_by_project"
             id="menu_invoices_status_by_project"
            />
-           
-        
     </data>
 </odoo>
