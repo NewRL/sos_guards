@@ -38,15 +38,15 @@
                             		<!-- A means Total Absent -->
                             		<!-- T means Total Days -->
                             		
-                            		<td class="text-center">M</td>
-                            		<td class="text-center">P</td>
-                            		<td class="text-center">LT</td>
-                            		<td class="text-center">SL</td>
-                            		<td class="text-center">HL</td>
-                            		<td class="text-center">L</td>
-                            		<td class="text-center">LW</td>
-				                    <td class="text-center">A</td>
-				                    <td class="text-center">T</td>
+                            		<td class="text-center" style="font-size: 6px;">M</td>
+                            		<td class="text-center" style="font-size: 6px;">P</td>
+                            		<td class="text-center" style="font-size: 6px;">LT</td>
+                            		<td class="text-center" style="font-size: 6px;">SL</td>
+                            		<td class="text-center" style="font-size: 6px;">HL</td>
+                            		<td class="text-center" style="font-size: 6px;">L</td>
+                            		<td class="text-center" style="font-size: 6px;">LW</td>
+				                    <td class="text-center" style="font-size: 6px;">A</td>
+				                    <td class="text-center" style="font-size: 6px;">T</td>
 		        				</tr>
 		        			</thead>
 		        			
@@ -58,15 +58,15 @@
 		        			 	 	 	<t t-foreach="emp['display']" t-as="details">
                                     		&lt;td style=background-color:<t t-esc="details['color'] or '#FFEBCD'"/> !important "&gt; <t style="font-size: 6px;" t-esc="details['In']"/> &lt;/td&gt;
                                 		</t>
-                                		<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['M'] or '-'"/></td>
-                                		<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['P'] or '-'"/></td>
-                                		<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['LT'] or '-'"/></td>
-                                		<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['S'] or '-'"/></td>
-                                		<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['H'] or '-'"/></td>
-                               			<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['L'] or '-'"/></td>
-                               			<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['W'] or '-'"/></td>
-                                		<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['A'] or '-'"/></td>
-                                		<td class="text-center" style="font-size: 6px;"><t t-esc="emp['summary'][0]['T'] or '-'"/></td>
+                                		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['M'] or '-'"/></td>
+                                		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['P'] or '-'"/></td>
+                                		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['LT'] or '-'"/></td>
+                                		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['S'] or '-'"/></td>
+                                		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['H'] or '-'"/></td>
+                               			<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['L'] or '-'"/></td>
+                               			<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['W'] or '-'"/></td>
+                                		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['A'] or '-'"/></td>
+                                		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['T'] or '-'"/></td>
                                 	</tr>
 		        			 	 </t>
 		        			 </tbody>
