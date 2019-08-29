@@ -56,7 +56,7 @@
 		        			 	 	 	<td><t t-esc="emp['emp']"/></td>
 		        			 	 	 	
 		        			 	 	 	<t t-foreach="emp['display']" t-as="details">
-                                    		&lt;td style=background-color:<t t-esc="details['color'] or '#FFEBCD'"/> !important "&gt; <t style="font-size: 6px;" t-esc="details['In']"/> &lt;/td&gt;
+                                    		&lt;td style=background-color:<t t-esc="details['color'] or '#FFEBCD'"/> !important "&gt; <t style="font-size: 5px;" t-esc="details['In']"/> &lt;/td&gt;
                                 		</t>
                                 		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['M'] or '-'"/></td>
                                 		<td class="text-center" style="font-size: 5px;"><t t-esc="emp['summary'][0]['P'] or '-'"/></td>

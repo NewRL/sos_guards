@@ -18,7 +18,7 @@
 			id="action_report_biometric_attendance"
 			string= "Bio-MetricAttendance Report"
 			model = "sos_reports.biometric.attendance.wizard"
-			report_type="qweb-pdf"
+			report_type="qweb-html"
 			file="sos_reports.report_biometricattendance"
 			name="sos_reports.report_biometricattendance"
 		/>
@@ -28,7 +28,7 @@
 			id="action_report_biometric_attendance_summary"
 			string= "Attendance Summary"
 			model = "sos_reports.biometric.attendance.summary.wizard"
-			report_type="qweb-pdf"
+			report_type="qweb-html"
 			file="sos_reports.report_biometric_attendancesummary"
 			name="sos_reports.report_biometric_attendancesummary"
 		/>
