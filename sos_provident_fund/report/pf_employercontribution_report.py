@@ -2,7 +2,7 @@ import pdb
 import time
 from datetime import datetime, timedelta
 from pytz import timezone
-from odoo import api, models
+from odoo import api, models, _
 import pytz, datetime
 from dateutil import tz
 from odoo import tools
