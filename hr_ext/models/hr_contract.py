@@ -286,31 +286,31 @@ class hr_contract(models.Model):
 	sub_segment_id = fields.Many2one(related='employee_id.sub_segment_id',string="Sub Segment", store=True)
 	center_id = fields.Many2one(related='employee_id.center_id', string='Center', store=True)
 	
-	@api.multi
-	def _track_subtype(self, init_values):
-		self.ensure_one()
-		if 'state' in init_values and self.state == 'pending':
-			return 'hr_contract.mt_contract_pending'
-		elif 'state' in init_values and self.state == 'trial_ending':
-			return 'hr_contract.mt_alert_trial_ending'
-		elif 'state' in init_values and self.state == 'open':
-			return 'hr_contract.mt_alert_open'
-		elif 'state' in init_values and self.state == 'contract_ending':
-			return 'hr_contract.mt_alert_contract_ending'				
-		elif 'state' in init_values and self.state == 'close':
-			return 'hr_contract.mt_contract_close'
-		elif 'godi_deduction' in init_values:
-			return 'hr_contract.mt_benefits_change'
-		elif 'transportation_allowance' in init_values:
-			return 'hr_contract.mt_benefits_change'
-		elif 'house_rent_allowance' in init_values:
-			return 'hr_contract.mt_benefits_change'
-		elif 'supplementary_allowance' in init_values:
-			return 'hr_contract.mt_benefits_change'
-		elif 'wage' in init_values:
-			return 'hr_contract.mt_benefits_change'
-				
-		return super(hr_contract, self)._track_subtype(init_values)	
+#	@api.multi
+#	def _track_subtype(self, init_values):
+#		self.ensure_one()
+#		if 'state' in init_values and self.state == 'pending':
+#			return 'hr_contract.mt_contract_pending'
+#		elif 'state' in init_values and self.state == 'trial_ending':
+#			return 'hr_contract.mt_alert_trial_ending'
+#		elif 'state' in init_values and self.state == 'open':
+#			return 'hr_contract.mt_alert_open'
+#		elif 'state' in init_values and self.state == 'contract_ending':
+#			return 'hr_contract.mt_alert_contract_ending'				
+#		elif 'state' in init_values and self.state == 'close':
+#			return 'hr_contract.mt_contract_close'
+#		elif 'godi_deduction' in init_values:
+#			return 'hr_contract.mt_benefits_change'
+#		elif 'transportation_allowance' in init_values:
+#			return 'hr_contract.mt_benefits_change'
+#		elif 'house_rent_allowance' in init_values:
+#			return 'hr_contract.mt_benefits_change'
+#		elif 'supplementary_allowance' in init_values:
+#			return 'hr_contract.mt_benefits_change'
+#		elif 'wage' in init_values:
+#			return 'hr_contract.mt_benefits_change'
+#				
+#		return super(hr_contract, self)._track_subtype(init_values)	
 
 	@api.onchange('employee_id')    
 	def onchange_employee_id(self):		
