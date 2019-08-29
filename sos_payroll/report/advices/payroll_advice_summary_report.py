@@ -17,8 +17,8 @@ class GuardPayrollAdviceSummaryReport(models.AbstractModel):
 	def _get_header_info(self, data=None):
 		advice = self.env['guards.payroll.advice'].search([('id','=',data['form']['advice_id'][0])])		
 		return {
-			'from_date': self.get_date_formate(advice.batch_id.date_start),
-			'to_date': self.get_date_formate(advice.batch_id.date_end),
+			'from_date': advice.batch_id.date_start,
+			'to_date': advice.batch_id.date_end,
 			'bank': advice.bank_id.acc_number,
 		}	
 
