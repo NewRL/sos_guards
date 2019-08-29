@@ -22,6 +22,7 @@ class GuardPayrollAdviceSummaryReport(models.AbstractModel):
 			'bank': advice.bank_id.acc_number,
 		}	
 
+
 	@api.model
 	def _get_report_values(self, docids, data=None):
 		if not data.get('form'):
