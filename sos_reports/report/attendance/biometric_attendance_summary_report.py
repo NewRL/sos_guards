@@ -133,7 +133,7 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 				if attendance.current_action not in ['leave','absent','short_leave','half_day_leave']:
 					check_in = fields.Datetime.from_string(attendance.name)
 					check_in = fields.Datetime.context_timestamp(attendance, check_in).date()		
-					res[(check_in-start_date).days]['In'] = attendance.name and localDate(self,strToDatetime(attendance.name)).strftime('%H:%M') or '-'	
+					res[(check_in-start_date).days]['In'] = attendance.name and localDate(self,attendance.name).strftime('%H:%M') or '-'
 					
 				if attendance.current_action == 'leave':
 					check_in = fields.Datetime.from_string(attendance.name)
@@ -165,7 +165,7 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 				emp_rec = self.env['hr.employee'].search([('id','=',empid)])
 				#pdb.set_trace()
 				emp_appointmentdate = emp_rec.appointmentdate
-				if emp_appointmentdate > sst_date:
+				if emp_appointmentdate > strToDate(sst_date):
 					app_date = fields.Datetime.from_string(emp_appointmentdate)
 					app_day =app_date.day
 					empty_days = app_day - 1
@@ -173,7 +173,7 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 				#Check if Terminate date is after the start date.
 				if emp_rec.resigdate:
 					emp_resigdate = emp_rec.resigdate
-					if emp_resigdate > sst_date:
+					if emp_resigdate > strToDate(sst_date):
 						resign_date = fields.Datetime.from_string(emp_resigdate)
 						resign_day =resign_date.day
 						empty_days = last_day - resign_day
