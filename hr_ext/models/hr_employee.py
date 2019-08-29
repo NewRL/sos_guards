@@ -285,6 +285,7 @@ class hr_employee(models.Model):
 		emps = self.search(domain + args, limit=limit)
 		return emps.name_get()
 
+
 class hr_passport(models.Model):
 	_name = 'hr.passport'
 	_description = 'HR Passport'
