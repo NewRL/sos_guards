@@ -18,8 +18,9 @@
 		'views/sos_accounts_view.xml',
 		'views/invoices_cron_view.xml',
 		'views/sos_abl_incentive_view.xml',
-
 		'views/account_checkbook_view.xml',   
+		'views/assets.xml',
+		
 		'wizard/invoice_states_view.xml',  
 		'wizard/invoices_cron_wizard_view.xml',
 		'wizard/invoices_debit_note_wizard_view.xml',
