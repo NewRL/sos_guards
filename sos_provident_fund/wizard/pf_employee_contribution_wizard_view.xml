@@ -47,7 +47,7 @@
                     
                     <page string="Guards Filters" name="guards">
 						<separator string="Print only" colspan="4"/>
-						<field name="guard_ids" colspan="4" nolabel="1" domain="[('is_guard','=', True),('current','=', True)]" context="{'tree_view_ref':'sos.view_guard_tree','search_view_ref':'sos.view_guard_filter'}">
+						<field name="guard_ids" colspan="4" nolabel="1" domain="[('is_guard','=', True),'|',('current','=', True),('current','=', False)]" context="{'search_view_ref':'sos.view_guard_filter'}">
 						<tree>
 							<field name="code"/>	
 							<field name="name"/>	
