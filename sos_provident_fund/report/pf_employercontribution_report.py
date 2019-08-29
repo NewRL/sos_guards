@@ -10,7 +10,6 @@ from dateutil.relativedelta import relativedelta
 from odoo.exceptions import UserError
 
 
-
 class ReportPFEmployerContribution(models.AbstractModel):
 	_name = 'report.sos_provident_fund.report_pf_employercontribution'
 	_description = 'PF Employer Contribution'
@@ -28,6 +27,13 @@ class ReportPFEmployerContribution(models.AbstractModel):
 		center_ids = data['form']['center_ids'] and data['form']['center_ids'] or False
 		post_ids = data['form']['post_ids'] and data['form']['post_ids'] or False
 		guard_ids = data['form']['guard_ids'] and data['form']['guard_ids'] or False
+
+		report_category = data['form']['category'] and data['form']['category'] or False
+		from_resign_date = data['form']['from_resign_date'] and data['form']['from_resign_date'] or False
+		to_resign_date = data['form']['to_resign_date'] and data['form']['to_resign_date'] or False
+
+		if not report_category:
+			raise UserError("Please Select the Report Cateogry, Current Employee or Inactive Employee")
 		
 		data_recs = []
 		res = {}
@@ -41,7 +47,11 @@ class ReportPFEmployerContribution(models.AbstractModel):
 				
 				project = self.env['sos.project'].search([('id','=',project_id)])
 				post_ids = self.env['sos.post'].search([('project_id','=', project_id),'|',('active','=',True),'&',('enddate' ,'>=', data['form']['date_from'] ),('enddate', '<=',  data['form']['date_to'])])
-				emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids),'|',('current','=',True),('current','=',False)])
+
+				if report_category == 'Current':
+					emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids),('current','=',True)])
+				if report_category == 'Inactive' and from_resign_date and to_resign_date:
+					emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids),('current','=',False),('resigdate','>=',from_resign_date),('resigdate','<=',to_resign_date)])
 				
 				if emp_ids:
 					#Detail
@@ -68,8 +78,12 @@ class ReportPFEmployerContribution(models.AbstractModel):
 				recs = False
 				center = self.env['sos.center'].search([('id','=',center_id)])
 				post_ids = self.env['sos.post'].search([('center_id','=', center_id),'|',('active','=',True),'&',('enddate' ,'>=', data['form']['date_from'] ),('enddate', '<=',  data['form']['date_to'])])
-				emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids),'|',('current','=',True),('current','=',False)])
-				
+
+				if report_category == 'Current':
+					emp_ids = self.env['hr.employee'].search([('current_post_id', 'in', post_ids.ids), ('current', '=', True)])
+				if report_category == 'Inactive' and from_resign_date and to_resign_date:
+					emp_ids = self.env['hr.employee'].search([('current_post_id', 'in', post_ids.ids), ('current', '=', False),('resigdate', '>=', from_resign_date), ('resigdate', '<=', to_resign_date)])
+
 				if emp_ids:
 					#Detail
 					self.env.cr.execute("""select e.code as emp_code,e.name as guard_name,g.cnic as cnic,g.current as status,sum(abs(pl.amount)) as amount from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
@@ -94,7 +108,11 @@ class ReportPFEmployerContribution(models.AbstractModel):
 				emp_ids = False
 				recs = False
 				post = self.env['sos.post'].search([('id','=',post_id)])
-				emp_ids = self.env['hr.employee'].search([('current_post_id','=',post_id),'|',('current','=',True),('current','=',False)])
+
+				if report_category == 'Current':
+					emp_ids = self.env['hr.employee'].search([('current_post_id', 'in', post_ids.ids), ('current', '=', True)])
+				if report_category == 'Inactive' and from_resign_date and to_resign_date:
+					emp_ids = self.env['hr.employee'].search([('current_post_id', 'in', post_ids.ids), ('current', '=', False),('resigdate', '>=', from_resign_date), ('resigdate', '<=', to_resign_date)])
 
 				if emp_ids:
 					#Detail

@@ -13,6 +13,9 @@
             		<group>
             			<field name="date_from" />
             			<field name="date_to" />
+						<field name="category" />
+						<field name="from_resign_date"  attrs="{'invisible': [('category', '=', 'Current')], 'required': [('category', '=', 'Inactive')]}"/>
+						<field name="to_resign_date"  attrs="{'invisible': [('category', '=', 'Current')], 'required': [('category', '=', 'Inactive')]}"/>
             		</group>
             		<group>	
     				</group>	
@@ -22,12 +25,12 @@
                 <notebook tabpos="up" colspan="4">
                     <page string="Project Filters" name="projects">
 						<separator string="Print only" colspan="4"/>
-						<field name="project_ids"  widget="many2many_tags" options="{'limit': 10, 'no_create': 1, 'no_create_edit': 1}"/>
+						<field name="project_ids"  widget="many2many_checkboxes" options="{'limit': 10, 'no_create': 1, 'no_create_edit': 1}"/>
                     </page>
                    
                     <page string="Center Filters" name="centers">
 						<separator string="Print only" colspan="4"/>
-						<field name="center_ids" widget="many2many_tags" options="{'limit': 10, 'no_create': 1, 'no_create_edit': 1}"/>
+						<field name="center_ids" widget="many2many_checkboxes" options="{'limit': 10, 'no_create': 1, 'no_create_edit': 1}"/>
 				    </page>
 				    
 				     <page string="Post Filters" name="posts">

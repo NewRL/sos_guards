@@ -60,6 +60,9 @@
 												<t t-if="ln['status']">
 													Current
 												</t>
+												<t t-if="not ln['status']">
+													Inactive
+												</t>
 											</td>
 											<td class="text-right">
 												<span t-esc="'{0:,.1f}'.format(ln['amount'])" />
