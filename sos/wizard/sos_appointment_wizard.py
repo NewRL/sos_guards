@@ -41,6 +41,5 @@ class sos_appointmentdate_wizard(models.TransientModel):
 				new_cnic = self.cnic
 				employee_id.cnic = new_cnic	
 		else:
-			raise UserError(_('You are not Authorized to do this! Please Contact To Mr.Aamir Raza.'))			
-		return {'type': 'ir.actions.act_window_close'}	 
-	
+			raise UserError(_('You are not Authorized to do this! Please Contact To Mr.Zahid Ashraf'))
+		return {'type': 'ir.actions.act_window_close'}
