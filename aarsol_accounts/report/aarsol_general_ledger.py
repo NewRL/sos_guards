@@ -55,6 +55,7 @@ class AARSOLReportGeneralLedger(models.AbstractModel):
                 'move_lines': list of move line
         }
         """
+
 		sos_flag = False
 		cr = self.env.cr
 		MoveLine = self.env['account.move.line']
