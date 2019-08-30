@@ -6,6 +6,7 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
+
 class AARSOLAccountReportGeneralLedger(models.TransientModel):
 	_name = "aarsol.account.report.general.ledger"
 	_description = "AARSOL Customized General Ledger Report"
