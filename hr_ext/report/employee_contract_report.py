@@ -12,7 +12,7 @@ class ReportEmployeeContract(models.AbstractModel):
 		return ss.strftime('%d %b %Y')
 	
 	@api.model
-	def get_report_values(self, docids, data=None):	
+	def _get_report_values(self, docids, data=None):	
 		company_id = data['form']['company_id'] and data['form']['company_id'][0]
 		employee_status = data['form']['employee_status'] and data['form']['employee_status'] or False
 		segment_id = data['form']['segment_id'] and data['form']['segment_id'][0] or False
