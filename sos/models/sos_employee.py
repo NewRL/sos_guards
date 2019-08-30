@@ -257,7 +257,7 @@ class hr_employee(models.Model):
 	@api.multi
 	def write(self, vals):
 		cnc = vals.get('cnic',False)
-		if cnc and self.env.user.id not in (1,5,10,90,83,39):
+		if cnc and self.env.user.id not in (1,5,10,90,83,39,125):
 			raise UserError(_('You are not Authorized to do this! Please Contact To Mr.Aamir Raza.'))
 		res = super(hr_employee, self).write(vals)
 		return res	
