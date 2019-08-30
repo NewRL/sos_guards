@@ -18,9 +18,10 @@
 
 		#'wizard/report_wizards_view.xml',		
 		'wizard/dimensions_view.xml',
+        'wizard/aarsol_general_ledger_view.xml',
 		#'wizard/ledger_summary_view.xml',
      		
-		#'report/general_ledger.xml',
+		'report/aarsol_general_ledger.xml',
 		#'report/ledger_summary.xml',
 
 		'report/journal_entry/reports.xml',
