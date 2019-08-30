@@ -313,18 +313,14 @@ class sos_attendance_close(models.Model):
 	_name ="sos.attendance.close"
 	_inherit = ['mail.thread']
 	_description ="Attendance Close"
-	
-	_track = {
-		}
-	
+
 	attendance_date = fields.Date('Attendance Date', required=True,track_visibility='onchange')
 	attendance_mark_date = fields.Date('Attendance Mark Date', required=True,track_visibility='onchange')
 	attendance_close_date = fields.Date('Attendance Close Date', required=True,track_visibility='onchange')
 	state = fields.Selection([('draft','Draft'),('done','Done')],'Status',default='draft',track_visibility='onchange')
 	
 	@api.model
-	def attendance_close_cron(self,nlimit=1):		
-		
+	def attendance_close_cron(self,nlimit=1):
 		center_obj = self.env['sos.center']
 		center_ids = center_obj.search([])
 		today = str(datetime.today())[:10]
@@ -345,8 +341,6 @@ class sos_guard_attendance1(models.Model):
 	_inherit = ['mail.thread']
 	_description = "Attendance"
 	_order = 'id desc'
-	_track = {
-		}
 	
 	#@api.one
 	#@api.depends('name')
@@ -415,9 +409,15 @@ class sos_guard_attendance1(models.Model):
 			device_id = self.env['sos.attendance.device'].search([('id','=',vals.get('device_id'))])
 		
 		if not device_id and employee_id.current_post_id:
-			device_id = self.env['sos.attendance.device'].search([('post_id','=',employee_id.current_post_id.id)])	
+			device_id = self.env['sos.attendance.device'].search([('post_id','=',employee_id.current_post_id.id)])
+
 			
 		if employee_id:
+			# if record already exist...then
+			rec_exist = self.env['sos.guard.attendance1'].search([('name', '=', vals.get('name')), ('employee_id', '=', employee_id.id),('action', '=', vals.get('action'))])
+			if rec_exist:
+				raise UserError('Employee Record Already Exists, please check it.')
+
 			#For Double Duty
 			second_shift = str(fields.Date.today()) + ' 20:00:00'
 			n1 = localDate(self, strToDatetime(vals['name'])).strftime("%Y-%m-%d %H:%M:%S")
@@ -465,7 +465,7 @@ class sos_guard_attendance1(models.Model):
 						vals['duty_status'] = 'late'
 				result = super(sos_guard_attendance1, self).create(vals)
 		else:
-			raise UserError(('Employee or Device record is not found in the System please check it.'))		
+			raise UserError('Employee or Device record is not found in the System please check it.')
 		return result
 
 	
