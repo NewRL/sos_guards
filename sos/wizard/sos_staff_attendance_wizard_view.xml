@@ -38,13 +38,9 @@
             <field name="view_id" ref="view_sos_staff_attendance_wizard"/>
             <field name="target">new</field>
         </record>
-        
-        <!-- SARFRAZ-->
-       <!--
+
         <menuitem name="Mark Staff Attendance" parent="sos_payroll.staff_attendance_main_menu" action="act_sos_staff_attendance_wizard" sequence="10" 
 						id="menu_staff_attendance_mark" groups="account.group_account_manager" />
-						-->
-						
         
 	</data>
 </odoo>
