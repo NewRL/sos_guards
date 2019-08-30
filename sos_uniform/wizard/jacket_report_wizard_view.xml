@@ -6,7 +6,7 @@
     <field name="name">Jacket Report Wizard</field>
     <field name="model">jacket.report.wizard</field>                     
     <field name="arch" type="xml">
-    <form string="Jacket Report Wizard" version="7.0">
+    <form string="Jacket Report Wizard">
 	 	<group>
 			<field name="report_name" />
 	 		<group>

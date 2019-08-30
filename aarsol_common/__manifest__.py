@@ -23,7 +23,6 @@
 		#'wizard/employee_statement_view.xml',		
 		#'wizard/trail_rep_wizard.xml',
 		#'report/report.xml',
-		#'report/general_ledger.xml',
 		
 		#'report/partner_statement.xml',
 		#'report/employee_statement.xml',
