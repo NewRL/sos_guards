@@ -55,6 +55,7 @@ class AARSOLReportGeneralLedger(models.AbstractModel):
                 'move_lines': list of move line
         }
         """
+		sos_flag = False
 		cr = self.env.cr
 		MoveLine = self.env['account.move.line']
 		move_lines = {x: [] for x in accounts.ids}
@@ -89,8 +90,16 @@ class AARSOLReportGeneralLedger(models.AbstractModel):
 		if sortby == 'sort_journal_partner':
 			sql_sort = 'j.code, p.name, l.move_id'
 
+		if self.env.context['account_ids']:
+			sos_flag = True
+			ac_ids =self.env.context['account_ids']
+			ac_recs = self.env['account.account'].search([('id','in',ac_ids)])
+			tables, where_clause, where_params = MoveLine.with_context(account_ids=ac_recs)._query_get()
+		if not sos_flag:
+			tables, where_clause, where_params = MoveLine._query_get()
+
 		# Prepare sql query base on selected parameters from wizard
-		tables, where_clause, where_params = MoveLine._query_get()
+		#tables, where_clause, where_params = MoveLine._query_get()
 		wheres = [""]
 		if where_clause.strip():
 			wheres.append(where_clause.strip())
@@ -330,8 +339,7 @@ class AARSOLReportGeneralLedger(models.AbstractModel):
 		else:
 			dimH_filters = "All"
 			accounts_res = self.with_context(data['form'].get('used_context',{}))._get_account_move_entry(accounts, init_balance, sortby, display_account)	
-		
-		
+
 		docargs = {
 			'doc_ids': self.ids,
 			'doc_model': self.model,
@@ -374,7 +382,6 @@ class AARSOLReportGeneralLedger(models.AbstractModel):
 		else:
 			accounts = self.env['account.account'].search([])
 
-		
 		if dimension_ids or dimension_group:
 			accounts_res,dimH_filters = self.with_context(data['form'].get('used_context',{}))._get_account_move_entry_with_dimensions(accounts, init_balance, sortby, display_account,dimension_ids,dimension_group)
 		else:
