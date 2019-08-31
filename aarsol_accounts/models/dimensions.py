@@ -183,7 +183,7 @@ class AccountMove(models.Model):
 class AccountMoveLine(models.Model, metaclass = MetaAnalytic):
 	_inherit = "account.move.line"
 	_analytic = True
-	_order = 'sequence, date desc, id desc'
+	_order = 'sequence, date desc, id'
 
 	@api.multi
 	def dimensions_input(self):
