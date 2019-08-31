@@ -135,8 +135,8 @@ class account_move(models.Model):
 class account_move_line(models.Model):
 	_name = 'account.move.line'
 	_inherit = 'account.move.line'
-
-	post_id = fields.Many2one('sos.post', 'Post', readonly=True)		
+	
+	post_id = fields.Many2one('sos.post', 'Post', readonly=True)
 	date = fields.Date(related='move_id.date', string='Financial Date', index=True, store=True, copy=False)
 	entry_date = fields.Date(related='move_id.entry_date', string='Entry Date', index=True, store=True, copy=False)
 
