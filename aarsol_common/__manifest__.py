@@ -36,10 +36,10 @@
 		#'report/payment/payment_data.xml',
 
     ],    
-    #'installable': True,
+    'installable': True,
 	'application': True,
-	#'qweb': [        
-    #    "static/src/xml/report.xml",        
-    #],
+	'qweb': [
+        "static/src/xml/report.xml",
+    ],
     
 }
