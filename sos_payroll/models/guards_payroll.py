@@ -25,7 +25,22 @@ class guards_payslip(models.Model):
 	def create(self,vals):
 		if 'journal_id' in self.env.context:
 			vals.update({'journal_id': self.env.context.get('journal_id')})
-		slip_id = super(guards_payslip, self).create(vals)		
+		slip_id = super(guards_payslip, self).create(vals)
+
+		if len(slip_id.attendance_line_ids) > 0:
+			gr = 10
+		else:
+			if 'attendance_line_ids' in vals:
+				att_ids = []
+				att_lines = vals['attendance_line_ids']
+				for line in att_lines:
+					if isinstance(line, (int)):
+						att_ids.append(line)
+					else:
+						att_ids.append(line[1])
+				att_ids = list(set(att_ids))
+				att_recs = self.env['sos.guard.attendance'].browse(att_ids)
+				att_recs.write({'slip_id': slip_id.id})
 		return slip_id
 	
 	#(2)
@@ -35,7 +50,6 @@ class guards_payslip(models.Model):
 		if 'attendance_line_ids' in vals:
 			att_lines = vals['attendance_line_ids']
 			for line in att_lines:
-				#if isinstance(line, (int, long)):
 				if isinstance(line, (int)):
 					att_ids.append(line)
 				else:
@@ -94,7 +108,7 @@ class guards_payslip(models.Model):
 		if att:
 			slip_ids = self.env['guards.payslip'].search([('id','=',att.keys())])
 		return slip_ids
-	
+
 	#(20)
 	@api.onchange('employee_id', 'date_from','date_to')
 	def onchange_employee(self):
@@ -125,7 +139,7 @@ class guards_payslip(models.Model):
 		if attendance_line_ids:
 			for att_line in attendance_line_ids:
 				att_ids.append(att_line.id)
-				
+
 		#self.worked_days_line_ids = worked_days_line_ids
 		worked_days_lines = self.worked_days_line_ids.browse([])
 		for r in worked_days_line_ids:
@@ -138,7 +152,7 @@ class guards_payslip(models.Model):
 			input_lines += input_lines.new(r)
 		self.input_line_ids = input_lines
 
-		self.attendance_line_ids = att_ids			
+		self.attendance_line_ids = att_ids
 		self.abl_incentive = abl_incentive
 		self.abl_incentive_amt = abl_incentive_amt
 		self.paid_leaves = paid_leaves
@@ -225,7 +239,6 @@ class guards_payslip(models.Model):
 			'paid_leaves_post': paid_leaves_post,
 		})
 		return res
-		
 	
 	#(9)
 	def on_change_contract_id(self, date_from, date_to, employee_id=False, paidon=False, contract_id=False):
@@ -445,8 +458,7 @@ class guards_payslip(models.Model):
 	
 	#(16)		
 	@api.multi
-	def get_attendance_lines(self,employee, date_from, date_to, paidon, exclude_project_ids):		
-		#self.ensure_one()
+	def get_attendance_lines(self,employee, date_from, date_to, paidon, exclude_project_ids):
 		att_line_pool = self.env['sos.guard.attendance']
 		pending_pool = self.env['project.salary.pending']
 		if not employee:
@@ -801,18 +813,11 @@ class guards_payslip(models.Model):
 						blacklist += [id for id, seq in rule._recursive_search_of_rules()]				
 		result = [value for code, value in result_dict.items()]
 		return result
-				
-	
-		
-##################################	
-###			Guards Arrears     ###
-##################################	
+
+
 class guards_arrears(models.Model):		
 	_name = "guards.arrears"
 	_inherit = ['mail.thread']
-	_track = {
-	
-	}
 	
 	employee_id = fields.Many2one('hr.employee', 'Guard', required=True, track_visibility='onchange')
 	center_id = fields.Many2one('sos.center', string='Center', related='employee_id.center_id', readonly=False, store=True, ondelete='restrict', track_visibility='onchange')
@@ -823,29 +828,23 @@ class guards_arrears(models.Model):
 	state = fields.Selection([('draft','Draft'),('confirm','Confirm'),('done','Paid'),('cancel','Cancelled'),],'Status',default='draft',track_visibility='onchange')
 	slip_id =fields.Many2one('guards.payslip', 'Pay Slip', ondelete='cascade')
 	bank_id = fields.Many2one('sos.bank', string='Bank', related='employee_id.bank_id', store=True)
-	
-		
-	### Arrears Validate Function###
+
 	@api.multi
 	def arrears_validate(self):
 		for arrear in self:		
 			arrear.state='confirm'
-			
-	### Arrears Cancel Function  ###
+
 	@api.multi
 	def arrears_cancel(self):			
 		for arrear in self:		
 			arrear.state='cancel'
-			
-	### Arrears Approved Function  ###
+
 	@api.multi
 	def arrear_approve(self):
 		for arrear in self:		
 			arrear.state='confirm'
-			
-######################################		
-### Projects Salary Pending Class  ###
-######################################
+
+
 class project_salary_pending(models.Model):		
 	_name = "project.salary.pending"
 	_description = 'Pending Salaries of Project'
@@ -879,10 +878,7 @@ class project_salary_pending(models.Model):
 			res= self.env.cr.dictfetchall()
 			for emp in res:
 				self.env['hr.guard']._check_draft_attendance(emp['employee_id'])
-				
-######################################		
-### Guards Payroll Advice Inherit  ###
-######################################
+
 class guards_payroll_advice(models.Model):
 	_inherit = 'guards.payroll.advice'
 	
