@@ -125,9 +125,19 @@ class guards_payslip(models.Model):
 		if attendance_line_ids:
 			for att_line in attendance_line_ids:
 				att_ids.append(att_line.id)
+				
+		#self.worked_days_line_ids = worked_days_line_ids
+		worked_days_lines = self.worked_days_line_ids.browse([])
+		for r in worked_days_line_ids:
+			worked_days_lines += worked_days_lines.new(r)
+		self.worked_days_line_ids = worked_days_lines
 
-		self.worked_days_line_ids = worked_days_line_ids
-		self.input_line_ids = input_line_ids
+		#self.input_line_ids = input_line_ids
+		input_lines = self.input_line_ids.browse([])
+		for r in input_line_ids:
+			input_lines += input_lines.new(r)
+		self.input_line_ids = input_lines
+
 		self.attendance_line_ids = att_ids			
 		self.abl_incentive = abl_incentive
 		self.abl_incentive_amt = abl_incentive_amt
@@ -228,7 +238,7 @@ class guards_payslip(models.Model):
 		journal_id = contract_id and contract_obj.browse( contract_id).journal_id.id or False
 		res['value'].update({'journal_id': journal_id, 'line_ids': [],})
 		
-		context = dict(context)
+		context = dict(self.env.context)
 		context.update({'contract': True})
 		if not contract_id:
 			res['value'].update({'struct_id': False})
@@ -238,26 +248,18 @@ class guards_payslip(models.Model):
 	def update_slip(self, date_from, date_to, employee_id=False, paidon=False, contract_id=False):
 		empolyee_obj = self.env['hr.employee']
 		worked_days_obj = self.env['guards.payslip.worked_days']
-		
 		if self.env.context is None:
 			self.env.context = {}
-	
-		old_worked_days_ids = ids and worked_days_obj.search([('payslip_id', '=', ids[0])]) or False
+		old_worked_days_ids = self.ids and worked_days_obj.search([('payslip_id', '=', self.ids[0])]) or False
 		if old_worked_days_ids:
 			sql = "delete from guards_payslip_worked_days where id in %s"
-			cr.execute(sql, (tuple(old_worked_days_ids),))
-				
-		
+			self.env.cr.execute(sql, (tuple(old_worked_days_ids),))
 		employee_id = empolyee_obj.browse(employee_id)
-		
 		worked_days_line_ids = self.get_worked_day_lines( employee_id, paidon, contract_id, date_from, date_to)
-		
 		for item in worked_days_line_ids:
-			item.update({'payslip_id':ids[0]})
-			worked_days_obj.create(item)	
-	
-		
-		
+			item.update({'payslip_id':self.ids[0]})
+			worked_days_obj.create(item)
+
 	#(11)	
 	@api.multi
 	def compute_sheet(self):
@@ -307,15 +309,12 @@ class guards_payslip(models.Model):
 			line_ids = []
 			debit_sum = 0.0
 			credit_sum = 0.0
-		
 			date_accounting = slip.date_to
-
 			if slip.move_id:
 				continue
-		
 			if slip.state == 'done':
 				continue
-			
+
 			default_emp_id = slip.employee_id.id
 			name = _('Payslip of %s') % (slip.employee_id.name)
 			move = {

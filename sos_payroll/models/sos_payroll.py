@@ -7,6 +7,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 import itertools
 
+
 ##*****Guards Leave Policy Class*****##
 class guards_leave_policy(models.Model):
 	_name = 'guards.leave.policy'
@@ -22,12 +23,14 @@ class guards_leave_policy(models.Model):
 	to_days = fields.Integer("To Days")
 	leaves = fields.Integer("Leaves")
 
+
 class hr_salary_rule(models.Model):
 	_name = 'hr.salary.rule'
 	_inherit = 'hr.salary.rule'
 	
 	is_loop = fields.Boolean('Repeat')
-	 	
+
+
 class guards_contract(models.Model):
 	_name = 'guards.contract'
 	_inherit = 'guards.contract'
@@ -53,6 +56,7 @@ class guards_contract(models.Model):
 		# YTI TODO return browse records
 		return list(set(structures._get_parent_structure().ids))
 
+
 class guards_payslip_worked_days(models.Model):
 	_name = 'guards.payslip.worked_days'
 	_description = 'Payslip Worked Days'
@@ -71,6 +75,7 @@ class guards_payslip_worked_days(models.Model):
 	contract_id = fields.Many2one('guards.contract', 'Contract', required=True, help="The contract for which applied this input", index = True)
 	move_line_id = fields.Many2one('account.move.line','Invoice')
 
+
 class guards_payslip_input(models.Model):
 	_name = 'guards.payslip.input'
 	_description = 'Payslip Input'
@@ -83,18 +88,16 @@ class guards_payslip_input(models.Model):
 	amount = fields.Float('Amount', default=0.0,help="It is used in computation. For e.g. A rule for sales having 1% commission of basic salary for per product can defined in expression like result = inputs.SALEURO.amount * contract.wage*0.01.")
 	contract_id = fields.Many2one('guards.contract', 'Contract', required=True, help="The contract for which applied this input")
 
+
 class guards_payslip(models.Model):
 	_name = 'guards.payslip'
 	_inherit = ['mail.thread']
 	_description = 'Guards Pay Slip'
-	_track = {
-	}
 
 	@api.model	
 	def _get_default_journal(self):		
 		return self.env['account.journal'].search([('name', '=', 'Salary Journal')])
-	
-	
+
 	@api.multi
 	@api.depends('line_ids','line_ids.total')
 	def _calculate_total(self):
@@ -176,6 +179,7 @@ class guards_payslip(models.Model):
 				rec.compute_sheet()
 				rec.to_be = False
 
+
 class guards_payslip_line(models.Model):
 	_name = 'guards.payslip.line'
 	_inherit = 'hr.salary.rule'
@@ -203,7 +207,8 @@ class guards_payslip_line(models.Model):
 		
 	date_from = fields.Date(related='slip_id.date_from', store=True, string='Date From')
 	date_to = fields.Date(related='slip_id.date_to',store=True, string='Date To')
-	
+
+
 class hr_employee(models.Model):
 	_name ="hr.employee"
 	_inherit ='hr.employee'
@@ -212,7 +217,6 @@ class hr_employee(models.Model):
 	to_be_processed = fields.Boolean(default=False)
 
 class hr_guard(models.Model):
-	_name ="hr.guard"
 	_inherit ='hr.guard'
 
 	@api.one
@@ -223,8 +227,8 @@ class hr_guard(models.Model):
 	
 	payslip_count = fields.Integer(compute='_payslip_count',string='Payslips',store=True)
 
+
 class sos_post(models.Model):
-	_name = 'sos.post'
 	_inherit = 'sos.post'
 	
 	@api.one	
@@ -235,7 +239,6 @@ class sos_post(models.Model):
 	payslip_count = fields.Integer(compute='_payslip_count', string='Payslips')
 	
 class SOSGuardsExitForm(models.Model):
-	_name ="sos.guards.exit.form"
 	_inherit ='sos.guards.exit.form'
 
 	slip_id = fields.Many2one('guards.payslip', 'Payslip', required=False, readonly=True)
@@ -337,4 +340,3 @@ class SOSGuardsExitForm(models.Model):
 					net_line = self.env['guards.payslip.line'].search([('slip_id','=',slip.id),('code', '=', 'NET')])
 					net_line.total = net_line.total + rec.security_amt
 					net_line.amount = net_line.amount + rec.security_amt
-					
