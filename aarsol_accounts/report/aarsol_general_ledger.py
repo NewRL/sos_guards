@@ -151,6 +151,7 @@ class AARSOLReportGeneralLedger(models.AbstractModel):
 	def _get_account_move_entry_with_dimensions(self, accounts, init_balance, sortby, display_account,dimension_ids,dimension_group):
 		cr = self.env.cr
 		MoveLine = self.env['account.move.line']
+		sos_flag = False
 
 		dim_filters = ""
 		dimH_filters = ""
@@ -256,7 +257,15 @@ class AARSOLReportGeneralLedger(models.AbstractModel):
 			sql_sort = 'j.code, p.name, l.move_id'
 
 		# Prepare sql query base on selected parameters from wizard
-		tables, where_clause, where_params = MoveLine._query_get()
+		#tables, where_clause, where_params = MoveLine._query_get()
+		if self.env.context['account_ids']:
+			sos_flag = True
+			ac_ids =self.env.context['account_ids']
+			ac_recs = self.env['account.account'].search([('id','in',ac_ids)])
+			tables, where_clause, where_params = MoveLine.with_context(account_ids=ac_recs)._query_get()
+		if not sos_flag:
+			tables, where_clause, where_params = MoveLine._query_get()
+
 		wheres = [""]
 		if where_clause.strip():
 			wheres.append(where_clause.strip())
