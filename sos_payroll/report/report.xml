@@ -95,7 +95,7 @@
 			id="report_guards_salary_new"
 			string= "Guards Salary Report(New)"
 			model = "sos_payroll.guards.salary.report"
-			report_type="qweb-html"
+			report_type="qweb-pdf"
 			file="sos_payroll.report_new_guardsalary"
 			name="sos_payroll.report_new_guardsalary"
 		/>
