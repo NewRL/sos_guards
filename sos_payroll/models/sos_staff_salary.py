@@ -164,7 +164,6 @@ class hr_payslip(models.Model):
 
 	#@api.multi
 	def process_sheet(self):
-		
 		move_pool = self.env['account.move']
 		hr_payslip_line_pool = self.env['hr.payslip.line']
 		precision = self.env['decimal.precision'].precision_get('Payroll')

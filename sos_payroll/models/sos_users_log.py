@@ -6,16 +6,13 @@ import itertools
 from odoo import models, fields, api, _
 from odoo.exceptions import except_orm, Warning, RedirectWarning, UserError
 
-## Attendance Log Class ##
 
+## Attendance Log Class ##
 class sos_attendance_log(models.Model):
 	_name = "sos.attendance.log"
 	_description = "Attendance Logs"
 	_inherit = ['mail.thread']
 	_order = 'id desc'
-	
-	_track = {
-		}
 
 	name = fields.Date('Attendance Date')
 	date = fields.Date('Date', required=True,default=lambda *a: time.strftime('%Y-%m-%d'))

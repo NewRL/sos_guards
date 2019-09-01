@@ -15,19 +15,11 @@ from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as OE_DTFORMAT
 from odoo.tools.translate import _
 from odoo import tools
 
-##################################
-###    Guards Payslip Class    ###
-##################################
+
 class guards_payslip(models.Model):
 	_name = 'guards.payslip'
 	_inherit = 'guards.payslip'
-	
-	
-	#********************#
-	# CRUD Functions  	 #
-	#********************#
-	
-	
+
 	#(1)
 	@api.model
 	def create(self,vals):
@@ -35,7 +27,6 @@ class guards_payslip(models.Model):
 			vals.update({'journal_id': self.env.context.get('journal_id')})
 		slip_id = super(guards_payslip, self).create(vals)		
 		return slip_id
-	
 	
 	#(2)
 	@api.multi
@@ -109,10 +100,8 @@ class guards_payslip(models.Model):
 	def onchange_employee(self):
 		if (not self.employee_id) or (not self.date_from) or (not self.date_to):
 			return
-		
-		ttyme = datetime.fromtimestamp(time.mktime(time.strptime(self.date_from, "%Y-%m-%d")))
-		
-		self.name = ('Salary Slip of %s for %s') % (self.employee_id.name, tools.ustr(ttyme.strftime('%B-%Y')))
+
+		self.name = ('Salary Slip of %s for %s') % (self.employee_id.name, tools.ustr(self.date_from.strftime('%B-%Y')))
 		self.company_id = self.employee_id.company_id and self.employee_id.company_id.id or False
 		self.contract_id = self.employee_id.guard_contract_id and self.employee_id.guard_contract_id.id or False 
 		self.struct_id = self.employee_id.guard_contract_id and self.employee_id.guard_contract_id.struct_id.id or False
@@ -136,7 +125,6 @@ class guards_payslip(models.Model):
 		if attendance_line_ids:
 			for att_line in attendance_line_ids:
 				att_ids.append(att_line.id)
-		
 
 		self.worked_days_line_ids = worked_days_line_ids
 		self.input_line_ids = input_line_ids
@@ -145,7 +133,6 @@ class guards_payslip(models.Model):
 		self.abl_incentive_amt = abl_incentive_amt
 		self.paid_leaves = paid_leaves
 		self.paid_leaves_post = paid_leaves_post
-		
 		return 
 		
 	#(8)
@@ -181,12 +168,10 @@ class guards_payslip(models.Model):
 			
 		if (not employee_id) or (not date_from) or (not date_to):
 			return res
-			
-		ttyme = datetime.fromtimestamp(time.mktime(time.strptime(date_from, "%Y-%m-%d")))
+
 		employee = empolyee_obj.browse( employee_id)
-				
 		res['value'].update({
-			'name': _('Salary Slip of %s for %s') % (employee.name, tools.ustr(ttyme.strftime('%B-%Y'))),
+			'name': _('Salary Slip of %s for %s') % (employee.name, tools.ustr(date_from.strftime('%B-%Y'))),
 			'company_id': employee.company_id.id,
 			'bank': employee.bank_id.id,
 			'bankacctitle': employee.bankacctitle,
@@ -503,8 +488,8 @@ class guards_payslip(models.Model):
 		
 		result_dict = {}		
 		seq = 1
-		day_from = datetime.strptime(date_from,"%Y-%m-%d")
-		day_to = datetime.strptime(date_to,"%Y-%m-%d")
+		day_from = date_from
+		day_to = date_to
 		nb_of_days = (day_to - day_from).days + 1
 		
 		if exclude_project_ids:
@@ -571,33 +556,9 @@ class guards_payslip(models.Model):
 							paid_leaves_post = line['post_id'] or False
 							line['number_of_days'] +=  paid_rec.leaves
 							inner_flag = False
-							flag =False		
-
+							flag =False
 		abl_incentive = False
 		abl_incentive_amt = 0
-		abl_days = sum([line['number_of_days'] for line in result if line['project_id'] == 26])
-		
-		#if abl_days > 0:
-		#	abl_incentive = True
-		
-		# For pose Wise Calculation	
-		#	for line in result:
-		#		if line['project_id'] == 26:
-		#			incentive_invoice = self.pool.get('account.invoice').search(cr,uid,[('incentive','=',True),('post_id','=',line['post_id']),('date_invoice','>=',date_from),('date_invoice','<=',date_to)],context=context)																																																																									
-		#			if incentive_invoice:
-		#				incentive_rec = self.pool.get('account.invoice').browse(cr,uid,incentive_invoice, context=context)
-		#				days = 0
-		#				duty_ids = self.pool.get('sos.guard.attendance').search(cr, uid, [('name', '>=', date_from),('name','<=',date_to),('post_id','=',line['post_id'])],context=context)
-		#				for duty in self.pool.get('sos.guard.attendance').browse(cr, uid, duty_ids, context=context):
-		#					if duty.action in ('present','extra'):
-		#						days += 1.0
-		#					if duty.action in ('double','extra_double'):
-		#						days += 2.0	
-		#				abl_incentive_amt += ((incentive_rec.amount_untaxed * 1.00) / days) * line['number_of_days']
-		
-		# For Over all calculation 2300 % 31=74.194     for 30=76.667 for month of June 2016
-		#abl_incentive_amt += 76.667 * abl_days
-		
 		return result,abl_incentive,abl_incentive_amt,paid_leaves,paid_leaves_post
 	
 	#(18)	

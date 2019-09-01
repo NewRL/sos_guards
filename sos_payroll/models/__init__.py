@@ -6,7 +6,7 @@ from . import guards_payroll_cron
 from . import guards_payroll_audit
 
 from . import sos_staff_salary
-from . import guards_payroll9
+from . import guards_payroll
 from . import staff_payroll_cron
 
 from . import guards_salary_difference

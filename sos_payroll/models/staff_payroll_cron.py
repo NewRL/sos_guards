@@ -11,14 +11,11 @@ from odoo import tools
 from odoo.tools.translate import _
 import odoo.addons.decimal_precision as dp
 from odoo.tools.safe_eval import safe_eval as eval
-
 DATETIME_FORMAT = "%Y-%m-%d"
 
 class staff_payslip_cron(models.Model):
-
 	_name = 'staff.payslip.cron'
 	_description = 'Payslip Cron Jobs'
-	
 	_order = 'id desc'
 		
 	employee_id = fields.Many2one('hr.employee','Employee')
@@ -29,15 +26,12 @@ class staff_payslip_cron(models.Model):
 	state = fields.Selection([('draft', 'Draft'),('generate', 'Generate'),('done', 'Done')], 'Status', readonly=True,default='draft')
 	slip_id = fields.Many2one('hr.payslip','Payslip')
 	
-	
-	
 	@api.one
 	def generate_slips(self, nlimit=100):
 		emp_pool = self.env['hr.employee']
 		contract_obj = self.env['hr.contract']
 		slip_pool = self.env['hr.payslip']
 		slip_ids = self.env['hr.payslip']
-					
 		cron_draft_slips = self.search([('state','=','draft')],limit=nlimit)
 		
 		if cron_draft_slips:

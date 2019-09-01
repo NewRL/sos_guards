@@ -95,7 +95,8 @@ class guards_payslip_run(models.Model):
 				advice_line_pool.create(advice_line)
 		slip_ids.write({'advice_id': advice.id})
 		return self.write({'available_advice' : True})
-		
+
+
 class guards_payroll_advice(models.Model):
 	_name = 'guards.payroll.advice'
 	_description = 'Bank Advice'
