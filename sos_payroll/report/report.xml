@@ -85,7 +85,7 @@
 			id="report_guards_salary_aduit"
 			string= "Guards Salary Audit Report"
 			model = "sos_payroll.guards.salary.report"
-			report_type="qweb-html"
+			report_type="qweb-pdf"
 			file="sos_payroll.report_audit_guardsalary"
 			name="sos_payroll.report_audit_guardsalary"
 		/>
