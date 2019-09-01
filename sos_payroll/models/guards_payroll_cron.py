@@ -77,7 +77,6 @@ class guards_payslip_cron(models.Model):
 	note = fields.Text('Note',related='slip_id.note')
 	audit_result = fields.Selection('Audit Status',related='slip_id.audit_result',store=True)
 
-	
 	@api.model		
 	def generate_slips(self, nlimit=100):
 		emp_pool = self.env['hr.employee']

@@ -9,6 +9,7 @@ from datetime import datetime
 from datetime import timedelta
 from dateutil import relativedelta
 
+
 class sos_guards_salary_difference(models.Model):		
 	_name = "sos.guards.salary.difference"
 	_inherit = ['mail.thread']
@@ -125,5 +126,3 @@ class sos_guards_salary_difference_line(models.Model):
 	employee_id = fields.Many2one('hr.employee', 'Guard', required=True)
 	amount = fields.Float(string='Amount', required=True)
 	difference_id = fields.Many2one('sos.guards.salary.difference','Salary Difference')
-	
-	
