@@ -40,7 +40,7 @@
 							 			<th rowspan="2" width="4%" style="text-align:center;" valign="middle">Net Salary</th>
 							 			<th rowspan="2" width="4%" style="text-align:center;" valign="middle">Paid Salary</th>
 						 			</tr>
-					 	 	 		<tr style="font-size:8px; font-weight:bold; border-bottom:1pt solid black;">
+					 	 	 		<tr style="font-size:7px; font-weight:bold; border-bottom:1pt solid black;">
 							 			<th style="text-align:center; valign:center;">Security Refund</th>
 							 			<th style="text-align:center; valign:center;">Weapon Allow</th>
 							 			<th style="text-align:center; valign:center;">Arrears</th>
@@ -60,79 +60,79 @@
 					 	 	 		
 					 	 	 		<t t-foreach="Guards" t-as="guard">
 							 			<tr>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard_index + 1" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['code']" />
 							 				</td>
-							 				<td style="text-align:left;font-size:12px;"> 
+							 				<td style="text-align:left;font-size:10px;">
 							 					<span t-esc="guard['name']" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['postname']" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['sal_days'] and '{0:,.0f}'.format(int(guard['sal_days'])) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['gross_amt'] and '{0:,.0f}'.format(int(guard['gross_amt'])) or '-'" />
 							 				</td>
 							 				<!-- Allowances-->
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['security_refund'] and '{0:,.0f}'.format(int(guard['security_refund'])) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['wp'] and '{0:,.0f}'.format(int(guard['wp'])) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['arrears'] and '{0:,.0f}'.format(int(guard['arrears'])) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['bonus'] and '{0:,.0f}'.format(int(guard['bonus'])) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['dalw'] and '{0:,.0f}'.format(int(guard['dalw'])) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['alw_amt'] and '{0:,.0f}'.format(int(guard['alw_amt'])) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['gross_amt'] and '{0:,.0f}'.format(int(guard['gross_amt']) + (int(guard['alw_amt']))) or '-'" />
 							 				</td>
 							 				<!-- Deduction-->
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['mbl_payroll_amt'] and '{0:,.0f}'.format(int(abs(guard['mbl_payroll_amt']))) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['adv_amt'] and '{0:,.0f}'.format(int(abs(guard['adv_amt']))) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['security_deposit_amt'] and '{0:,.0f}'.format(int(abs(guard['security_deposit_amt']))) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['fine_amt'] and '{0:,.0f}'.format(int(abs(guard['fine_amt']))) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['ud_amt'] and '{0:,.0f}'.format(int(abs(guard['ud_amt']))) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['debit_balance_amt'] and '{0:,.0f}'.format(int(abs(guard['debit_balance_amt']))) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['excess_salary_amt'] and '{0:,.0f}'.format(int(abs(guard['excess_salary_amt']))) or '-'" />
 							 				</td>
 							 				
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['provident_fund_amt'] and '{0:,.0f}'.format(int(abs(guard['provident_fund_amt']))) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['deduct_amt'] and '{0:,.0f}'.format(int(abs(guard['deduct_amt']))) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['net_amt'] and '{0:,.0f}'.format(int(guard['net_amt'])) or '-'" />
 							 				</td>
-							 				<td style="text-align:left; font-size:12px;"> 
+							 				<td style="text-align:left; font-size:10px;">
 							 					<span t-esc="guard['paid_by_advice'] and '{0:,.0f}'.format(int(guard['paid_by_advice'])) or '-'" />
 							 				</td>
 						 				</tr>
@@ -143,66 +143,66 @@
 						 						Totals:
 						 					</td>
 						 					
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Days and '{0:,.0f}'.format(int(Total_Days)) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Gross_Amt and '{0:,.0f}'.format(int(Total_Gross_Amt)) or '-'" />  
 						 					</td>
 						 					<!-- Allowances-->
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Security_Refund and '{0:,.0f}'.format(int(Total_Security_Refund)) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Wp and '{0:,.0f}'.format(int(Total_Wp)) or '-'" />  
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Arrears and '{0:,.0f}'.format(int(Total_Arrears)) or '-'" />  
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Bonus and '{0:,.0f}'.format(int(Total_Bonus)) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Dalw and '{0:,.0f}'.format(int(Total_Dalw)) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Alw_Amt and '{0:,.0f}'.format(int(Total_Alw_Amt)) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Gross_Amt and '{0:,.0f}'.format(int(Total_Alw_Amt + Total_Gross_Amt)) or '-'" /> 
 						 					</td>
 						 					<!-- Deduction-->
-						 					<td style="text-align:left; font-size:12px;"> 
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Mbl_Payroll_Amt and '{0:,.0f}'.format(int(abs(Total_Mbl_Payroll_Amt))) or '-'" />
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Adv_amt and '{0:,.0f}'.format(int(abs(Total_Adv_amt))) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;"> 
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Security_Deposit_Amt and '{0:,.0f}'.format(int(abs(Total_Security_Deposit_Amt))) or '-'" />
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;"> 
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Fine_Amt and '{0:,.0f}'.format(int(Total_Fine_Amt)) or '-'" />
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Ud_Amt and '{0:,.0f}'.format(int(abs(Total_Ud_Amt))) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Debit_Balance_Amt and '{0:,.0f}'.format(int(abs(Total_Debit_Balance_Amt))) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Excess_Salary_Amt and '{0:,.0f}'.format(int(abs(Total_Excess_Salary_Amt))) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Provident_Fund_Amt and '{0:,.0f}'.format(int(abs(Total_Provident_Fund_Amt))) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Deduct_Amt and '{0:,.0f}'.format(int(abs(Total_Deduct_Amt))) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Net_Amt and '{0:,.0f}'.format(int(Total_Net_Amt)) or '-'" /> 
 						 					</td>
-						 					<td style="text-align:left; font-size:12px;">
+						 					<td style="text-align:left; font-size:10px;">
 						 						<span t-esc="Total_Paid_By_Advice and '{0:,.0f}'.format(int(Total_Paid_By_Advice)) or '-'" /> 
 						 					</td>
 						 				</tr>	
