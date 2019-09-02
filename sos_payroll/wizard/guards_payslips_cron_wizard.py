@@ -103,9 +103,3 @@ class guards_payslips_cron_wizard(models.TransientModel):
 					
 			
 		return {'type': 'ir.actions.act_window_close'}
-
-
-
-
-
-          
