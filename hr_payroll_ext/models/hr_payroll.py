@@ -85,8 +85,8 @@ class hr_payslip(models.Model):
 			rec.total = total
 
 	journal_id = fields.Many2one('account.journal', 'Salary Journal',states={'draft': [('readonly', False)]}, readonly=True, required=True,default=_default_journal)
-	date_from = fields.Date('Date From', readonly=True, states={'draft': [('readonly', False)]}, required=True,default=lambda *a: time.strftime('%Y-%m-01'))
-	date_to = fields.Date('Date To', readonly=True, states={'draft': [('readonly', False)]}, required=True,default=lambda *a: time.strftime('%Y-%m-31'))
+	date_from = fields.Date('Date From', readonly=True, states={'draft': [('readonly', False)]}, required=True)
+	date_to = fields.Date('Date To', readonly=True, states={'draft': [('readonly', False)]}, required=True)
 	code = fields.Char('Code',related='employee_id.code',store=True)
 	payslip_run_id = fields.Many2one('hr.payslip.run', string='Payslip Batches',readonly=False, copy=False)
 	send_sms = fields.Boolean('SMS Sent', defult=False)
@@ -106,6 +106,41 @@ class hr_payslip(models.Model):
 		for line in lines:
 			total += abs(line.total)
 		return total
+
+#	@api.model
+#	def create(self, vals):
+#		slip_id = super(hr_payslip, self).create(vals)
+#		if len(slip_id.staff_attendance_line_ids) > 0:
+#			gr = 10
+#		else:
+#			if 'staff_attendance_line_ids' in vals:
+#				att_ids = []
+#				att_lines = vals['staff_attendance_line_ids']
+#				for line in att_lines:
+#					if isinstance(line, (int)):
+#						att_ids.append(line)
+#					else:
+#						att_ids.append(line[1])
+#				att_ids = list(set(att_ids))
+#				att_recs = self.env['sos.guard.attendance1'].browse(att_ids)
+#				att_recs.write({'staff_slip_id': slip_id.id})
+#		return slip_id
+
+#	@api.multi
+#	def write(self, vals):
+#		att_ids = []
+#		if 'staff_attendance_line_ids' in vals:
+#			att_lines = vals['staff_attendance_line_ids']
+#			for line in att_lines:
+#				if isinstance(line, (int)):
+#					att_ids.append(line)
+#				else:
+#					att_ids.append(line[1])
+#			att_ids = list(set(att_ids))
+#			att_recs = self.env['sos.guard.attendance1'].browse(att_ids)
+#			att_recs.write({'state': 'counted'})
+#		return super(hr_payslip, self).write(vals)
+
 	
 	@api.multi
 	def onchange_employee_id(self, date_from, date_to, employee_id=False, contract_id=False):
@@ -160,20 +195,16 @@ class hr_payslip(models.Model):
 		res['value'].update({
 			'struct_id': struct.id,
 		})
-		
-		##Name Changed here due to inputs
-		new_date_from = strToDate(date_from)
-		new_date_to = strToDate(date_to)
-		new_date_from = str(new_date_from + relativedelta.relativedelta(day=1))
-		new_date_to = str(new_date_to + relativedelta.relativedelta(day=31))
-		
+
 		#computation of the salary input
 		contracts = self.env['hr.contract'].browse(contract_ids)
-		worked_days_line_ids = self.get_worked_day_lines(contracts, new_date_from, new_date_to)
+		worked_days_line_ids = self.get_worked_day_lines(contracts, date_from, date_to)
 		input_line_ids = self.get_inputs(contracts, date_from, date_to)
+		staff_attendance_line_ids = self.get_attendance_lines(employee, date_from,date_to)
 		res['value'].update({
 			'worked_days_line_ids': worked_days_line_ids,
 			'input_line_ids': input_line_ids,
+			'staff_attendance_line_ids': staff_attendance_line_ids,
 		})
 		return res
 	
@@ -182,7 +213,6 @@ class hr_payslip(models.Model):
 	def onchange_employee(self):
 		if (not self.employee_id) or (not self.date_from) or (not self.date_to):
 			return
-		
 		employee_id = self.employee_id
 		date_from = self.date_from
 		date_to = self.date_to
@@ -235,6 +265,11 @@ class hr_payslip(models.Model):
 			self.input_line_ids = input_lines
 
 		staff_attendance_line_ids = self.get_attendance_lines(self.employee_id, self.date_from, self.date_to)
+		att_ids = []
+		if staff_attendance_line_ids:
+			for att_line in staff_attendance_line_ids:
+				att_ids.append(att_line.id)
+			self.staff_attendance_line_ids = att_ids
 		return
 
 	@api.multi
@@ -335,12 +370,10 @@ class hr_payslip(models.Model):
 			rec.message_post_with_template(template.id, composition_mode='comment')
 			rec.send_email = True	
 
+
 class hr_salary_inputs(models.Model):		
 	_name = "hr.salary.inputs"
 	_inherit = ['mail.thread']
-	_track = {
-	
-	}
 	
 	employee_id = fields.Many2one('hr.employee', 'Employee', required=True,track_visibility='always')
 	center_id = fields.Many2one('sos.center', string='Center', related='employee_id.center_id', readonly=False, store=True)
@@ -359,31 +392,31 @@ class hr_salary_inputs(models.Model):
 	#addition	
 	loan_line = fields.Many2one('hr.loan.line', string="Loan Line")
 
-	@api.one	
+	@api.multi
 	def inputs_validate(self):
-		self.write({'state':'confirm'})
-		return True    
+		for rec in self:
+			rec.write({'state':'confirm'})
 	
-	@api.one	
+	@api.multi
 	def inputs_set_draft(self):
-		self.write({'state':'draft'})
-		return True 
+		for rec in self:
+			rec.write({'state':'draft'})
 
-	@api.one	
-	def inputs_cancel(self):	
-		self.write({'state':'cancel'})
-		return True 
+	@api.multi
+	def inputs_cancel(self):
+		for rec in self:
+			rec.write({'state':'cancel'})
 
-	@api.one	
+	@api.multi
 	def inputs_approve(self):
-		self.write({'state':'confirm'})
-		return True
+		for rec in self:
+			rec.write({'state':'confirm'})
 
 	@api.multi
 	def unlink(self):
 		for input_id in self:
 			if input_id.state != 'draft':
-				 raise ValidationError(_('You can only delete Salary Inputs in draft state .'))
+				raise ValidationError(_('You can only delete Salary Inputs in draft state .'))
 		return super(hr_salary_inputs, self).unlink()
 																															
 
