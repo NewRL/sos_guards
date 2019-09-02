@@ -23,8 +23,7 @@ class GuardsSalaryWizard(models.TransientModel):
 	guard_ids = fields.Many2many('hr.employee', string='Filter on Guards', help="""Only selected Guards will be printed. Leave empty to print all Guards.""")
 	post_ids = fields.Many2many('sos.post', string='Filter on Posts', help="""Only selected Posts will be printed. Leave empty to print all Posts.""")
 	project_ids = fields.Many2many('sos.project', string='Filter on Projects', help="""Only selected Projects will be printed. Leave empty to print all Projects.""")                              
-	center_ids = fields.Many2many('sos.center', string='Filter on Centers', help="""Only selected Centers will be printed. Leave empty to print all Centers.""")	
-	
+	center_ids = fields.Many2many('sos.center', string='Filter on Centers', help="""Only selected Centers will be printed. Leave empty to print all Centers.""")
 	
 	@api.multi
 	def print_report(self):
