@@ -30,16 +30,16 @@ class SalaryStopWizard(models.TransientModel):
 	@api.multi
 	def salary_stop_funct(self):
 		for slip in self.slip_ids:
-			msg = "Bank Name is Changed TO the STOP By the User " + self.env.user.name
+			body = "Bank Name is Changed TO the STOP By the User " + self.env.user.name
 			slip.bank_temp_id = slip.bank and slip.bank.id or False
 			slip.bank = 35		## 35 Stop
-			slip.message_post(msg)
+			slip.message_post(body=body)
 	
 	#Function
 	@api.multi
 	def salary_restore_funct(self):
 		for slip in self.slip_ids:
-			msg = "Bank Name is Restored To Previous By the User " + self.env.user.name
+			body = "Bank Name is Restored To Previous By the User " + self.env.user.name
 			if slip.bank_temp_id:
 				slip.bank = slip.bank_temp_id and slip.bank_temp_id.id
-				slip.message_post(msg)		
+				slip.message_post(body=body)
