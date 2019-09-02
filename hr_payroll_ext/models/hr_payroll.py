@@ -95,6 +95,7 @@ class hr_payslip(models.Model):
 	bank_id = fields.Many2one('sos.bank','Bank Name')
 	bankacctitle = fields.Char('Account Title')
 	bankacc = fields.Char('Account No')
+	staff_attendance_line_ids = fields.One2many('sos.guard.attendance1', 'staff_slip_id', 'Attendance Days')
 	
 	def get_line_salary(self,code=None):
 		total = 0
@@ -232,7 +233,17 @@ class hr_payslip(models.Model):
 			for r in input_line_ids:
 				input_lines += input_lines.new(r)
 			self.input_line_ids = input_lines
+
+		staff_attendance_line_ids = self.get_attendance_lines(self.employee_id, self.date_from, self.date_to)
 		return
+
+	@api.multi
+	def get_attendance_lines(self, employee, date_from, date_to):
+		att_line_pool = self.env['sos.guard.attendance1']
+		if not employee:
+			return False
+		att_ids = att_line_pool.search([('name', '>=', date_from), ('name', '<=', date_to),('employee_id', '=', employee.id), '|', ('slip_id', '=', False),('slip_id', 'in', self.ids)])
+		return att_ids
 
 	@api.multi
 	def process_sheet(self):

@@ -117,7 +117,7 @@ class guards_payslip(models.Model):
 			LEFT JOIN hr_salary_rule_category AS sh on (pl.category_id = sh.id) \
 				WHERE pl.slip_id in %s \
 				GROUP BY pl.slip_id, pl.sequence, pl.id ORDER BY pl.sequence''',(tuple(ids),))
-		res = cr.fetchall()
+		res = self.env.cr.fetchall()
 		for r in res:
 			result[r[0]].append(r[1])
 		return result
