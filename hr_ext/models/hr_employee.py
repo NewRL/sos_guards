@@ -407,7 +407,6 @@ class hr_experience(models.Model):
 				delta = rec.start_date - rec.end_date
 				rec.total_experience = parse_date(delta)
 				
-				
 	name = fields.Char("Company Name")
 	employee_id = fields.Many2one('hr.employee', string = 'Employee')
 	position = fields.Char("Position")
