@@ -12,11 +12,8 @@ class GuardsSalaryWizard(models.TransientModel):
 	
 	date_from = fields.Date("Start Date",default=lambda *a: str(datetime.now() + relativedelta.relativedelta(months=-1, day=1))[:10])
 	date_to = fields.Date("End Date",default=lambda *a: str(datetime.now() + relativedelta.relativedelta(months=-1, day=31))[:10])
-	#group_by = fields.Selection([
-	#						('sos_report_salary_new_aeroo', 'Guards Salary (New)'),
-	#						('sos_report_audit_salary_aeroo', 'Guards Wise (Audit)'),
-	#						('sos_report_salary_aeroo', 'Posts Wise'),], 'Report',default='sos_report_salary_aeroo')
 	group_by = fields.Selection([
+							('sos_report_salary_new_aeroo', 'Guards Salary (New)'),
 							('sos_report_audit_salary_aeroo', 'Guards Wise (Audit)'),
 							('sos_report_salary_aeroo', 'Posts Wise'),], 'Report',default='sos_report_salary_aeroo')
 		
@@ -24,6 +21,7 @@ class GuardsSalaryWizard(models.TransientModel):
 	post_ids = fields.Many2many('sos.post', string='Filter on Posts', help="""Only selected Posts will be printed. Leave empty to print all Posts.""")
 	project_ids = fields.Many2many('sos.project', string='Filter on Projects', help="""Only selected Projects will be printed. Leave empty to print all Projects.""")                              
 	center_ids = fields.Many2many('sos.center', string='Filter on Centers', help="""Only selected Centers will be printed. Leave empty to print all Centers.""")
+
 	
 	@api.multi
 	def print_report(self):
