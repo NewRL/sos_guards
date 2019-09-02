@@ -404,9 +404,7 @@ class hr_experience(models.Model):
 	def _total_experience_days(self):
 		for rec in self:			
 			if rec.start_date and rec.end_date:
-				start = datetime.strptime(rec.start_date,OE_DFORMAT)
-				end = datetime.strptime(rec.end_date, OE_DFORMAT)
-				delta = end - start
+				delta = rec.start_date - rec.end_date
 				rec.total_experience = parse_date(delta)
 				
 				
