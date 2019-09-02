@@ -136,7 +136,25 @@
 				
 				<xpath expr="//field[@name='payslip_run_id']" position="replace">
 	        		<field name="payslip_run_id" options="{'no_create': True, 'no_open': True}"/>
-	   			</xpath> 
+	   			</xpath>
+
+				<xpath expr="/form/sheet/notebook" position="inside">
+					<page string="Attendance Details">
+						<field name="staff_attendance_line_ids">
+							<tree>
+								<field name="name" readonly="1" />
+								<field name="project_id" readonly="1"  />
+								<field name="post_id" readonly="1"/>
+								<field name="center_id" readonly="1"  />
+								<field name="action"/>
+								<field name="state" readonly="1" />
+								<field name="employee_id" invisible="1" />
+								<field name="staff_slip_id" invisible="1" />
+							</tree>
+						</field>
+					   </page>
+				</xpath>
+
 				
 			</field>
 		</record>

@@ -384,7 +384,8 @@ class sos_guard_attendance1(models.Model):
 	late_time = fields.Char("Late Time")
 	absent_reason = fields.Selection([('leave', 'Leave'),('short_leave', 'Short Leave'),('half_day_leave', 'Half Day Leave')], string = 'Absent Reason')							
 	present_reason = fields.Selection([('on_field', 'Field'), ('out_station', 'Out Station'), ('visit', ' Visit/Official Duty')], string = 'Present Reason')							
-	remarks = fields.Char('Remarks')								
+	remarks = fields.Char('Remarks')
+	staff_slip_id = fields.Many2one('hr.payslip','Staff Pay Slip')
 	
 	
 	@api.model
