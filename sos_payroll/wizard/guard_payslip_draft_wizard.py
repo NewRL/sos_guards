@@ -39,4 +39,3 @@ class SOSGuardPayslipDraftwizard(models.TransientModel):
 		else:
 			raise UserError(_('You are not Authorized to do this! Please Contact To System Administrator'))		
 		return {'type': 'ir.actions.act_window_close'}
-	
