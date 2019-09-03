@@ -29,7 +29,7 @@ class SOSGuardPayslipDraftwizard(models.TransientModel):
 	
 	@api.one
 	def payslip_status(self):
-		if self.env.user.id == 25:
+		if self.env.user.id == 125:
 			move_id = self.payslip_id.move_id or False
 			if move_id and self.payslip_id.state == 'done':
 				self.env.cr.execute("delete from account_move where id=%s"%(move_id.id))
