@@ -167,7 +167,7 @@ class AccountMove(models.Model):
 
 class AccountMoveLine(models.Model):
 	_inherit = "account.move.line"
-	_order = 'sequence, date desc, id'
+	_order = "id desc"
 
 	@api.model
 	def _get_company(self):		
