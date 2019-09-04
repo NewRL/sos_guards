@@ -435,11 +435,9 @@ class guards_payslip(models.Model):
 			
 			att_ids = att_pool.search([('slip_id','=',slip.id)])
 			att_ids.write({'state':'done'})
-		
-			arr_ids = arr_pool.search([('employee_id','=',slip.employee_id.id)])
+
+			arr_ids = arr_pool.search([('employee_id', '=', slip.employee_id.id),('date', '>=', slip.date_from),('date', '<=', slip.date_to),('state', '=', 'confirm')])
 			arr_ids.write({'state':'done','slip_id':slip.id})
-		
-		
 		return self.write({'paid': True, 'state': 'done'})
 	
 	#(14)		
@@ -828,6 +826,7 @@ class guards_arrears(models.Model):
 	state = fields.Selection([('draft','Draft'),('confirm','Confirm'),('done','Paid'),('cancel','Cancelled'),],'Status',default='draft',track_visibility='onchange')
 	slip_id =fields.Many2one('guards.payslip', 'Pay Slip', ondelete='cascade')
 	bank_id = fields.Many2one('sos.bank', string='Bank', related='employee_id.bank_id', store=True)
+	to_be = fields.Boolean('To Be')
 
 	@api.multi
 	def arrears_validate(self):
@@ -843,6 +842,19 @@ class guards_arrears(models.Model):
 	def arrear_approve(self):
 		for arrear in self:		
 			arrear.state='confirm'
+
+	#Cron Jobs
+	@api.model
+	def process_old_arrear_entry(self, nlimit=100):
+		arrears = self.search([('to_be','=',True)],limit=nlimit)
+		if arrears:
+			for arr in arrears:
+				slip_id = self.env['guards.payslip'].search([('employee_id','=',arr.employee_id.id),('date_from','<=',arr.date),('date_to','>=',arr.date)], order='date_from')
+				if slip_id:
+					slip = slip_id[0]
+					arr.slip_id = slip.id
+					arr.to_be = False
+
 
 
 class project_salary_pending(models.Model):		
