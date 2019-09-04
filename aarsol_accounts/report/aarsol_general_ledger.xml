@@ -24,51 +24,60 @@
                 <t t-set="data_report_dpi" t-value="110"/>
                 <t t-call="web.internal_layout">
                     <div class="page">
+                        <style>
+							.table td {
+								padding: 0.15rem;
+							}
+							.table th {
+								padding: 0.25rem;
+							}
+						</style>
+
                         <h3>General ledger</h3>
 
                         <div class="row mt32">
-                            <div class="col-xs-3">
-                                <strong>Journals:</strong>
+                            <div class="col-xs-3" style="font-size:1px;font-weight:bold;">
+                                Journals:
                                   <p t-esc="', '.join([ lt or '' for lt in print_journal ])"/>
                             </div>
-                            <div class="col-xs-3">
-                                <strong>Display Account</strong>
+                            <div class="col-xs-3" style="font-size:14px;font-weight:bold;">
+                                Display Account
                                 <p>
                                     <span t-if="data['display_account'] == 'all'">All accounts'</span>
                                     <span t-if="data['display_account'] == 'movement'">With movements</span>
                                     <span t-if="data['display_account'] == 'not_zero'">With balance not equal to zero</span>
                                 </p>
                             </div>
-                            <div class="col-xs-3">
-                                <strong>Target Moves:</strong>
+                            <div class="col-xs-3" style="font-size:14px;font-weight:bold;">
+                                Target Moves:
                                 <p t-if="data['target_move'] == 'all'">All Entries</p>
                                 <p t-if="data['target_move'] == 'posted'">All Posted Entries</p>
                             </div>
-                             <div class="col-xs-3">
-                                <strong>Sorted By:</strong>
+                             <div class="col-xs-3" style="font-size:14px;font-weight:bold;">
+                                Sorted By:
                                 <p t-if="data['sortby'] == 'sort_date'">Date</p>
                                 <p t-if="data['sortby'] == 'sort_journal_partner'">Journal and Partner</p>
                             </div>
                         </div>
                         <div class="row mb32">
-                            <div class="col-xs-3">
-                                <strong>Accounts:</strong>
-                                  <span t-if="data['account_ids']">
+                            <div class="col-xs-3" style="font-size:14px;font-weight:bold;">
+                                Accounts:
+                                <span t-if="data['account_ids']">
                                     <p t-esc="', '.join([ lt.code+'-'+lt.name or '' for lt in print_account ])"/>
                                   </span>
                                   <span t-if="not data['account_ids']">	<p>ALL</p></span>
 
                             </div>
-                            <div id="date" class="col-xs-3">
-                                <t t-if="data['date_from']"><strong>Date from :</strong> <span t-esc="data['date_from']"/><br/></t>
-                                <t t-if="data['date_to']"><strong>Date to :</strong> <span t-esc="data['date_to']"/></t>
+                            <div id="date" class="col-xs-3" style="font-size:14px;font-weight:bold;">
+                                <t t-if="data['date_from']">Date from :<span t-esc="data['date_from']"/><br/></t>
+                                <t t-if="data['date_to']">Date to : <span t-esc="data['date_to']"/></t>
                             </div>
 
                         </div>
 
                         <table class="table table-condensed">
                             <thead>
-                                <tr class="text-center">
+                                <tr class="text-center" style="font-size:12px;font-weight:bold;">
                                     <th width="7%">Date</th>
                                     <th>JRNL</th>
                                     <th>Partner</th>
@@ -82,7 +91,7 @@
                             </thead>
                             <tbody>
                                 <t t-foreach="Accounts" t-as="account">
-                                    <tr style="font-weight: bold;">
+                                    <tr style="font-size:12px;font-weight:bold;">
                                         <td colspan="6">
                                             <span t-esc="'..'"/>  <!-- style="color: white;" -->
                                             <span t-esc="account['code']"/>
@@ -99,8 +108,8 @@
                                         </td>
 
                                     </tr>
-                                    <tr t-foreach="account['move_lines']" t-as="line">
-                                        <td width="7%"><span t-esc="line['ldate']"/></td>
+                                    <tr t-foreach="account['move_lines']" t-as="line" style="font-size:13px;">
+                                        <td width="8%"><span t-esc="line['ldate']"/></td>
                                         <td><span t-esc="line['lcode']"/></td>
                                         <td><span t-esc="line['partner_name']"/></td>
                                         <td><span t-if="line['lref']" t-esc="line['lref']"/></td>
