@@ -115,7 +115,7 @@
 			<field name="model">account.move.line</field>
 			<field name="priority">32</field>
 			<field name="arch" type="xml">
-			<tree string="Journal Items">
+			<tree string="Journal Items" default_order="id desc">
 				<field name="sequence" widget="handle"/>
 				<field name="account_id" domain="[('company_id', '=', parent.company_id), ('deprecated', '=', False)]" options="{'no_create': True, 'no_open': True}"/>
 
