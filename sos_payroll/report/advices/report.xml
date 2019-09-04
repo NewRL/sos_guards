@@ -18,7 +18,7 @@
 			id="sos_payroll.action_guards_summary_adivce_summary"
 			string= "Print Advice Summary"
 			model = "guards.payroll.advice.summary.wiz"
-			report_type="qweb-pdf"
+			report_type="qweb-html"
 			file="sos_payroll.guards_payroll_advice_summary_report"
 			name="sos_payroll.guards_payroll_advice_summary_report"
 		/>

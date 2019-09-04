@@ -4,6 +4,14 @@
 		<template id ="sos_payroll.guards_payroll_advice_summary_report">
 			<t t-call="web.html_container">
 					<t t-call="web.external_layout" style="font-family:georgia,garamond,serif;font-size:10px;">
+						<style>
+							.table td {
+								padding: 0.15rem;
+							}
+							.table th {
+								padding: 0.25rem;
+							}
+						</style>
 						<div class="page">
 							<t t-set="info" t-value="get_header_info"/>
 							
@@ -33,7 +41,7 @@
 								Please make the payroll transfer from above account number to the below mentioned account numbers towards employee salaries:
 							</div>
 								
-							<table class="table table-condensed" width="100%">
+							<table id ='advise_summary_table' class="table table-condensed">
 								<thead>
 									<tr style="font-size:10px; font-weight:bold;">
 										<th class="text-left">SI. No</th>
