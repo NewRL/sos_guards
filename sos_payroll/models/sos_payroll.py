@@ -7,13 +7,12 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 import itertools
 
-##*****Guards Leave Policy Class*****##
-class guards_leave_policy(models.Model):
+
+class GuardsLeavePolicy(models.Model):
 	_name = 'guards.leave.policy'
 	_description = 'Guards Leave Policy'
 	_order = 'sequence'
-	
-	#Columns
+
 	post_id = fields.Many2one('sos.post', 'Post')
 	project_id = fields.Many2one('sos.project', 'Project')
 	center_id = fields.Many2one('sos.center', 'Center')	
@@ -21,6 +20,7 @@ class guards_leave_policy(models.Model):
 	from_days = fields.Integer("From Days")
 	to_days = fields.Integer("To Days")
 	leaves = fields.Integer("Leaves")
+
 
 class hr_salary_rule(models.Model):
 	_name = 'hr.salary.rule'
@@ -83,17 +83,15 @@ class guards_payslip_input(models.Model):
 	amount = fields.Float('Amount', default=0.0,help="It is used in computation. For e.g. A rule for sales having 1% commission of basic salary for per product can defined in expression like result = inputs.SALEURO.amount * contract.wage*0.01.")
 	contract_id = fields.Many2one('guards.contract', 'Contract', required=True, help="The contract for which applied this input")
 
+
 class guards_payslip(models.Model):
 	_name = 'guards.payslip'
 	_inherit = ['mail.thread']
 	_description = 'Guards Pay Slip'
-	_track = {
-	}
 
 	@api.model	
 	def _get_default_journal(self):		
 		return self.env['account.journal'].search([('name', '=', 'Salary Journal')])
-
 
 	@api.multi
 	@api.depends('line_ids','line_ids.total')
@@ -338,4 +336,3 @@ class SOSGuardsExitForm(models.Model):
 					net_line = self.env['guards.payslip.line'].search([('slip_id','=',slip.id),('code', '=', 'NET')])
 					net_line.total = net_line.total + rec.security_amt
 					net_line.amount = net_line.amount + rec.security_amt
-
