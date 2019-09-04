@@ -166,6 +166,7 @@ class guards_payslip(models.Model):
 	bank_temp_id = fields.Many2one('sos.bank','Bank Temp Name', help="Storing the bank when salary is being stoped.")
 	to_be = fields.Boolean('To Be', default=False)
 
+
 	#Cron Written to Recompute the Slips
 	@api.model
 	def may2019_slips(self,nlimit=100):
