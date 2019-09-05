@@ -447,14 +447,14 @@ class guards_payslip(models.Model):
 			raise UserError (('Payslip should be in the draft state to Cancel it.'))
 		self.state='cancel'
 	
-	#(15)	
+	#(15)
 	@api.multi
 	def guards_verify_sheet(self):
 		for sheet in self:		
 			sheet.compute_sheet()
 			sheet.guards_process_sheet()
 	
-	#(16)		
+	#(16)
 	@api.multi
 	def get_attendance_lines(self,employee, date_from, date_to, paidon, exclude_project_ids):
 		att_line_pool = self.env['sos.guard.attendance']

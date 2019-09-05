@@ -19,6 +19,10 @@ from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as OE_DATETIMEFORMAT
 from odoo.tools import float_compare, float_is_zero
 import math
 
+import logging
+_logger = logging.getLogger(__name__)
+
+
 def strToDate(strdate):
 	return datetime.strptime(strdate, '%Y-%m-%d').date()
 
@@ -84,9 +88,11 @@ class hr_payslip(models.Model):
 					total += float(line.quantity) * line.amount
 			rec.total = total
 
+	exception_ids = fields.One2many('hr.payslip.exception', 'slip_id','Exceptions', readonly=True)
+	advice_id = fields.Many2one('hr.payroll.advice', 'Bank Advice', copy=False)
 	journal_id = fields.Many2one('account.journal', 'Salary Journal',states={'draft': [('readonly', False)]}, readonly=True, required=True,default=_default_journal)
-	date_from = fields.Date('Date From', readonly=True, states={'draft': [('readonly', False)]}, required=True)
-	date_to = fields.Date('Date To', readonly=True, states={'draft': [('readonly', False)]}, required=True)
+	date_from = fields.Date('Date From', readonly=True, states={'draft': [('readonly', False)]}, required=True, default = lambda *a: str(datetime.now()+ relativedelta.relativedelta(months=-1) + relativedelta.relativedelta(day=1))[:10])
+	date_to = fields.Date('Date To', readonly=True, states={'draft': [('readonly', False)]}, required=True, default= lambda *a: str(datetime.now() + relativedelta.relativedelta(months=-1, day=31))[:10],)
 	code = fields.Char('Code',related='employee_id.code',store=True)
 	payslip_run_id = fields.Many2one('hr.payslip.run', string='Payslip Batches',readonly=False, copy=False)
 	send_sms = fields.Boolean('SMS Sent', defult=False)
@@ -107,39 +113,37 @@ class hr_payslip(models.Model):
 			total += abs(line.total)
 		return total
 
-#	@api.model
-#	def create(self, vals):
-#		slip_id = super(hr_payslip, self).create(vals)
-#		if len(slip_id.staff_attendance_line_ids) > 0:
-#			gr = 10
-#		else:
-#			if 'staff_attendance_line_ids' in vals:
-#				att_ids = []
-#				att_lines = vals['staff_attendance_line_ids']
-#				for line in att_lines:
-#					if isinstance(line, (int)):
-#						att_ids.append(line)
-#					else:
-#						att_ids.append(line[1])
-#				att_ids = list(set(att_ids))
-#				att_recs = self.env['sos.guard.attendance1'].browse(att_ids)
-#				att_recs.write({'staff_slip_id': slip_id.id})
-#		return slip_id
+	@api.model
+	def create(self, vals):
+		slip_id = super(hr_payslip, self).create(vals)
+		att_recs = self.get_attendance_lines(slip_id.employee_id, slip_id.date_from, slip_id.date_to)
+		att_recs.write({'staff_slip_id': slip_id.id})
+		return slip_id
 
-#	@api.multi
-#	def write(self, vals):
-#		att_ids = []
-#		if 'staff_attendance_line_ids' in vals:
-#			att_lines = vals['staff_attendance_line_ids']
-#			for line in att_lines:
-#				if isinstance(line, (int)):
-#					att_ids.append(line)
-#				else:
-#					att_ids.append(line[1])
-#			att_ids = list(set(att_ids))
-#			att_recs = self.env['sos.guard.attendance1'].browse(att_ids)
-#			att_recs.write({'state': 'counted'})
-#		return super(hr_payslip, self).write(vals)
+	@api.multi
+	def write(self, vals):
+		att_ids = []
+		if 'staff_attendance_line_ids' in vals:
+			att_lines = vals['staff_attendance_line_ids']
+			for line in att_lines:
+				if isinstance(line, (int)):
+					att_ids.append(line)
+				else:
+					att_ids.append(line[1])
+			att_ids = list(set(att_ids))
+			att_recs = self.env['sos.guard.attendance1'].browse(att_ids)
+			att_recs.write({'staff_payslip_id': self.id})
+		return super(hr_payslip, self).write(vals)
+
+
+	@api.multi
+	def unlink(self):
+		for payslip in self:
+			if payslip.state not in ['draft', 'cancel']:
+				raise Warning(_('You cannot delete a payslip which is not draft or cancelled!'))
+			att_ids = self.env['sos.guard.attendance1'].search([('employee_id','=',payslip.employee_id.id),('staff_slip_id','=',payslip.id)])
+			att_ids.write({'staff_slip_id':False})
+		return super(hr_payslip, self).unlink()
 
 	
 	@api.multi
@@ -238,7 +242,6 @@ class hr_payslip(models.Model):
 				if not cont_ids:
 					return
 				self.contract_id = self.contract_id.browse(cont_ids[0])
-
 		if not self.contract_id.struct_id:
 			return
 
@@ -278,7 +281,7 @@ class hr_payslip(models.Model):
 		if not employee:
 			return False
 		att_ids = att_line_pool.search([('name', '>=', date_from), ('name', '<=', date_to),('employee_id', '=', employee.id), '|', ('slip_id', '=', False),('slip_id', 'in', self.ids)])
-		return att_ids
+		return att_ids and att_ids or False
 
 	@api.multi
 	def process_sheet(self):
@@ -368,7 +371,550 @@ class hr_payslip(models.Model):
 		for rec in self:
 			template = self.env.ref('hr_payroll_ext.payslip_email_template')	
 			rec.message_post_with_template(template.id, composition_mode='comment')
-			rec.send_email = True	
+			rec.send_email = True
+
+	def _partial_period_factor(self, payslip, contract):
+		dpsFrom = payslip.date_from
+		dpsTo = payslip.date_to
+		dcStart = contract.date_start
+		dcEnd = False
+		if contract.date_end:
+			dcEnd = contract.date_end
+
+		# both start and end of contract are out of the bounds of the payslip
+		if dcStart <= dpsFrom and (not dcEnd or dcEnd >= dpsTo):
+			return 1
+
+		# One or both start and end of contract are within the bounds of the
+		#  payslip
+		#
+		no_contract_days = 0
+		if dcStart > dpsFrom:
+			no_contract_days += (dcStart - dpsFrom).days
+		if dcEnd and dcEnd < dpsTo:
+			no_contract_days += (dpsTo - dcEnd).days
+
+		total_days = (dpsTo - dpsFrom).days + 1
+		contract_days = total_days - no_contract_days
+		return float(contract_days) / float(total_days)
+
+	def get_utilities_dict(self, contract, payslip):
+		res = {}
+		if not contract or not payslip:
+			return res
+
+		# Calculate percentage of pay period in which contract lies
+		res['PPF'] = {
+			'amount': self._partial_period_factor(payslip, contract),
+		}
+
+		# Calculate net amount of previous payslip
+		ps_ids = self.env['hr.payslip'].search([('employee_id', '=', contract.employee_id.id)], order='date_from')
+		res.update({
+			'PREVPS': {
+				'exists': 0,
+				'net': 0
+			}
+		})
+		if ps_ids:
+			# Get database ID of Net salary category
+			res_model, net_id = self.env['ir.model.data'].get_object_reference('hr_payroll', 'NET')
+			res['PREVPS']['exists'] = 1
+			total = 0
+			for line in ps_ids[-1].line_ids:
+				if line.salary_rule_id.category_id.id == net_id:
+					total += line.total
+			res['PREVPS']['net'] = total
+		return res
+
+	# YTI TODO contract_ids should be a browse record
+	@api.model
+	def get_inputs(self, contracts, date_from, date_to):
+		res = []
+		arrears_obj = self.env['hr.salary.inputs']
+
+		structure_ids = contracts.get_all_structures()
+		rule_ids = self.env['hr.payroll.structure'].browse(structure_ids).get_all_rules()
+		sorted_rule_ids = [id for id, sequence in sorted(rule_ids, key=lambda x: x[1])]
+		inputs = self.env['hr.salary.rule'].browse(sorted_rule_ids).mapped('input_ids')
+
+		# for contract in contracts:
+		#	for input in inputs:
+		#	    input_data = {
+		#	        'name': input.name,
+		#	        'code': input.code,
+		#	        'contract_id': contract.id,
+		#	    }
+		#	    res += [input_data]
+
+		for contract in contracts:
+			for input in inputs:
+
+				# Get last month 21 to next month 21 OT
+				if input.code == 'SARFRAZ':  # To remark use Sarfraz
+					start_date = strToDate(date_from)
+					end_date = strToDate(date_to)
+
+					start_date1 = start_date + relativedelta.relativedelta(months=-1, day=21)
+					end_date1 = start_date + relativedelta.relativedelta(day=21, minutes=-1)
+
+					date_from = datetime.strftime(start_date1, '%Y-%m-%d')
+					date_to = datetime.strftime(end_date1, '%Y-%m-%d')
+
+				arr_amt = 0
+				arr_ids = self.env['hr.salary.inputs'].search(
+					[('employee_id', '=', contract.employee_id.id), ('name', '=', input.code),
+					 ('date', '>=', date_from), ('date', '<=', date_to), ('state', '=', 'confirm')])
+				if arr_ids:
+					arr_amt = 0
+					for arr_id in arr_ids:
+						# arr_id.slip_id = self.id
+						arr_amt += arr_id.amount
+				input_data = {
+					'name': input.name,
+					'code': input.code,
+					'contract_id': contract.id,
+					'amount': arr_amt or 0,
+				}
+				res += [input_data]
+		return res
+
+	@api.multi
+	def compute_sheet(self):
+		for payslip in self:
+			# Changed the Number Style
+			ttyme = payslip.date_from
+			number = _('Slip-%s-%s') % (tools.ustr(ttyme.strftime('%y%m')), payslip.employee_id.code)
+
+			# delete old payslip lines
+			payslip.line_ids.unlink()
+
+			# set the list of contract for which the rules have to be applied
+			# if we don't give the contract, then the rules to apply should be for all current contracts of the employee
+			contract_ids = payslip.contract_id.ids or \
+						   self.get_contract(payslip.employee_id, payslip.date_from, payslip.date_to)
+
+			# Added these two writes for inputs and attendance
+			start_date = payslip.date_from
+			end_date = payslip.date_to
+
+			start_date1 = start_date + relativedelta.relativedelta(months=-1, day=21)
+			end_date1 = start_date + relativedelta.relativedelta(day=21, minutes=-1)
+
+			date_from = datetime.strftime(start_date1, '%Y-%m-%d')
+			date_to = datetime.strftime(end_date1, '%Y-%m-%d')
+
+			arr_ids = self.env['hr.salary.inputs'].search([('employee_id', '=', payslip.employee_id.id),
+														   ('date', '>=', payslip.date_from),
+														   ('date', '<=', payslip.date_to), ('state', '=', 'confirm')])
+
+			if arr_ids:
+				arr_ids.write({'state': 'done', 'slip_id': payslip.id})
+				ot_inputs = arr_ids.filtered(lambda z: z.name == 'OT')
+				if ot_inputs:
+					for ot_input in ot_inputs:
+						if ot_input.ot_id:
+							ot_input.ot_id.overtime_status = 'post'
+
+			att_ids = self.env['hr.employee.month.attendance'].search([('employee_id', '=', payslip.employee_id.id),
+																	   ('date', '>=', payslip.date_from),
+																	   ('date', '<=', payslip.date_to)])
+			if att_ids:
+				att_ids.write({'state': 'done', 'slip_id': payslip.id})
+
+			lines = [(0, 0, line) for line in self.get_payslip_lines(contract_ids, payslip.id)]
+			payslip.write({'line_ids': lines, 'number': number})
+
+			##For SMS
+			if not payslip.send_sms:
+				slip_month = (tools.ustr(ttyme.strftime('%B-%Y')))
+				text = "Dear Mr./Ms. " + payslip.employee_id.name + ", \n Your Salary For the Month of " + slip_month + " has been Generated. \n Regards, SOS."
+				message = self.env['send_sms'].render_template(text, 'hr.payslip', payslip.id)
+				mobile_no = (payslip.employee_id.mobile_phone and payslip.employee_id.mobile_phone) or (
+							payslip.employee_id.work_phone and payslip.employee_id.work_phone) or False
+				gatewayurl_id = self.env['gateway_setup'].search([('id', '=', 1)])
+				if mobile_no:
+					self.env['send_sms'].send_sms_link(message, mobile_no, payslip.id, 'hr.payslip', gatewayurl_id)
+		return True
+
+	@api.model
+	def get_payslip_lines(self, contract_ids, payslip_id):
+		def _sum_salary_rule_category(localdict, category, amount):
+			if category.parent_id:
+				localdict = _sum_salary_rule_category(localdict, category.parent_id, amount)
+			if category.code in localdict['categories'].dict:
+				localdict['categories'].dict[category.code] = localdict['categories'].dict[category.code] + amount
+			else:
+				localdict['categories'].dict[category.code] = amount
+			return localdict
+
+		class BrowsableObject(object):
+
+			def __init__(self, employee_id, dict, env):
+				self.employee_id = employee_id
+				self.dict = dict
+				self.env = env
+
+			def __getattr__(self, attr):
+				return attr in self.dict and self.dict.__getitem__(attr) or 0.0
+
+		class InputLine(BrowsableObject):
+			"""a class that will be used into the python code, mainly for usability purposes"""
+
+			def sum(self, code, from_date, to_date=None):
+				if to_date is None:
+					to_date = fields.Date.today()
+				self.env.cr.execute("""
+						SELECT sum(amount) as sum
+						FROM hr_payslip as hp, hr_payslip_input as pi 
+						WHERE hp.employee_id = %s AND hp.state = 'done' 
+						AND hp.date_from >= %s AND hp.date_to <= %s 
+						AND hp.id = pi.payslip_id AND pi.code = %s""",
+									(self.employee_id, from_date, to_date, code))
+				return self.env.cr.fetchone()[0] or 0.0
+
+		class LoanLine(BrowsableObject):
+			"""a class that will be used into the python code, mainly for usability purposes"""
+
+			def sum(self, code, from_date, to_date=None):
+				if to_date is None:
+					to_date = fields.Date.today()
+				self.env.cr.execute("""
+						SELECT sum(amount) as sum 
+						FROM hr_payslip as hp, hr_payslip_loan as pl 
+						WHERE hp.employee_id = %s AND hp.state = 'done' 
+						AND hp.date_from >= %s AND hp.date_to <= %s AND hp.id = pl.payslip_id AND pl.code = %s""",
+									(self.employee_id, from_date, to_date, code))
+				return self.env.cr.fetchone()[0] or 0.0
+
+		class WorkedDays(BrowsableObject):
+			"""a class that will be used into the python code, mainly for usability purposes"""
+
+			def _sum(self, code, from_date, to_date=None):
+				if to_date is None:
+					to_date = fields.Date.today()
+				self.env.cr.execute("""
+						SELECT sum(number_of_days) as number_of_days, sum(number_of_hours) as number_of_hours 
+						FROM hr_payslip as hp, hr_payslip_worked_days as pi 
+						WHERE hp.employee_id = %s AND hp.state = 'done' 
+						AND hp.date_from >= %s AND hp.date_to <= %s AND hp.id = pi.payslip_id AND pi.code = %s""",
+									(self.employee_id, from_date, to_date, code))
+				return self.env.cr.fetchone()
+
+			def sum(self, code, from_date, to_date=None):
+				res = self._sum(code, from_date, to_date)
+				return res and res[0] or 0.0
+
+			def sum_hours(self, code, from_date, to_date=None):
+				res = self._sum(code, from_date, to_date)
+				return res and res[1] or 0.0
+
+		class Payslips(BrowsableObject):
+			"""a class that will be used into the python code, mainly for usability purposes"""
+
+			def sum(self, code, from_date, to_date=None):
+				if to_date is None:
+					to_date = fields.Date.today()
+				self.env.cr.execute("""
+						SELECT sum(case when hp.credit_note = False then (pl.total) else (-pl.total) end) 
+						FROM hr_payslip as hp, hr_payslip_line as pl 
+						WHERE hp.employee_id = %s AND hp.state = 'done' 
+						AND hp.date_from >= %s AND hp.date_to <= %s AND hp.id = pl.slip_id AND pl.code = %s""",
+									(self.employee_id, from_date, to_date, code))
+				res = self.env.cr.fetchone()
+				return res and res[0] or 0.0
+
+		# we keep a dict with the result because a value can be overwritten by another rule with the same code
+		result_dict = {}
+		rules_dict = {}
+		worked_days_dict = {}
+		categories_dict = {}
+		inputs_dict = {}
+		loans_dict = {}
+		blacklist = []
+
+		payslip = self.env['hr.payslip'].browse(payslip_id)
+
+		for worked_days_line in payslip.worked_days_line_ids:
+			worked_days_dict[worked_days_line.code] = worked_days_line
+
+		for input_line in payslip.input_line_ids:
+			inputs_dict[input_line.code] = input_line
+
+		for loan_line in payslip.employee_id.loan_ids:
+			loans_dict[loan_line.code] = loan_line
+
+		categories = BrowsableObject(payslip.employee_id.id, categories_dict, self.env)
+		inputs = InputLine(payslip.employee_id.id, inputs_dict, self.env)
+		loans = LoanLine(payslip.employee_id.id, loans_dict, self.env)
+		worked_days = WorkedDays(payslip.employee_id.id, worked_days_dict, self.env)
+		payslips = Payslips(payslip.employee_id.id, payslip, self.env)
+		rules = BrowsableObject(payslip.employee_id.id, rules_dict, self.env)
+
+		baselocaldict = {'categories': categories, 'rules': rules, 'payslip': payslips, 'worked_days': worked_days,
+						 'inputs': inputs, 'loans': loans}
+		# get the ids of the structures on the contracts and their parent id as well
+		contracts = self.env['hr.contract'].browse(contract_ids)
+		structure_ids = contracts.get_all_structures()
+		# get the rules of the structure and thier children
+		rule_ids = self.env['hr.payroll.structure'].browse(structure_ids).get_all_rules()
+		# run the rules by sequence
+		sorted_rule_ids = [id for id, sequence in sorted(rule_ids, key=lambda x: x[1])]
+		sorted_rules = self.env['hr.salary.rule'].browse(sorted_rule_ids)
+
+		for contract in contracts:
+			employee = contract.employee_id
+
+			## These lines (before for) )are added for utils object , Plus utils is added in localdict
+			temp_dict = {}
+			utils_dict = self.get_utilities_dict(contract, payslip)
+			for k, v in utils_dict.items():
+				k_obj = BrowsableObject(payslip.employee_id.id, v, self.env)
+				temp_dict.update({k: k_obj})
+			utils = BrowsableObject(payslip.employee_id.id, temp_dict, self.env)
+
+			localdict = dict(baselocaldict, employee=employee, contract=contract, utils=utils)
+
+			for rule in sorted_rules:
+				key = rule.code + '-' + str(contract.id)
+				localdict['result'] = None
+				localdict['result_qty'] = 1.0
+				localdict['result_rate'] = 100
+				# check if the rule can be applied
+				if rule._satisfy_condition(localdict) and rule.id not in blacklist:
+					# compute the amount of the rule
+					amount, qty, rate = rule._compute_rule(localdict)
+					# check if there is already a rule computed with that code
+					previous_amount = rule.code in localdict and localdict[rule.code] or 0.0
+					# set/overwrite the amount computed for this rule in the localdict
+					tot_rule = amount * qty * rate / 100.0
+					localdict[rule.code] = tot_rule
+					rules_dict[rule.code] = rule
+					# sum the amount for its salary category
+					localdict = _sum_salary_rule_category(localdict, rule.category_id, tot_rule - previous_amount)
+					# create/overwrite the rule in the temporary results
+					result_dict[key] = {
+						'salary_rule_id': rule.id,
+						'contract_id': contract.id,
+						'name': rule.name,
+						'code': rule.code,
+						'category_id': rule.category_id.id,
+						'sequence': rule.sequence,
+						'appears_on_payslip': rule.appears_on_payslip,
+						'condition_select': rule.condition_select,
+						'condition_python': rule.condition_python,
+						'condition_range': rule.condition_range,
+						'condition_range_min': rule.condition_range_min,
+						'condition_range_max': rule.condition_range_max,
+						'amount_select': rule.amount_select,
+						'amount_fix': rule.amount_fix,
+						'amount_python_compute': rule.amount_python_compute,
+						'amount_percentage': rule.amount_percentage,
+						'amount_percentage_base': rule.amount_percentage_base,
+						'register_id': rule.register_id.id,
+						'amount': amount,
+						'employee_id': contract.employee_id.id,
+						'quantity': qty,
+						'rate': rate,
+					}
+				else:
+					# blacklist this rule and its children
+					blacklist += [id for id, seq in rule._recursive_search_of_rules()]
+
+			## For Exception Checking
+			localdict.update({'result': None})
+			rule_ids = self.env['hr.payslip.exception.rule'].search([('active', '=', True)], order='sequence')
+
+			for rule in rule_ids:
+				if rule.satisfy_condition(localdict):
+					val = {
+						'name': rule.name,
+						'slip_id': payslip.id,
+						'rule_id': rule.id,
+					}
+					self.env['hr.payslip.exception'].create(val)
+			## End Exception Checking
+
+			result = [value for code, value in result_dict.items()]
+			return result
+
+	@api.model
+	def get_worked_day_lines(self, contract_ids, date_from, date_to):
+		for contract in contract_ids:
+			attendance_policy = contract.employee_id.company_id.attendance_policy
+			if not attendance_policy:
+				attendance_policy = contract.company_id.attendance_policy
+			if not attendance_policy:
+				attendance_policy = self.env['res.company'].search([('id', '=', 1)]).attendance_policy
+
+			if attendance_policy == 'none':
+				return super(hr_payslip, self).get_worked_day_lines(contract_ids, date_from, date_to)
+			elif attendance_policy == 'daily':
+				return self.get_worked_day_lines_attendance(contract_ids, date_from, date_to)
+			elif attendance_policy in ('bio_month', 'monthly'):
+				return self.get_worked_day_lines_monthly_attendance(contract_ids, date_from, date_to)
+
+	def get_worked_day_lines_monthly_attendance(self, contract_ids, date_from, date_to):
+		res = []
+		for contract in contract_ids:
+			attendances = {
+				'MAX': {
+					'name': _("Maximum Possible Working Hours"),
+					'sequence': 1,
+					'code': 'MAX',
+					'number_of_days': 0.0,
+					'number_of_hours': 0.0,
+					'contract_id': contract.id,
+				},
+				'WORK100': {
+					'name': _("Normal Working Days paid at 100%"),
+					'sequence': 2,
+					'code': 'WORK100',
+					'number_of_days': 0.0,
+					'number_of_hours': 0.0,
+					'contract_id': contract.id,
+				},
+			}
+
+			leaves = {}
+			day_from = date_from
+			day_to = date_to
+
+			attendance_ids = self.env['hr.employee.month.attendance'].search(
+				[('employee_id', '=', contract.employee_id.id), ('date', '>=', date_from), ('date', '<=', date_to)])
+			# ('date','>=',date_from),('date','<=',date_to),('slip_id','=',False)])
+
+			if len(attendance_ids) > 1:
+				attendance_ids = attendance_ids.filtered(lambda att: att.contract_id.id == contract.id)
+
+			if attendance_ids:
+				for attendance in attendance_ids:
+					attendances['WORK100']['number_of_days'] += attendance.present_days
+					attendances['WORK100']['number_of_hours'] += attendance.present_days * 8
+
+					attendances['MAX']['number_of_days'] += attendance.total_days
+					attendances['MAX']['number_of_hours'] += attendance.total_days * 8
+
+				leaves = []
+				attendances = [value for key, value in attendances.items()]
+
+				res += attendances + leaves
+		return res
+
+	def get_worked_day_lines_attendance(self, contract_ids, date_from, date_to):
+		def was_on_leave(employee_id, datetime_day):
+			day = datetime_day.strftime("%Y-%m-%d")
+			holiday_ids = self.env['hr.leave'].search(
+				[('state', '=', 'validate'), ('employee_id', '=', employee_id), ('type', '=', 'remove'),
+				 ('date_from', '<=', day), ('date_to', '>=', day)])
+			return holiday_ids and holiday_ids[0].holiday_status_id.name or False
+
+		res = []
+		for contract in self.env['hr.contract'].browse(contract_ids):
+			if not contract.working_hours:
+				# fill only if the contract as a working schedule linked
+				continue
+			attendances = {
+				'MAX': {
+					'name': _("Maximum Possible Working Hours"),
+					'sequence': 1,
+					'code': 'MAX',
+					'number_of_days': 0.0,
+					'number_of_hours': 0.0,
+					'contract_id': contract.id,
+				},
+				'WORK100': {
+					'name': _("Normal Working Days paid at 100%"),
+					'sequence': 2,
+					'code': 'WORK100',
+					'number_of_days': 0.0,
+					'number_of_hours': 0.0,
+					'contract_id': contract.id,
+				},
+			}
+
+			leaves = {}
+			day_from = datetime.strptime(date_from, "%Y-%m-%d")
+			day_to = datetime.strptime(date_to, "%Y-%m-%d")
+			nb_of_days = (day_to - day_from).days + 1
+			for day in range(0, nb_of_days):
+				working_hours_on_day = self.env['resource.calendar'].working_hours_on_day(contract.working_hours,
+																						  day_from + timedelta(
+																							  days=day))
+				if working_hours_on_day:
+					# the employee had to work
+					leave_type = was_on_leave(contract.employee_id.id, day_from + timedelta(days=day))
+					if leave_type:
+						# if he was on leave, fill the leaves dict
+						if leave_type in leaves:
+							leaves[leave_type]['number_of_days'] += 1.0
+							leaves[leave_type]['number_of_hours'] += working_hours_on_day
+						else:
+							leaves[leave_type] = {
+								'name': leave_type,
+								'sequence': 5,
+								'code': leave_type,
+								'number_of_days': 1.0,
+								'number_of_hours': working_hours_on_day,
+								'contract_id': contract.id,
+							}
+					# attendances['WORK100']['number_of_days'] += 1.0
+					# attendances['WORK100']['number_of_hours'] += working_hours_on_day
+					else:
+						attendance_id = self.env['hr.employee.attendance'].search(
+							[('employee_id', '=', contract.employee_id.id),
+							 ('name', '=', day_from + timedelta(days=day))])
+						if attendance_id:
+							attendances['WORK100']['number_of_days'] += 1.0
+							attendances['WORK100']['number_of_hours'] += working_hours_on_day
+
+					attendances['MAX']['number_of_days'] += 1.0
+					attendances['MAX']['number_of_hours'] += working_hours_on_day
+
+			leaves = [value for key, value in leaves.items()]
+			attendances = [value for key, value in attendances.items()]
+
+			res += attendances + leaves
+		return res
+
+	def holidays_list_init(self, dFrom, dTo):
+		holiday_obj = self.env['hr.holidays.public']
+		res = holiday_obj.get_holidays_list(dFrom.year)
+		if dTo.year != dFrom.year:
+			res += holiday_obj.get_holidays_list(dTo.year)
+		return res
+
+	def leaves_list_init(self, employee_id, dFrom, dTo, tz):
+		"""Returns a list of tuples containing start, end dates for leaves within the specified period.
+        """
+
+		leave_obj = self.env['hr.holidays']
+		dtS = datetime.strptime(dFrom.strftime(OE_DATEFORMAT) + ' 00:00:00', OE_DATETIMEFORMAT)
+		dtE = datetime.strptime(dTo.strftime(OE_DATEFORMAT) + ' 23:59:59', OE_DATETIMEFORMAT)
+		utcdt_dayS = timezone(tz).localize(dtS).astimezone(utc)
+		utcdt_dayE = timezone(tz).localize(dtE).astimezone(utc)
+		utc_dayS = utcdt_dayS.strftime(OE_DATETIMEFORMAT)
+		utc_dayE = utcdt_dayE.strftime(OE_DATETIMEFORMAT)
+
+		leave_ids = leave_obj.search([
+			('state', 'in', ['validate', 'validate1']),
+			('employee_id', '=', employee_id),
+			('type', '=', 'remove'),
+			('date_from', '<=', utc_dayE),
+			('date_to', '>=', utc_dayS)
+		])
+		res = []
+		if len(leave_ids) == 0:
+			return res
+
+		for leave in leave_ids:
+			res.append({
+				'code': leave.holiday_status_id.code,
+				'tz': tz,
+				'start': utc.localize(datetime.strptime(leave.date_from, OE_DATETIMEFORMAT)),
+				'end': utc.localize(datetime.strptime(leave.date_to, OE_DATETIMEFORMAT))
+			})
+		return res
 
 
 class hr_salary_inputs(models.Model):		
@@ -589,16 +1135,16 @@ class hr_payslip_run(models.Model):
 			advice = self.env['hr.payroll.advice'].create(advice_data)
 			for slip_id in run.slip_ids:
 				# TODO is it necessary to interleave the calls ?
-				slip.action_payslip_done()
-				if not slip.employee_id.bank_account_id or not slip.employee_id.bank_account_id.acc_number:
-					raise UserError(_('Please define bank account for the %s employee') % (slip.employee_id.name))
-				payslip_line = self.env['hr.payslip.line'].search([('slip_id', '=', slip.id), ('code', '=', 'NET')], limit=1)
+				slip_id.action_payslip_done()
+				if not slip_id.employee_id.bank_account_id or not slip_id.employee_id.bank_account_id.acc_number:
+					raise UserError(_('Please define bank account for the %s employee') % (slip_id.employee_id.name))
+				payslip_line = self.env['hr.payslip.line'].search([('slip_id', '=', slip_id.id), ('code', '=', 'NET')], limit=1)
 				if payslip_line:
 					advice_line = {
-						'advice_id': advice_id,
-						'name': slip.employee_id.bank_account_id.acc_number,
+						'advice_id': advice,
+						'name': slip_id.employee_id.bank_account_id.acc_number,
 						#'ifsc_code': slip.employee_id.bank_account_id.bank_bic or '',
-						'employee_id': slip.employee_id.id,
+						'employee_id': slip_id.employee_id.id,
 						'bysal': payslip_line.total
 					}
 					self.env['hr.payroll.advice.line'].create(advice_line)
@@ -624,548 +1170,6 @@ class payroll_advice_line(models.Model):
 		self.name = self.employee_id.bank_account_id.acc_number
 		self.ifsc_code = self.employee_id.bank_account_id.bank_bic or ''
 
-
-class hr_payslip(models.Model):
-	_inherit = 'hr.payslip'
-
-	exception_ids = fields.One2many('hr.payslip.exception', 'slip_id','Exceptions', readonly=True)
-	advice_id = fields.Many2one('hr.payroll.advice', 'Bank Advice', copy=False)
-	
-	_defaults = {
-		'date_from': lambda *a: str(datetime.now()+ relativedelta.relativedelta(months=-1) + relativedelta.relativedelta(day=1))[:10],
-		'date_to': lambda *a: str(datetime.now() + relativedelta.relativedelta(months=-1, day=31))[:10],
-	}	
-        
-	def _partial_period_factor(self, payslip, contract):
-
-		dpsFrom = payslip.date_from
-		dpsTo = payslip.date_to
-		dcStart = contract.date_start
-		dcEnd = False
-		if contract.date_end:
-			dcEnd = contract.date_end
-
-		# both start and end of contract are out of the bounds of the payslip
-		if dcStart <= dpsFrom and (not dcEnd or dcEnd >= dpsTo):
-			return 1
-
-		# One or both start and end of contract are within the bounds of the
-		#  payslip
-		#
-		no_contract_days = 0
-		if dcStart > dpsFrom:
-			no_contract_days += (dcStart - dpsFrom).days
-		if dcEnd and dcEnd < dpsTo:
-			no_contract_days += (dpsTo - dcEnd).days
-
-		total_days = (dpsTo - dpsFrom).days + 1
-		contract_days = total_days - no_contract_days
-		return float(contract_days) / float(total_days)
-
-	def get_utilities_dict(self, contract, payslip):
-		res = {}
-		if not contract or not payslip:
-			return res
-
-		# Calculate percentage of pay period in which contract lies
-		res['PPF'] = {
-			'amount': self._partial_period_factor(payslip, contract),
-		}
-
-		# Calculate net amount of previous payslip
-		ps_ids = self.env['hr.payslip'].search([('employee_id', '=', contract.employee_id.id)],order='date_from')
-		res.update({
-			'PREVPS':{
-				'exists': 0,
-				'net': 0
-			}
-		})
-		if ps_ids:
-			# Get database ID of Net salary category
-			res_model, net_id = self.env['ir.model.data'].get_object_reference('hr_payroll', 'NET')
-			res['PREVPS']['exists'] = 1
-			total = 0
-			for line in ps_ids[-1].line_ids:
-				if line.salary_rule_id.category_id.id == net_id:
-					total += line.total
-			res['PREVPS']['net'] = total
-
-		return res
-
-	# YTI TODO contract_ids should be a browse record
-	@api.model
-	def get_inputs(self, contracts, date_from, date_to):
-		res = []
-		arrears_obj = self.env['hr.salary.inputs']
-		
-		structure_ids = contracts.get_all_structures()
-		rule_ids = self.env['hr.payroll.structure'].browse(structure_ids).get_all_rules()
-		sorted_rule_ids = [id for id, sequence in sorted(rule_ids, key=lambda x:x[1])]
-		inputs = self.env['hr.salary.rule'].browse(sorted_rule_ids).mapped('input_ids')
-    
-		#for contract in contracts:
-        #	for input in inputs:
-        #	    input_data = {
-        #	        'name': input.name,
-        #	        'code': input.code,
-        #	        'contract_id': contract.id,
-        #	    }
-        #	    res += [input_data]
-            
-		for contract in contracts:                
-			for input in inputs:
-				
-				#Get last month 21 to next month 21 OT
-				if input.code == 'SARFRAZ': # To remark use Sarfraz
-					start_date = strToDate(date_from)
-					end_date = strToDate(date_to)
-		
-					start_date1 = start_date + relativedelta.relativedelta(months=-1,day=21)
-					end_date1 = start_date + relativedelta.relativedelta(day=21,minutes=-1)
-		
-					date_from = datetime.strftime(start_date1,'%Y-%m-%d')
-					date_to = datetime.strftime(end_date1,'%Y-%m-%d')
-				
-				arr_amt = 0
-				arr_ids = self.env['hr.salary.inputs'].search([('employee_id', '=', contract.employee_id.id),('name', '=', input.code),
-					('date', '>=', date_from),('date', '<=', date_to),('state', '=', 'confirm')])
-				if arr_ids:
-					arr_amt = 0
-					for arr_id in arr_ids: 
-						#arr_id.slip_id = self.id
-						arr_amt += arr_id.amount
-				input_data = {
-					'name': input.name,
-					'code': input.code,
-					'contract_id': contract.id,
-					'amount': arr_amt or 0,
-				}
-				res += [input_data]
-		return res
-
-	@api.multi
-	def compute_sheet(self):
-		for payslip in self:
-			# Changed the Number Style
-			ttyme = payslip.date_from
-			number = _('Slip-%s-%s') % (tools.ustr(ttyme.strftime('%y%m')),payslip.employee_id.code)
-			
-			#delete old payslip lines
-			payslip.line_ids.unlink()
-			
-			# set the list of contract for which the rules have to be applied
-			# if we don't give the contract, then the rules to apply should be for all current contracts of the employee
-			contract_ids = payslip.contract_id.ids or \
-				self.get_contract(payslip.employee_id, payslip.date_from, payslip.date_to)
-
-			
-			# Added these two writes for inputs and attendance
-			start_date = payslip.date_from
-			end_date = payslip.date_to
-			
-			start_date1 = start_date + relativedelta.relativedelta(months=-1,day=21)
-			end_date1 = start_date + relativedelta.relativedelta(day=21,minutes=-1)
-
-			date_from = datetime.strftime(start_date1,'%Y-%m-%d')
-			date_to = datetime.strftime(end_date1,'%Y-%m-%d')
-			
-			arr_ids = self.env['hr.salary.inputs'].search([('employee_id', '=', payslip.employee_id.id),
-				('date', '>=', payslip.date_from),('date', '<=', payslip.date_to),('state', '=', 'confirm')])
-			
-			if arr_ids:
-				arr_ids.write({'state':'done','slip_id':payslip.id})
-				ot_inputs = arr_ids.filtered(lambda z: z.name == 'OT')
-				if ot_inputs:
-					for ot_input in ot_inputs:
-						if ot_input.ot_id:
-							ot_input.ot_id.overtime_status = 'post'
- 			
-			att_ids = self.env['hr.employee.month.attendance'].search([('employee_id', '=', payslip.employee_id.id),
-				('date', '>=', payslip.date_from),('date', '<=', payslip.date_to)])
-			if att_ids:
-				att_ids.write({'state':'done','slip_id':payslip.id})
- 				
-			lines = [(0, 0, line) for line in self.get_payslip_lines(contract_ids, payslip.id)]
-			payslip.write({'line_ids': lines, 'number': number})
-			
-			##For SMS
-			if not payslip.send_sms:
-				slip_month = (tools.ustr(ttyme.strftime('%B-%Y')))
-				text = "Dear Mr./Ms. " + payslip.employee_id.name + ", \n Your Salary For the Month of " + slip_month + " has been Generated. \n Regards, SOS."
-				message = self.env['send_sms'].render_template(text, 'hr.payslip', payslip.id)
-				mobile_no = (payslip.employee_id.mobile_phone and payslip.employee_id.mobile_phone) or (payslip.employee_id.work_phone and payslip.employee_id.work_phone) or False
-				gatewayurl_id = self.env['gateway_setup'].search([('id','=',1)])
-				if mobile_no:
-					self.env['send_sms'].send_sms_link(message, mobile_no,payslip.id,'hr.payslip',gatewayurl_id)
-			
-		return True
-
-	@api.model
-	def get_payslip_lines(self, contract_ids, payslip_id):
-		def _sum_salary_rule_category(localdict, category, amount):
-			if category.parent_id:
-				localdict = _sum_salary_rule_category(localdict, category.parent_id, amount)
-			if category.code in localdict['categories'].dict:
-				localdict['categories'].dict[category.code] = localdict['categories'].dict[category.code] + amount
-			else:
-				localdict['categories'].dict[category.code] = amount
-			return localdict
-	
-		class BrowsableObject(object):
-
-		    def __init__(self, employee_id, dict, env):
-		        self.employee_id = employee_id
-		        self.dict = dict
-		        self.env = env
-
-		    def __getattr__(self, attr):
-		        return attr in self.dict and self.dict.__getitem__(attr) or 0.0
-
-		class InputLine(BrowsableObject):
-			"""a class that will be used into the python code, mainly for usability purposes"""
-			def sum(self, code, from_date, to_date=None):
-				if to_date is None:
-					to_date = fields.Date.today()
-				self.env.cr.execute("""
-					SELECT sum(amount) as sum
-					FROM hr_payslip as hp, hr_payslip_input as pi 
-					WHERE hp.employee_id = %s AND hp.state = 'done' 
-					AND hp.date_from >= %s AND hp.date_to <= %s 
-					AND hp.id = pi.payslip_id AND pi.code = %s""",
-					(self.employee_id, from_date, to_date, code))
-				return self.env.cr.fetchone()[0] or 0.0
-
-		class LoanLine(BrowsableObject):
-			"""a class that will be used into the python code, mainly for usability purposes"""
-			def sum(self, code, from_date, to_date=None):
-				if to_date is None:
-					to_date = fields.Date.today()
-				self.env.cr.execute("""
-					SELECT sum(amount) as sum 
-					FROM hr_payslip as hp, hr_payslip_loan as pl 
-					WHERE hp.employee_id = %s AND hp.state = 'done' 
-					AND hp.date_from >= %s AND hp.date_to <= %s AND hp.id = pl.payslip_id AND pl.code = %s""",
-					(self.employee_id, from_date, to_date, code))
-				return self.env.cr.fetchone()[0] or 0.0
-
-		class WorkedDays(BrowsableObject):
-			"""a class that will be used into the python code, mainly for usability purposes"""
-			def _sum(self, code, from_date, to_date=None):
-				if to_date is None:
-					to_date = fields.Date.today()
-				self.env.cr.execute("""
-					SELECT sum(number_of_days) as number_of_days, sum(number_of_hours) as number_of_hours 
-					FROM hr_payslip as hp, hr_payslip_worked_days as pi 
-					WHERE hp.employee_id = %s AND hp.state = 'done' 
-					AND hp.date_from >= %s AND hp.date_to <= %s AND hp.id = pi.payslip_id AND pi.code = %s""",
-					(self.employee_id, from_date, to_date, code))
-				return self.env.cr.fetchone()
-
-			def sum(self, code, from_date, to_date=None):
-				res = self._sum(code, from_date, to_date)
-				return res and res[0] or 0.0
-
-			def sum_hours(self, code, from_date, to_date=None):
-				res = self._sum(code, from_date, to_date)
-				return res and res[1] or 0.0
-
-		class Payslips(BrowsableObject):
-			"""a class that will be used into the python code, mainly for usability purposes"""
-			def sum(self, code, from_date, to_date=None):
-				if to_date is None:
-					to_date = fields.Date.today()
-				self.env.cr.execute("""
-					SELECT sum(case when hp.credit_note = False then (pl.total) else (-pl.total) end) 
-					FROM hr_payslip as hp, hr_payslip_line as pl 
-					WHERE hp.employee_id = %s AND hp.state = 'done' 
-					AND hp.date_from >= %s AND hp.date_to <= %s AND hp.id = pl.slip_id AND pl.code = %s""",
-					(self.employee_id, from_date, to_date, code))
-				res = self.env.cr.fetchone()
-				return res and res[0] or 0.0
-
-		#we keep a dict with the result because a value can be overwritten by another rule with the same code
-		result_dict = {}
-		rules_dict = {}
-		worked_days_dict = {}
-		categories_dict = {}
-		inputs_dict = {}
-		loans_dict = {}
-		blacklist = []
-		
-		payslip = self.env['hr.payslip'].browse(payslip_id)	
-		
-		for worked_days_line in payslip.worked_days_line_ids:
-			worked_days_dict[worked_days_line.code] = worked_days_line
-
-		for input_line in payslip.input_line_ids:
-			inputs_dict[input_line.code] = input_line
-		
-		for loan_line in payslip.employee_id.loan_ids:
-			loans_dict[loan_line.code] = loan_line
-
-		categories = BrowsableObject(payslip.employee_id.id, categories_dict, self.env)
-		inputs = InputLine(payslip.employee_id.id, inputs_dict, self.env)
-		loans = LoanLine(payslip.employee_id.id, loans_dict, self.env)
-		worked_days = WorkedDays(payslip.employee_id.id, worked_days_dict, self.env)
-		payslips = Payslips(payslip.employee_id.id, payslip, self.env)
-		rules = BrowsableObject(payslip.employee_id.id, rules_dict, self.env)
-
-		baselocaldict = {'categories': categories, 'rules': rules, 'payslip': payslips, 'worked_days': worked_days, 'inputs': inputs, 'loans': loans}
-		#get the ids of the structures on the contracts and their parent id as well
-		contracts = self.env['hr.contract'].browse(contract_ids)
-		structure_ids = contracts.get_all_structures()
-		#get the rules of the structure and thier children
-		rule_ids = self.env['hr.payroll.structure'].browse(structure_ids).get_all_rules()
-		#run the rules by sequence
-		sorted_rule_ids = [id for id, sequence in sorted(rule_ids, key=lambda x:x[1])]
-		sorted_rules = self.env['hr.salary.rule'].browse(sorted_rule_ids)
-		
-		for contract in contracts:
-			employee = contract.employee_id
-
-			## These lines (before for) )are added for utils object , Plus utils is added in localdict
-			temp_dict = {}
-			utils_dict = self.get_utilities_dict(contract, payslip)
-			for k, v in utils_dict.items():
-				k_obj = BrowsableObject(payslip.employee_id.id, v, self.env)
-				temp_dict.update({k: k_obj})
-			utils = BrowsableObject(payslip.employee_id.id, temp_dict, self.env)
-
-			localdict = dict(baselocaldict, employee=employee, contract=contract,utils=utils)
-
-			for rule in sorted_rules:
-				key = rule.code + '-' + str(contract.id)
-				localdict['result'] = None
-				localdict['result_qty'] = 1.0
-				localdict['result_rate'] = 100
-				#check if the rule can be applied
-				if rule._satisfy_condition(localdict) and rule.id not in blacklist:
-				    #compute the amount of the rule
-				    amount, qty, rate = rule._compute_rule(localdict)
-				    #check if there is already a rule computed with that code
-				    previous_amount = rule.code in localdict and localdict[rule.code] or 0.0
-				    #set/overwrite the amount computed for this rule in the localdict
-				    tot_rule = amount * qty * rate / 100.0
-				    localdict[rule.code] = tot_rule
-				    rules_dict[rule.code] = rule
-				    #sum the amount for its salary category
-				    localdict = _sum_salary_rule_category(localdict, rule.category_id, tot_rule - previous_amount)
-				    #create/overwrite the rule in the temporary results
-				    result_dict[key] = {
-				        'salary_rule_id': rule.id,
-				        'contract_id': contract.id,
-				        'name': rule.name,
-				        'code': rule.code,
-				        'category_id': rule.category_id.id,
-				        'sequence': rule.sequence,
-				        'appears_on_payslip': rule.appears_on_payslip,
-				        'condition_select': rule.condition_select,
-				        'condition_python': rule.condition_python,
-				        'condition_range': rule.condition_range,
-				        'condition_range_min': rule.condition_range_min,
-				        'condition_range_max': rule.condition_range_max,
-				        'amount_select': rule.amount_select,
-				        'amount_fix': rule.amount_fix,
-				        'amount_python_compute': rule.amount_python_compute,
-				        'amount_percentage': rule.amount_percentage,
-				        'amount_percentage_base': rule.amount_percentage_base,
-				        'register_id': rule.register_id.id,
-				        'amount': amount,
-				        'employee_id': contract.employee_id.id,
-				        'quantity': qty,
-				        'rate': rate,
-				    }
-				else:
-				    #blacklist this rule and its children
-				    blacklist += [id for id, seq in rule._recursive_search_of_rules()]
-
-			## For Exception Checking
-			localdict.update({'result': None})
-			rule_ids = self.env['hr.payslip.exception.rule'].search([('active', '=', True)],order='sequence')
-
-			for rule in rule_ids:
-				if rule.satisfy_condition(localdict):
-					val = {
-						'name': rule.name,
-						'slip_id': payslip.id,
-						'rule_id': rule.id,
-					}
-					self.env['hr.payslip.exception'].create(val)
-			## End Exception Checking
-
-			result = [value for code, value in result_dict.items()]
-			return result
-
-	@api.model
-	def get_worked_day_lines(self, contract_ids, date_from, date_to):
-		for contract in contract_ids:
-			attendance_policy = contract.employee_id.company_id.attendance_policy
-			if not attendance_policy:
-				attendance_policy = contract.company_id.attendance_policy
-			if not attendance_policy:
-				attendance_policy = self.env['res.company'].search([('id','=',1)]).attendance_policy
-			
-			if attendance_policy == 'none':
-				return super(hr_payslip, self).get_worked_day_lines(contract_ids, date_from, date_to)
-			elif attendance_policy == 'daily':
-				return self.get_worked_day_lines_attendance(contract_ids, date_from, date_to)
-			elif attendance_policy in ('bio_month','monthly'):
-				return self.get_worked_day_lines_monthly_attendance(contract_ids, date_from, date_to)
-
-	def get_worked_day_lines_monthly_attendance(self, contract_ids, date_from, date_to):
-		res = []		
-		for contract in contract_ids:
-			attendances = {
-				'MAX': {
-					'name': _("Maximum Possible Working Hours"),
-					'sequence': 1,
-					'code': 'MAX',
-					'number_of_days': 0.0,
-					'number_of_hours': 0.0,
-					'contract_id': contract.id,
-				},
-				'WORK100': {
-					'name': _("Normal Working Days paid at 100%"),
-					'sequence': 2,
-					'code': 'WORK100',
-					'number_of_days': 0.0,
-					'number_of_hours': 0.0,
-					'contract_id': contract.id,
-				},
-			}
-
-			leaves = {}
-			day_from = date_from
-			day_to = date_to
-			
-			attendance_ids =self.env['hr.employee.month.attendance'].search([('employee_id','=', contract.employee_id.id),('date','>=',date_from),('date','<=',date_to)])
-				#('date','>=',date_from),('date','<=',date_to),('slip_id','=',False)])
-			
-			if len(attendance_ids) > 1:
-				attendance_ids = attendance_ids.filtered(lambda att: att.contract_id.id == contract.id)	
-			
-			if attendance_ids:
-				for attendance in attendance_ids:
-					attendances['WORK100']['number_of_days'] += attendance.present_days
-					attendances['WORK100']['number_of_hours'] += attendance.present_days * 8
-
-					attendances['MAX']['number_of_days'] += attendance.total_days
-					attendances['MAX']['number_of_hours'] += attendance.total_days * 8
-
-				leaves = []
-				attendances = [value for key, value in attendances.items()]
-			
-				res += attendances + leaves
-		return res
-
-	def get_worked_day_lines_attendance(self, contract_ids, date_from, date_to):
-		def was_on_leave(employee_id, datetime_day):
-			day = datetime_day.strftime("%Y-%m-%d")
-			holiday_ids = self.env['hr.leave'].search([('state','=','validate'),('employee_id','=',employee_id),('type','=','remove'),
-				('date_from','<=',day),('date_to','>=',day)])
-			return holiday_ids and holiday_ids[0].holiday_status_id.name or False
-
-		res = []
-		for contract in self.env['hr.contract'].browse(contract_ids):		
-			if not contract.working_hours:
-				#fill only if the contract as a working schedule linked
-				continue
-			attendances = {
-				'MAX': {
-					'name': _("Maximum Possible Working Hours"),
-					'sequence': 1,
-					'code': 'MAX',
-					'number_of_days': 0.0,
-					'number_of_hours': 0.0,
-					'contract_id': contract.id,
-				},
-				'WORK100': {
-					'name': _("Normal Working Days paid at 100%"),
-					'sequence': 2,
-					'code': 'WORK100',
-					'number_of_days': 0.0,
-					'number_of_hours': 0.0,
-					'contract_id': contract.id,
-				},
-			}
-			
-			leaves = {}
-			day_from = datetime.strptime(date_from,"%Y-%m-%d")
-			day_to = datetime.strptime(date_to,"%Y-%m-%d")
-			nb_of_days = (day_to - day_from).days + 1
-			for day in range(0, nb_of_days):
-				working_hours_on_day = self.env['resource.calendar'].working_hours_on_day(contract.working_hours, day_from + timedelta(days=day))
-				if working_hours_on_day:
-					#the employee had to work
-					leave_type = was_on_leave(contract.employee_id.id, day_from + timedelta(days=day))
-					if leave_type:
-						#if he was on leave, fill the leaves dict
-						if leave_type in leaves:
-							leaves[leave_type]['number_of_days'] += 1.0
-							leaves[leave_type]['number_of_hours'] += working_hours_on_day
-						else:
-							leaves[leave_type] = {
-								'name': leave_type,
-								'sequence': 5,
-								'code': leave_type,
-								'number_of_days': 1.0,
-								'number_of_hours': working_hours_on_day,
-								'contract_id': contract.id,
-							}
-						#attendances['WORK100']['number_of_days'] += 1.0
-						#attendances['WORK100']['number_of_hours'] += working_hours_on_day
-					else:
-						attendance_id = self.env['hr.employee.attendance'].search([('employee_id','=', contract.employee_id.id),('name','=',day_from + timedelta(days=day))])
-						if attendance_id:
-							attendances['WORK100']['number_of_days'] += 1.0
-							attendances['WORK100']['number_of_hours'] += working_hours_on_day
-
-					attendances['MAX']['number_of_days'] += 1.0
-					attendances['MAX']['number_of_hours'] += working_hours_on_day
-
-			leaves = [value for key,value in leaves.items()]
-			attendances = [value for key, value in attendances.items()]
-			
-			res += attendances + leaves
-		return res
-	
-	def holidays_list_init(self, dFrom, dTo):
-		holiday_obj = self.env['hr.holidays.public']
-		res = holiday_obj.get_holidays_list(dFrom.year)
-		if dTo.year != dFrom.year:
-			res += holiday_obj.get_holidays_list(dTo.year)
-		return res
-
-	def leaves_list_init(self, employee_id, dFrom, dTo, tz):
-		"""Returns a list of tuples containing start, end dates for leaves within the specified period.
-		"""
-		leave_obj = self.env['hr.holidays']
-		dtS = datetime.strptime(dFrom.strftime(OE_DATEFORMAT) + ' 00:00:00', OE_DATETIMEFORMAT)
-		dtE = datetime.strptime(dTo.strftime(OE_DATEFORMAT) + ' 23:59:59', OE_DATETIMEFORMAT)
-		utcdt_dayS = timezone(tz).localize(dtS).astimezone(utc)
-		utcdt_dayE = timezone(tz).localize(dtE).astimezone(utc)
-		utc_dayS = utcdt_dayS.strftime(OE_DATETIMEFORMAT)
-		utc_dayE = utcdt_dayE.strftime(OE_DATETIMEFORMAT)
-
-		leave_ids = leave_obj.search([
-			('state', 'in', ['validate', 'validate1']),
-			('employee_id', '=', employee_id),
-			('type', '=', 'remove'),
-			('date_from', '<=', utc_dayE),
-			('date_to', '>=', utc_dayS)
-		])
-		res = []
-		if len(leave_ids) == 0:
-			return res
-
-		for leave in leave_ids:
-			res.append({
-				'code': leave.holiday_status_id.code,
-				'tz': tz,
-				'start': utc.localize(datetime.strptime(leave.date_from,OE_DATETIMEFORMAT)),
-				'end': utc.localize(datetime.strptime(leave.date_to,OE_DATETIMEFORMAT))
-			})
-		return res
 
 class hr_payslip_exception(models.Model):
 	_name = 'hr.payslip.exception'
