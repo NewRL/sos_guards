@@ -253,6 +253,7 @@ class hr_employee(models.Model):
 	emp_rf_ids = fields.One2many('employee.rfid', 'employee_id', 'RF IDS')
 	rejoin_ids = fields.One2many('sos.rejoin.guards', 'employee_id', 'Re-Joining IDS')
 	transfer_ids = fields.One2many('hr.staff.transfer.history', 'employee_id', 'Transfer History')
+	status = fields.Selection([('new', 'New-Hire'),('onboarding', 'On-Boarding'),('active', 'Active'),('pending_inactive', 'Pending Deactivation'),('inactive', 'Inactive'),('reactivated', 'Re-Activated'),('terminated', 'Terminated'),],default='new',string='Status',readonly=True,)
 
 	@api.multi
 	def write(self, vals):
@@ -320,4 +321,3 @@ class EmployeeRFID(models.Model):
 			raise UserError(('You can not delete the Record which are not in Draft State. Please Shift First in Draft state then delete it.'))
 		ret = super(EmployeeRFID, self).unlink()
 		return ret
-		

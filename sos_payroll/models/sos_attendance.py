@@ -469,7 +469,6 @@ class sos_guard_attendance1(models.Model):
 			raise UserError('Employee or Device record is not found in the System please check it.')
 		return result
 
-	
 	@api.multi
 	def unlink(self):
 		for rec in self:
