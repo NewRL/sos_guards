@@ -13,6 +13,7 @@ import odoo.addons.decimal_precision as dp
 from odoo.tools.safe_eval import safe_eval as eval
 DATETIME_FORMAT = "%Y-%m-%d"
 
+
 class staff_payslip_cron(models.Model):
 	_name = 'staff.payslip.cron'
 	_description = 'Payslip Cron Jobs'

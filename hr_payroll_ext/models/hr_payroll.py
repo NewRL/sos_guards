@@ -121,22 +121,6 @@ class hr_payslip(models.Model):
 		return slip_id
 
 	@api.multi
-	def write(self, vals):
-		att_ids = []
-		if 'staff_attendance_line_ids' in vals:
-			att_lines = vals['staff_attendance_line_ids']
-			for line in att_lines:
-				if isinstance(line, (int)):
-					att_ids.append(line)
-				else:
-					att_ids.append(line[1])
-			att_ids = list(set(att_ids))
-			att_recs = self.env['sos.guard.attendance1'].browse(att_ids)
-			att_recs.write({'staff_payslip_id': self.id})
-		return super(hr_payslip, self).write(vals)
-
-
-	@api.multi
 	def unlink(self):
 		for payslip in self:
 			if payslip.state not in ['draft', 'cancel']:
@@ -211,10 +195,9 @@ class hr_payslip(models.Model):
 			'staff_attendance_line_ids': staff_attendance_line_ids,
 		})
 		return res
-	
-	
+
 	@api.onchange('employee_id', 'date_from','date_to','contract_id')
-	def onchange_employee(self):
+	def onchange_employee_or_date(self):
 		if (not self.employee_id) or (not self.date_from) or (not self.date_to):
 			return
 		employee_id = self.employee_id
@@ -261,18 +244,11 @@ class hr_payslip(models.Model):
 			
 		input_line_ids = self.get_inputs(contract_ids, date_from, date_to)
 		input_lines = self.input_line_ids.browse([])
-		
 		if input_line_ids:
 			for r in input_line_ids:
 				input_lines += input_lines.new(r)
 			self.input_line_ids = input_lines
-
-		staff_attendance_line_ids = self.get_attendance_lines(self.employee_id, self.date_from, self.date_to)
-		att_ids = []
-		if staff_attendance_line_ids:
-			for att_line in staff_attendance_line_ids:
-				att_ids.append(att_line.id)
-			self.staff_attendance_line_ids = att_ids
+		self.get_attendance_lines2(self.employee_id, self.date_from, self.date_to)
 		return
 
 	@api.multi
@@ -280,8 +256,27 @@ class hr_payslip(models.Model):
 		att_line_pool = self.env['sos.guard.attendance1']
 		if not employee:
 			return False
-		att_ids = att_line_pool.search([('name', '>=', date_from), ('name', '<=', date_to),('employee_id', '=', employee.id), '|', ('slip_id', '=', False),('slip_id', 'in', self.ids)])
-		return att_ids and att_ids or False
+		att_ids = att_line_pool.search(
+			[('name', '>=', date_from), ('name', '<=', date_to), ('employee_id', '=', employee.id), '|',
+			 ('slip_id', '=', False), ('slip_id', 'in', self.ids)])
+		return att_ids
+
+	@api.multi
+	def get_attendance_lines2(self, employee, date_from, date_to):
+		for slip in self:
+			att_line_pool = self.env['sos.guard.attendance1']
+			if not employee:
+				return False
+			att_ids = att_line_pool.search(
+				[('employee_id', '=', employee.id), ('staff_slip_id', '=', slip.id)])
+			att_ids.write({'staff_slip_id': False})
+			att_ids = att_line_pool.search([
+				('name', '>=', date_from), ('name', '<=', date_to),('employee_id', '=', employee.id),
+				'|', ('staff_slip_id', '=', False),('staff_slip_id', '=', slip.id)
+			])
+			att_ids.write({'staff_slip_id': slip.id})
+
+
 
 	@api.multi
 	def process_sheet(self):
@@ -364,6 +359,7 @@ class hr_payslip(models.Model):
 			move.update({'line_ids': line_ids})
 			move_id = move_pool.create(move)
 			#move_id.action_post() need to check
+			slip.staff_attendance_line_ids.write({'state': 'done'})
 			slip.write({'move_id': move_id.id, 'date' : date,'state': 'done'})
 			
 	@api.multi
@@ -385,9 +381,7 @@ class hr_payslip(models.Model):
 		if dcStart <= dpsFrom and (not dcEnd or dcEnd >= dpsTo):
 			return 1
 
-		# One or both start and end of contract are within the bounds of the
-		#  payslip
-		#
+		# One or both start and end of contract are within the bounds of the payslip
 		no_contract_days = 0
 		if dcStart > dpsFrom:
 			no_contract_days += (dcStart - dpsFrom).days
@@ -402,7 +396,6 @@ class hr_payslip(models.Model):
 		res = {}
 		if not contract or not payslip:
 			return res
-
 		# Calculate percentage of pay period in which contract lies
 		res['PPF'] = {
 			'amount': self._partial_period_factor(payslip, contract),
@@ -431,52 +424,29 @@ class hr_payslip(models.Model):
 	@api.model
 	def get_inputs(self, contracts, date_from, date_to):
 		res = []
+		contract_obj = self.env['hr.contract']
+		rule_obj = self.env['hr.salary.rule']
 		arrears_obj = self.env['hr.salary.inputs']
-
 		structure_ids = contracts.get_all_structures()
 		rule_ids = self.env['hr.payroll.structure'].browse(structure_ids).get_all_rules()
 		sorted_rule_ids = [id for id, sequence in sorted(rule_ids, key=lambda x: x[1])]
-		inputs = self.env['hr.salary.rule'].browse(sorted_rule_ids).mapped('input_ids')
-
-		# for contract in contracts:
-		#	for input in inputs:
-		#	    input_data = {
-		#	        'name': input.name,
-		#	        'code': input.code,
-		#	        'contract_id': contract.id,
-		#	    }
-		#	    res += [input_data]
-
 		for contract in contracts:
-			for input in inputs:
-
-				# Get last month 21 to next month 21 OT
-				if input.code == 'SARFRAZ':  # To remark use Sarfraz
-					start_date = strToDate(date_from)
-					end_date = strToDate(date_to)
-
-					start_date1 = start_date + relativedelta.relativedelta(months=-1, day=21)
-					end_date1 = start_date + relativedelta.relativedelta(day=21, minutes=-1)
-
-					date_from = datetime.strftime(start_date1, '%Y-%m-%d')
-					date_to = datetime.strftime(end_date1, '%Y-%m-%d')
-
-				arr_amt = 0
-				arr_ids = self.env['hr.salary.inputs'].search(
-					[('employee_id', '=', contract.employee_id.id), ('name', '=', input.code),
-					 ('date', '>=', date_from), ('date', '<=', date_to), ('state', '=', 'confirm')])
-				if arr_ids:
-					arr_amt = 0
-					for arr_id in arr_ids:
-						# arr_id.slip_id = self.id
-						arr_amt += arr_id.amount
-				input_data = {
-					'name': input.name,
-					'code': input.code,
-					'contract_id': contract.id,
-					'amount': arr_amt or 0,
-				}
-				res += [input_data]
+			for rule in rule_obj.browse(sorted_rule_ids):
+				if rule.input_ids:
+					for input in rule.input_ids:
+						arr_amt = ''
+						arr_ids = arrears_obj.search([('employee_id', '=', contract.employee_id.id), ('name', '=', input.code),('date', '>=', date_from), ('date', '<=', date_to), ('state', '=', 'confirm')])
+						if arr_ids:
+							arr_amt = 0
+							for arr_id in arr_ids:
+								arr_amt += arr_id.amount
+						inputs = {
+							'name': input.name,
+							'code': input.code,
+							'contract_id': contract.id,
+							'amount': arr_amt or 0,
+						}
+						res += [inputs]
 		return res
 
 	@api.multi
@@ -485,47 +455,36 @@ class hr_payslip(models.Model):
 			# Changed the Number Style
 			ttyme = payslip.date_from
 			number = _('Slip-%s-%s') % (tools.ustr(ttyme.strftime('%y%m')), payslip.employee_id.code)
-
 			# delete old payslip lines
 			payslip.line_ids.unlink()
 
 			# set the list of contract for which the rules have to be applied
 			# if we don't give the contract, then the rules to apply should be for all current contracts of the employee
-			contract_ids = payslip.contract_id.ids or \
-						   self.get_contract(payslip.employee_id, payslip.date_from, payslip.date_to)
+			contract_ids = payslip.contract_id.ids or self.get_contract(payslip.employee_id, payslip.date_from, payslip.date_to)
 
-			# Added these two writes for inputs and attendance
-			start_date = payslip.date_from
-			end_date = payslip.date_to
-
-			start_date1 = start_date + relativedelta.relativedelta(months=-1, day=21)
-			end_date1 = start_date + relativedelta.relativedelta(day=21, minutes=-1)
-
-			date_from = datetime.strftime(start_date1, '%Y-%m-%d')
-			date_to = datetime.strftime(end_date1, '%Y-%m-%d')
-
-			arr_ids = self.env['hr.salary.inputs'].search([('employee_id', '=', payslip.employee_id.id),
-														   ('date', '>=', payslip.date_from),
-														   ('date', '<=', payslip.date_to), ('state', '=', 'confirm')])
-
+			arr_ids = self.env['hr.salary.inputs'].search([('employee_id', '=', payslip.employee_id.id),('date', '>=', payslip.date_from),('date', '<=', payslip.date_to), ('state', '=', 'confirm')])
 			if arr_ids:
-				arr_ids.write({'state': 'done', 'slip_id': payslip.id})
 				ot_inputs = arr_ids.filtered(lambda z: z.name == 'OT')
 				if ot_inputs:
 					for ot_input in ot_inputs:
 						if ot_input.ot_id:
 							ot_input.ot_id.overtime_status = 'post'
+				loan_inputs = arr_ids.filtered(lambda z: z.name == 'LOAN')
+				if loan_inputs:
+					for loan_input in loan_inputs:
+						if loan_input.name == 'LOAN' and loan_input.loan_line:
+							loan_input.loan_line.paid = True
+				arr_ids.write({'state': 'done', 'slip_id': payslip.id})
 
-			att_ids = self.env['hr.employee.month.attendance'].search([('employee_id', '=', payslip.employee_id.id),
-																	   ('date', '>=', payslip.date_from),
-																	   ('date', '<=', payslip.date_to)])
-			if att_ids:
-				att_ids.write({'state': 'done', 'slip_id': payslip.id})
+			payslip.staff_attendance_line_ids.write({'state': 'counted'})
+			month_att_ids = self.env['hr.employee.month.attendance'].search([('employee_id', '=', payslip.employee_id.id),('date', '>=', payslip.date_from),('date', '<=', payslip.date_to)])
+			if month_att_ids:
+				month_att_ids.write({'state': 'done', 'slip_id': payslip.id})
 
 			lines = [(0, 0, line) for line in self.get_payslip_lines(contract_ids, payslip.id)]
 			payslip.write({'line_ids': lines, 'number': number})
 
-			##For SMS
+			#For SMS
 			if not payslip.send_sms:
 				slip_month = (tools.ustr(ttyme.strftime('%B-%Y')))
 				text = "Dear Mr./Ms. " + payslip.employee_id.name + ", \n Your Salary For the Month of " + slip_month + " has been Generated. \n Regards, SOS."
