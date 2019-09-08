@@ -791,6 +791,14 @@ class hr_payslip(models.Model):
 					'number_of_hours': 0.0,
 					'contract_id': contract.id,
 				},
+				'HDAYS100': {
+					'name': _("Public Holidays paid at 100%"),
+					'sequence': 3,
+					'code': 'HDAYS100',
+					'number_of_days': 0.0,
+					'number_of_hours': 0.0,
+					'contract_id': contract.id,
+				},
 			}
 
 			leaves = {}
@@ -806,45 +814,56 @@ class hr_payslip(models.Model):
 				attendances['WORK100']['number_of_hours'] = nb_of_days * 8
 
 			else:
-				for day in range(0, nb_of_days):
-					#working_hours_on_day = self.env['resource.calendar'].working_hours_on_day(contract.working_hours, day_from + timedelta(days=day))
-					working_hours_on_day = 8
-					if working_hours_on_day:
-						# the employee had to work
-						leave_type = was_on_leave(contract.employee_id.id, day_from + timedelta(days=day))
-
-						if leave_type:
-							# if he was on leave, fill the leaves dict
-							if leave_type in leaves:
-								leaves[leave_type]['number_of_days'] += 1.0
-								leaves[leave_type]['number_of_hours'] += working_hours_on_day
-							else:
-								leaves[leave_type] = {
-									'name': leave_type,
-									'sequence': 5,
-									'code': leave_type,
-									'number_of_days': 1.0,
-									'number_of_hours': working_hours_on_day,
-									'contract_id': contract.id,
-								}
-						# attendances['WORK100']['number_of_days'] += 1.0
-						# attendances['WORK100']['number_of_hours'] += working_hours_on_day
-						else:
-							attendance_id = self.env['sos.guard.attendance1'].search(
+				#if Attendance Records found for this employee
+				emp_atts = self.env['sos.guard.attendance1'].search(
 								[('employee_id', '=', contract.employee_id.id),
-								 ('name', '>=', day_from + timedelta(days=day)),('name','<=',day_from + timedelta(days=day)),('action','!=','out')])
-							if attendance_id:
-								attendance_id = attendance_id[0]
-								attendances['WORK100']['number_of_days'] += 1.0
-								attendances['WORK100']['number_of_hours'] += working_hours_on_day
-							if not attendance_id:
-								pub_holiday = self.env['hr.holidays.public.line'].search([('date', '>=', day_from + timedelta(days=day)),('date','<=',day_from + timedelta(days=day))])
-								if pub_holiday:
+								 ('name', '>=', date_from),
+								 ('name','<=',date_to),
+								 ('action','!=','out')])
+				if emp_atts:
+					for day in range(0, nb_of_days):
+						#working_hours_on_day = self.env['resource.calendar'].working_hours_on_day(contract.working_hours, day_from + timedelta(days=day))
+						working_hours_on_day = 8
+						if working_hours_on_day:
+							#the employee had to work
+							leave_type = was_on_leave(contract.employee_id.id, day_from + timedelta(days=day))
+							if leave_type:
+								# if he was on leave, fill the leaves dict
+								if leave_type in leaves:
+									leaves[leave_type]['number_of_days'] += 1.0
+									leaves[leave_type]['number_of_hours'] += working_hours_on_day
+								else:
+									leaves[leave_type] = {
+										'name': leave_type,
+										'sequence': 5,
+										'code': leave_type,
+										'number_of_days': 1.0,
+										'number_of_hours': working_hours_on_day,
+										'contract_id': contract.id,
+									}
+							# attendances['WORK100']['number_of_days'] += 1.0
+							# attendances['WORK100']['number_of_hours'] += working_hours_on_day
+							else:
+								attendance_id = self.env['sos.guard.attendance1'].search(
+									[('employee_id', '=', contract.employee_id.id),
+									 ('name', '>=', day_from + timedelta(days=day)),
+									 ('name','<=',day_from + timedelta(days=day)),
+									 ('action','!=','out')])
+
+								if attendance_id:
+									attendance_id = attendance_id[0]
 									attendances['WORK100']['number_of_days'] += 1.0
 									attendances['WORK100']['number_of_hours'] += working_hours_on_day
+								if not attendance_id:
+									pub_holiday = self.env['hr.holidays.public.line'].search([('date', '>=', day_from + timedelta(days=day)),('date','<=',day_from + timedelta(days=day))])
+									if pub_holiday:
+										#attendances['WORK100']['number_of_days'] += 1.0
+										#attendances['WORK100']['number_of_hours'] += working_hours_on_day
+										attendances['HDAYS100']['number_of_days'] += 1.0
+										attendances['HDAYS100']['number_of_hours'] += working_hours_on_day
 
-						attendances['MAX']['number_of_days'] += 1.0
-						attendances['MAX']['number_of_hours'] += working_hours_on_day
+							attendances['MAX']['number_of_days'] += 1.0
+							attendances['MAX']['number_of_hours'] += working_hours_on_day
 
 			leaves = [value for key, value in leaves.items()]
 			attendances = [value for key, value in attendances.items()]
