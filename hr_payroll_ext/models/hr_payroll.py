@@ -701,6 +701,7 @@ class hr_payslip(models.Model):
 	def get_worked_day_lines(self, contract_ids, date_from, date_to):
 		for contract in contract_ids:
 			attendance_policy = contract.employee_id.company_id.attendance_policy
+			attendance_policy = 'daily' #SARFRAZ
 			if not attendance_policy:
 				attendance_policy = contract.company_id.attendance_policy
 			if not attendance_policy:
@@ -764,13 +765,13 @@ class hr_payslip(models.Model):
 		def was_on_leave(employee_id, datetime_day):
 			day = datetime_day.strftime("%Y-%m-%d")
 			holiday_ids = self.env['hr.leave'].search(
-				[('state', '=', 'validate'), ('employee_id', '=', employee_id), ('type', '=', 'remove'),
+				[('state', '=', 'validate'), ('employee_id', '=', employee_id),
 				 ('date_from', '<=', day), ('date_to', '>=', day)])
 			return holiday_ids and holiday_ids[0].holiday_status_id.name or False
 
 		res = []
-		for contract in self.env['hr.contract'].browse(contract_ids):
-			if not contract.working_hours:
+		for contract in contract_ids:
+			if not contract.resource_calendar_id:
 				# fill only if the contract as a working schedule linked
 				continue
 			attendances = {
@@ -793,42 +794,57 @@ class hr_payslip(models.Model):
 			}
 
 			leaves = {}
-			day_from = datetime.strptime(date_from, "%Y-%m-%d")
-			day_to = datetime.strptime(date_to, "%Y-%m-%d")
+			day_from = date_from
+			day_to = date_to
 			nb_of_days = (day_to - day_from).days + 1
-			for day in range(0, nb_of_days):
-				working_hours_on_day = self.env['resource.calendar'].working_hours_on_day(contract.working_hours,
-																						  day_from + timedelta(
-																							  days=day))
-				if working_hours_on_day:
-					# the employee had to work
-					leave_type = was_on_leave(contract.employee_id.id, day_from + timedelta(days=day))
-					if leave_type:
-						# if he was on leave, fill the leaves dict
-						if leave_type in leaves:
-							leaves[leave_type]['number_of_days'] += 1.0
-							leaves[leave_type]['number_of_hours'] += working_hours_on_day
-						else:
-							leaves[leave_type] = {
-								'name': leave_type,
-								'sequence': 5,
-								'code': leave_type,
-								'number_of_days': 1.0,
-								'number_of_hours': working_hours_on_day,
-								'contract_id': contract.id,
-							}
-					# attendances['WORK100']['number_of_days'] += 1.0
-					# attendances['WORK100']['number_of_hours'] += working_hours_on_day
-					else:
-						attendance_id = self.env['hr.employee.attendance'].search(
-							[('employee_id', '=', contract.employee_id.id),
-							 ('name', '=', day_from + timedelta(days=day))])
-						if attendance_id:
-							attendances['WORK100']['number_of_days'] += 1.0
-							attendances['WORK100']['number_of_hours'] += working_hours_on_day
 
-					attendances['MAX']['number_of_days'] += 1.0
-					attendances['MAX']['number_of_hours'] += working_hours_on_day
+			#Employee is AEX from Attendance
+			if 'AEX' in contract.employee_id.category_ids.mapped('name'):
+				attendances['MAX']['number_of_days'] = nb_of_days
+				attendances['MAX']['number_of_hours'] = nb_of_days * 8
+				attendances['WORK100']['number_of_days'] = nb_of_days
+				attendances['WORK100']['number_of_hours'] = nb_of_days * 8
+
+			else:
+				for day in range(0, nb_of_days):
+					#working_hours_on_day = self.env['resource.calendar'].working_hours_on_day(contract.working_hours, day_from + timedelta(days=day))
+					working_hours_on_day = 8
+					if working_hours_on_day:
+						# the employee had to work
+						leave_type = was_on_leave(contract.employee_id.id, day_from + timedelta(days=day))
+
+						if leave_type:
+							# if he was on leave, fill the leaves dict
+							if leave_type in leaves:
+								leaves[leave_type]['number_of_days'] += 1.0
+								leaves[leave_type]['number_of_hours'] += working_hours_on_day
+							else:
+								leaves[leave_type] = {
+									'name': leave_type,
+									'sequence': 5,
+									'code': leave_type,
+									'number_of_days': 1.0,
+									'number_of_hours': working_hours_on_day,
+									'contract_id': contract.id,
+								}
+						# attendances['WORK100']['number_of_days'] += 1.0
+						# attendances['WORK100']['number_of_hours'] += working_hours_on_day
+						else:
+							attendance_id = self.env['sos.guard.attendance1'].search(
+								[('employee_id', '=', contract.employee_id.id),
+								 ('name', '>=', day_from + timedelta(days=day)),('name','<=',day_from + timedelta(days=day)),('action','!=','out')])
+							if attendance_id:
+								attendance_id = attendance_id[0]
+								attendances['WORK100']['number_of_days'] += 1.0
+								attendances['WORK100']['number_of_hours'] += working_hours_on_day
+							if not attendance_id:
+								pub_holiday = self.env['hr.holidays.public.line'].search([('date', '>=', day_from + timedelta(days=day)),('date','<=',day_from + timedelta(days=day))])
+								if pub_holiday:
+									attendances['WORK100']['number_of_days'] += 1.0
+									attendances['WORK100']['number_of_hours'] += working_hours_on_day
+
+						attendances['MAX']['number_of_days'] += 1.0
+						attendances['MAX']['number_of_hours'] += working_hours_on_day
 
 			leaves = [value for key, value in leaves.items()]
 			attendances = [value for key, value in attendances.items()]
