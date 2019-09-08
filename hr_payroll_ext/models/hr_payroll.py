@@ -791,6 +791,14 @@ class hr_payslip(models.Model):
 					'number_of_hours': 0.0,
 					'contract_id': contract.id,
 				},
+				'HDAYS100': {
+					'name': _("Public Holidays paid at 100%"),
+					'sequence': 3,
+					'code': 'HDAYS100',
+					'number_of_days': 0.0,
+					'number_of_hours': 0.0,
+					'contract_id': contract.id,
+				},
 			}
 
 			leaves = {}
@@ -849,8 +857,10 @@ class hr_payslip(models.Model):
 								if not attendance_id:
 									pub_holiday = self.env['hr.holidays.public.line'].search([('date', '>=', day_from + timedelta(days=day)),('date','<=',day_from + timedelta(days=day))])
 									if pub_holiday:
-										attendances['WORK100']['number_of_days'] += 1.0
-										attendances['WORK100']['number_of_hours'] += working_hours_on_day
+										#attendances['WORK100']['number_of_days'] += 1.0
+										#attendances['WORK100']['number_of_hours'] += working_hours_on_day
+										attendances['HDAYS100']['number_of_days'] += 1.0
+										attendances['HDAYS100']['number_of_hours'] += working_hours_on_day
 
 							attendances['MAX']['number_of_days'] += 1.0
 							attendances['MAX']['number_of_hours'] += working_hours_on_day
