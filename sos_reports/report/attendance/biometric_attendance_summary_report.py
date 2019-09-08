@@ -3,16 +3,15 @@ from odoo import api, fields, models, _
 from odoo import tools
 from operator import itemgetter
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from dateutil.relativedelta import relativedelta
 from pytz import timezone, utc
-
+from odoo.exceptions import UserError, ValidationError
 import logging
 _logger = logging.getLogger(__name__)
 
-
 def strToDate(strdate):
-	return datetime.strptime(strdate, '%Y-%m-%d').date()
+	return datetime.strptime(strdate, '%Y-%m-%d')
 	
 def strToDatetime(strdatetime):
 	return datetime.strptime(strdatetime, '%Y-%m-%d %H:%M:%S')
@@ -35,6 +34,7 @@ def localDate(self, utc_dt):
     local_tz = timezone(user.tz)
     local_dt = utc_dt.replace(tzinfo=utc).astimezone(local_tz)
     return local_dt	
+
 
 class ReportBiometricAttendanceSummary(models.AbstractModel):
 	_name = 'report.sos_reports.report_biometric_attendancesummary'
@@ -64,8 +64,8 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 		 
 		res = []
 		b = []
-		d1= start_date + ' 00:00:01'
-		d2= end_date + ' 23:59:59'
+		d1 = datetime.combine(fields.Date.from_string(start_date), time.min)
+		d2 = datetime.combine(fields.Date.from_string(end_date), time.max)
 		start_date = fields.Date.from_string(start_date)
 		end_date = fields.Date.from_string(end_date)
 		
@@ -164,8 +164,8 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 				#Check if appointment date is after the start date.
 				emp_rec = self.env['hr.employee'].search([('id','=',empid)])
 				#pdb.set_trace()
-				emp_appointmentdate = emp_rec.appointmentdate
-				if emp_appointmentdate > strToDate(sst_date):
+				emp_appointmentdate = fields.Date.from_string(emp_rec.appointmentdate)
+				if emp_appointmentdate >fields.Date.from_string(sst_date):
 					app_date = fields.Datetime.from_string(emp_appointmentdate)
 					app_day =app_date.day
 					empty_days = app_day - 1
@@ -173,7 +173,7 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 				#Check if Terminate date is after the start date.
 				if emp_rec.resigdate:
 					emp_resigdate = emp_rec.resigdate
-					if emp_resigdate > strToDate(sst_date):
+					if emp_resigdate > sst_date:
 						resign_date = fields.Datetime.from_string(emp_resigdate)
 						resign_day =resign_date.day
 						empty_days = last_day - resign_day
@@ -181,8 +181,7 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 				t = ((last_day) - (a + w + empty_days))		
 			b.append({'M':last_day,'P':p,'LT':lt,'L':l,'A':a,'W':w,'S':s,'H':h,'T':t})	
 		return res,b	
-			
-	
+
 	def _get_data_from_report(self, data):
 		start_date = data['form']['start_date'] and data['form']['start_date']
 		end_date = data['form']['end_date'] and data['form']['end_date']
@@ -207,6 +206,9 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 			emps = self.env.cr.dictfetchall()
 		
 		res.append({'data':[]})
+		if not emps:
+			raise UserError("Select Proper Input Data")
+
 		for emp_id in emps:
 			employee_rec = self.env['hr.employee'].search([('id','=',emp_id['employee_id'])])
 			if employee_rec:
@@ -217,8 +219,7 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 				'summary': self._get_attendance_summary(start_date,end_date,employee_rec.id)[1]
 				})
 		return res	
-	
-		
+
 	@api.model
 	def _get_report_values(self, docsid, data=None):
 		if not data.get('form'):
@@ -230,12 +231,13 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 		project_ids = data['form']['project_ids'] and data['form']['project_ids'] or False
 		department_ids = data['form']['department_ids'] and data['form']['department_ids'] or False
 		employee_ids = data['form']['employee_ids'] and data['form']['employee_ids'] or False
-		
 		recs = False
-		d1= start_date + ' 00:00:01'
-		d2= end_date + ' 23:59:59'
+
+		if start_date and end_date:
+			d1 = datetime.combine(fields.Date.from_string(start_date), time.min)
+			d2 = datetime.combine(fields.Date.from_string(end_date), time.max)
+
 		report_heading = ''
-		
 		res = {}
 		line_ids = []
 		
@@ -292,4 +294,3 @@ class ReportBiometricAttendanceSummary(models.AbstractModel):
 			"Report_Heading" : report_heading,
 		}
 		return docargs
-		
