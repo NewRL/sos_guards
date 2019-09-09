@@ -116,6 +116,9 @@ class hr_payslip(models.Model):
 	@api.model
 	def create(self, vals):
 		slip_id = super(hr_payslip, self).create(vals)
+		slip_id.bank_id =  slip_id.employee_id.bank_id and slip_id.employee_id.bank_id.id or False
+		slip_id.bankacctitle =  slip_id.employee_id.bankacctitle and slip_id.employee_id.bankacctitle or ''
+		slip_id.bankacc =  slip_id.employee_id.bankacc and slip_id.employee_id.bankacc or ''
 		att_recs = self.get_attendance_lines(slip_id.employee_id, slip_id.date_from, slip_id.date_to)
 		att_recs.write({'staff_slip_id': slip_id.id})
 		return slip_id
@@ -159,7 +162,6 @@ class hr_payslip(models.Model):
 			'bankacctitle' : employee.bankacctitle and employee.bankacctitle or '',
 			'bankacc' : employee.bankacc and employee.bankacc or '',
 		})
-
 		if not contract_id and not self.env.context.get('contract'):
 			#fill with the first contract of the employee
 			contract_ids = self.get_contract(employee, date_from, date_to)

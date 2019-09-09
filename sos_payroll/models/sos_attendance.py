@@ -269,9 +269,9 @@ class sos_guard_attendance(models.Model):
 		return ret
 		
 class hr_guard(models.Model):
-	_name ="hr.guard"
-	_description ="Guard Employee"
 	_inherit ='hr.guard'
+	_description ="Guard Employee"
+
 	
 	#@api.one
 	#@api.depends('attendance_ids')
@@ -295,11 +295,13 @@ class hr_guard(models.Model):
 	def _replacement_count(self):
 		employee = self.env['hr.employee'].search([('guard_id','=',self.id)])
 		self.replacement_count = self.env['sos.guard.shortfall'].search_count([('employee_id', '=', employee.id)])
-		
-	@api.one
+
+	@api.multi
+	@api.depends('attendance_ids')
 	def _attendance_count(self):
-		employee = self.env['hr.employee'].search([('guard_id','=',self.id)])					
-		self.attendance_count = self.env['sos.guard.attendance'].search_count([('employee_id', '=', employee.id),('slip_id', '=', False)])
+		for rec in self:
+			employee = self.env['hr.employee'].search([('guard_id','=',rec.id)])
+			rec.attendance_count = self.env['sos.guard.attendance'].search_count([('employee_id', '=', employee.id),('slip_id', '=', False)])
 		
 	attendance_ids = fields.One2many('sos.guard.attendance', 'employee_id', 'Attendance History',domain="[('slip_id','=',False)]")
 	#att_draft = fields.Boolean('Draft', compute='_check_draft_attendance',store=True)
