@@ -125,6 +125,8 @@
 					<field name="name" string="Payslip Lines" filter_domain="['|',('name','ilike',self),('code','ilike',self)]"/>
 					<field name="amount_select"/>
 					<field name="slip_id"/>
+					<field name="employee_id"/>
+					<field name="code"/>
 					
 					<group col="8" colspan="4" expand="0" string="Group By...">
 						<filter string="Salary Rule Category" icon="terp-camera_test" name="category_id" context="{'group_by':'category_id'}"/>
@@ -140,6 +142,8 @@
 						<filter string="Centers" name="center_id" icon="terp-personal" context="{'group_by':'center_id'}"/>
 						<filter string="Projects" name="project_id" icon="terp-personal" context="{'group_by':'project_id'}"/>
 						<filter string="Posts" name="post_id" icon="terp-personal" context="{'group_by':'post_id'}"/>
+						<filter string="Codes" name="code" icon="terp-personal" context="{'group_by':'code'}"/>
+						<filter string="Employee" name="employee_id" icon="terp-personal" context="{'group_by':'employee_id'}"/>
 					</group>
 				</search>
 			</field>
@@ -576,6 +580,13 @@
 		</record>
 		-->
 
+		<record id="act_guards_employee_provident_fund_list" model="ir.actions.act_window">
+			<field name="res_model">guards.payslip.line</field>
+			<field name="name">Payslips PF Lines</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="context">{'search_default_employee_id': [active_id], 'default_employee_id': active_id,'search_default_code': 'GPROF','default_code': 'GPROF'}</field>
+		</record>
 
 		<record id="sos_view_employee_form_inherit" model="ir.ui.view">
 			<field name="name">sos_view_employee_form.inherit</field>
@@ -589,7 +600,13 @@
 						icon="fa-list" 
 						type="action">
 						<field name="payslip_count" widget="statinfo" string="Payslip" help="Payslip Details"  groups="base.group_user"/>
-					</button>		 	
+					</button>
+					<button name="%(act_guards_employee_provident_fund_list)d"
+						class="oe_stat_button"
+						icon="fa-list"
+						type="action">
+						<field name="pf_line_count" widget="statinfo" string="Provident Fund" help="PF Details"  groups="base.group_user"/>
+					</button>
 				 </xpath>
 				<!--
 				 <xpath expr="//field[@name='designation']" position="after">
