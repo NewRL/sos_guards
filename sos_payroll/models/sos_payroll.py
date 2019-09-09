@@ -219,8 +219,11 @@ class hr_guard(models.Model):
 	def _payslip_count(self):
 		employee = self.env['hr.employee'].search([('guard_id','=',self.id)])
 		self.payslip_count = self.env['guards.payslip'].search_count([('employee_id', '=', employee.id)])
+		self.pf_line_count = self.env['guards.payslip.line'].search_count([('employee_id', '=', employee.id),('code','=','GPROF')])
 	
 	payslip_count = fields.Integer(compute='_payslip_count',string='Payslips',store=True)
+	pf_line_count = fields.Integer(compute='_payslip_count',string='PF Lines')
+
 
 class sos_post(models.Model):
 	_name = 'sos.post'
