@@ -10,6 +10,10 @@
     'depends': ['sos','sos_payroll'],
     'init_xml': [],
     'data': [
+        'data/sos_data.xml',
+        'security/ir.model.access.csv',
+		#'security/sos_security.xml',
+
     	'wizard/pf_employee_contribution_wizard_view.xml',
 		'wizard/pf_employer_contribution_wizard_view.xml',
 		'wizard/pf_employee_statement_wizard_view.xml',
@@ -19,6 +23,7 @@
 		'report/report_pf_employeestatement.xml',
 		
 		'views/purchase_order_ext_view.xml',
+        'views/guards_pf_return_form_view.xml',
     	
         'report/report.xml',
         'menu/sos_provident_fund_menu.xml',

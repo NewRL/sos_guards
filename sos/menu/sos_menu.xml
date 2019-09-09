@@ -11,7 +11,7 @@
 				<menuitem name="Guards" parent="menu_gms_main" id="menu_open_view_guard_list_my" sequence="10" action="open_view_guard_list_my"/>
 				<menuitem name="Multi Step Profile Creation" parent="menu_gms_main" id="sos_guard_multi_step_profile_menu" sequence="11" action="action_sos_guard_multi_step_profile"/>
 				<menuitem name="Guards Exit Form" parent="menu_gms_main" id="menu_guards_exit_form" sequence="12" action="sos_guards_exit_form_action"/>
-				<menuitem name="Black List Guards" parent="menu_gms_main" id="menu_black_list_guards" sequence="13" action="sos_black_listed_guards_action"/>
+				<menuitem name="Black List Guards" parent="menu_gms_main" id="menu_black_list_guards" sequence="14" action="sos_black_listed_guards_action"/>
 				<menuitem name="Guards Account Block" parent="menu_gms_main" id="menu_guards_account_block" sequence="15" action="sos_guards_account_block_action"/>
 				<menuitem name="Centers" parent="menu_gms_main" id="sos_center_mi" sequence="20" action="sos_center_action"/>
 				<menuitem name="Projects" parent="menu_gms_main" id="sos_project_mi" sequence="30" action="sos_project_action"/>
