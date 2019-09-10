@@ -3,10 +3,10 @@
 	<data>
 		<template id ="report_staffsalarysheet">
 			<t t-call="web.html_container">
-					<t t-call="web.external_layout" style="font-family:georgia,garamond,serif;font-size:10px">
+					<t t-call="web.basic_layout" style="font-family:georgia,garamond,serif;font-size:10px">
 						<div class="page">
 							<style>
-									.tabhead{font-size:7px;}
+									.tabhead{font-size:9px;}
 									.tabcol{font-size:9px;}
 									.tabtot{font-size:10px;}
 									 table th { background-color:#d4e3e5;}
@@ -27,7 +27,7 @@
 											<th class="text-center" colspan="7" style="background-color:#cdcdcd;font-size:9px;border: 1px solid black;">D E D U C T I O N S</th>
 											<th class="text-right" style="background-color:#ffffff;border:none"></th>
 										</tr>
-										<tr class="tabhead" style="padding-left:0px;padding-right:0px;">
+										<tr class="tabhead" style="padding-left:0px;padding-right:0px;margin-left:0px;margin-right:0px;">
 											<th class="text-center">S.No</th>
 											<th class="text-center">EMP Code</th>
 											<th class="text-left">Name</th>
@@ -82,7 +82,7 @@
 													-->
 													
 													<t t-foreach="rec['payslips']" t-as="payslip">
-														<tr>
+														<tr style="font-size:12px;">
 															<td class="text-center">
 																<span t-esc="payslip_index + 1" />
 															</td>
@@ -187,7 +187,7 @@
 												
 											
 												<!-- Department Totals -->
-												<tr>
+												<tr style="font-size:14px;">
 													<td class="text-center" colspan="5">
 														Totals:
 													</td>
@@ -277,7 +277,7 @@
 										
 										
 											<!-- Over All Totals -->
-											<tr>
+											<tr style="font-size:14px;">
 												<td class="text-center" colspan="5">
 													Grand Totals:
 												</td>
