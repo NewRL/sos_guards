@@ -30,7 +30,7 @@ class sos_staff_termination_wizard(models.TransientModel):
 		# 94 = Adviser
 		# 42 = HR Master
 		flag = False
-		access_ids = [25,42,94]
+		access_ids = [125,25,42,94]
 		group_ids = self.env.user.groups_id.ids or False
 		resource_id = self.employee_id.resource_id.id
 		

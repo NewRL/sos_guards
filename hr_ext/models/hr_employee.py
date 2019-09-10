@@ -68,7 +68,6 @@ class hr_contact_detail(models.Model):
 class hr_employee(models.Model):
 	_inherit = 'hr.employee'
 	_order = 'code'
-	
 			
 	@api.multi	
 	def _compute_age(self):
@@ -106,7 +105,7 @@ class hr_employee(models.Model):
 				product_identifier.name = self.code
 				self.import_identifier = product_identifier.id
 				#self.full_import_identifier = product_identifier.module + '.' + product_identifier.name	
-		return result	
+		return result
     	 
 	to_be_processed = fields.Boolean()
 	address_home_id = fields.Many2one('res.partner', string='Home Address',related='user_id.partner_id')
@@ -126,7 +125,7 @@ class hr_employee(models.Model):
 
 	# 'state' is already being used by hr.attendance
 	status = fields.Selection([('new', 'New'),('active', 'Active'),('pending_inactive', 'Pending Deactivation'),
-		('inactive', 'Inactive')],default='new',string='Status',readonly=True,)
+		('inactive', 'Inactive'),('terminated','Terminated')],default='new',string='Status',readonly=True,)
 	inactive_ids = fields.One2many('hr.employee.termination','employee_id','Deactivation Records',)
 	saved_department_id = fields.Many2one('hr.department','Saved Department',)
 	
