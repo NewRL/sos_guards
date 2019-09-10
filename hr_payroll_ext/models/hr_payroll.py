@@ -858,7 +858,7 @@ class hr_payslip(models.Model):
 									attendances['WORK100']['number_of_hours'] += working_hours_on_day
 								if not attendance_id:
 									pub_holiday = self.env['hr.holidays.public.line'].search([('date', '>=', day_from + timedelta(days=day)),('date','<=',day_from + timedelta(days=day))])
-									if pub_holiday and not contract.employee_id.resigdate and contract.employee_id.joining_date <= pub_holiday.date:
+									if pub_holiday and not contract.employee_id.resigdate and contract.employee_id.appointmentdate <= pub_holiday.date:
 										# attendances['WORK100']['number_of_days'] += 1.0
 										# attendances['WORK100']['number_of_hours'] += working_hours_on_day
 										attendances['HDAYS100']['number_of_days'] += 1.0
