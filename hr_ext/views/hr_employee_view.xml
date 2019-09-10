@@ -28,7 +28,7 @@
 				<data>        
 				    <xpath expr="//sheet" position="before">
 				       <header>                    
-				           <field name="status" widget="statusbar" statusbar_visible="new,active"/>
+				           <field name="status" widget="statusbar" statusbar_visible="new,active,terminated,inactive"/>
 				        </header>
 				    </xpath>           
 				                          
