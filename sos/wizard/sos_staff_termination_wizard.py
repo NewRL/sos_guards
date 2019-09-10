@@ -8,6 +8,7 @@ from odoo import tools
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
+
 class sos_staff_termination_wizard(models.TransientModel):
 	_name = 'sos.staff.termination.wizard'
 	_description = 'Staff Termination Wizard'
