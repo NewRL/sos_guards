@@ -23,7 +23,7 @@
 									<thead>
 										<tr class="tabhead">
 											<th class="text-center" colspan="5" style="background-color:#ffffff;border:none"></th>
-											<th class="text-center" colspan="13" style="background-color:#FFEBCD;font-size:9px;border: 1px solid black;">S  A  L  A  R  Y</th>
+											<th class="text-center" colspan="12" style="background-color:#FFEBCD;font-size:9px;border: 1px solid black;">S  A  L  A  R  Y</th>
 											<th class="text-center" colspan="7" style="background-color:#cdcdcd;font-size:9px;border: 1px solid black;">D E D U C T I O N S</th>
 											<th class="text-right" style="background-color:#ffffff;border:none"></th>
 										</tr>
@@ -37,7 +37,7 @@
 											<th class="text-right">Basic</th>
 											<th class="text-right">Earned</th>
 											<th class="text-right">Bike Maint.</th>
-											<th class="text-right">Medical</th>
+											<!-- <th class="text-right">Medical</th> -->
 											<th class="text-right">Housing</th>
 											<th class="text-right">Arrears</th>
 											<th class="text-right">Mobile Allowance</th>
@@ -67,7 +67,7 @@
 								
 										<t t-foreach="Payslip" t-as="rec">
 											<tr class="tabcol">
-												<td class="text-left" style="font-size:12px;font-weight:bold;" colspan="27">
+												<td class="text-left" style="font-size:12px;font-weight:bold;" colspan="26">
 													<span t-esc="rec['department']" />
 												</td>
 											</tr>
@@ -97,7 +97,7 @@
 															</td>
 													
 															<td class="text-right">
-																<span t-esc="Working_Days(payslip.id,'WORK100')" />
+																<span t-esc="Working_Days(payslip.id,'WORK100') + Working_Days(payslip.id,'HDAYS100')" />
 															</td>
 													
 															<td class="text-right">
@@ -110,9 +110,11 @@
 															<td class="text-right">
 																<span t-esc="Lines(payslip.id,'payslip_line','SBIKA') and '{0:,.2f}'.format(int(Lines(payslip.id,'payslip_line','SBIKA'))) or '-'" />													
 															</td>
+															<!--
 															<td class="text-right">
 																<span t-esc="Lines(payslip.id,'payslip_line','MEDA') and '{0:,.2f}'.format(int(Lines(payslip.id,'payslip_line','MEDA'))) or '-'" />													
 															</td>
+															-->
 														
 															<td class="text-right">
 																<span t-esc="Lines(payslip.id,'payslip_line','PHR') and '**' or ''" />
@@ -200,9 +202,11 @@
 													<td class="text-right">
 														<span t-esc="rec['dept_bike'] and '{0:,.2f}'.format(int(rec['dept_bike'])) or '-'" />													
 													</td>
+													<!--
 													<td class="text-right">
 														<span t-esc="rec['dept_medical'] and '{0:,.2f}'.format(int(rec['dept_medical'])) or '-'" />													
 													</td>
+													-->
 													<td class="text-right">
 														<span t-esc="rec['dept_housing'] and '{0:,.2f}'.format(int(rec['dept_housing'])) or '-'" />		
 													</td>
@@ -290,9 +294,11 @@
 												<td class="text-right">
 													<span t-esc="BIKE and '{0:,.2f}'.format(int(BIKE)) or '-'" />													
 												</td>
+												<!--
 												<td class="text-right">
 													<span t-esc="MEDICAL and '{0:,.2f}'.format(int(MEDICAL)) or '-'" />													
 												</td>
+												-->
 												<td class="text-right">
 													<span t-esc="HOUSING and '{0:,.2f}'.format(int(HOUSING)) or '-'" />		
 												</td>
