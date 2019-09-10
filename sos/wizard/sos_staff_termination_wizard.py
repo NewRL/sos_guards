@@ -39,6 +39,7 @@ class sos_staff_termination_wizard(models.TransientModel):
 				if access_id in group_ids:
 					flag = True
 
+
 		#Termination Process
 		if flag and self.join_termination == 'terminate' and self.employee_id.department_id.id !=29:
 			if self.employee_id.status == 'terminated':
