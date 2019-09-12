@@ -68,4 +68,3 @@ class StaffPayrollAdviceSummaryReport(models.AbstractModel):
 			'get_header_info': self._get_header_info(data),
 			'Total' : total_bysal,
 		}
-		
