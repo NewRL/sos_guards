@@ -56,8 +56,6 @@ class StaffPayrollAdviceSummaryReport(models.AbstractModel):
 		#	total_bysal -= adv.amount
 				
 		result = [value for code, value in result_dict.items()]
-		
-
 		report = self.env['ir.actions.report']._get_report_from_name('hr_payroll_ext.staff_payroll_advice_summary_report')
 		return {
 			'doc_ids': self._ids,
