@@ -492,7 +492,8 @@ class sos_guard_attendance1(models.Model):
 		self.project_id = self.device_id.project_id and self.device_id.project_id.id or False
 		self.center_id = self.device_id.center_id and self.device_id.center_id.id or False
 		self.post_id = self.device_id.post_id and self.device_id.post_id.id or False
-	
+
+
 	@api.multi
 	def action_verify(self):
 		for rec in self:
