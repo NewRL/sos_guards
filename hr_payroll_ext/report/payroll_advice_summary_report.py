@@ -3,6 +3,8 @@ import time
 from datetime import datetime, timedelta
 from pytz import timezone
 from odoo import api, fields, models, _
+from odoo.exceptions import Warning, RedirectWarning, UserError
+
 
 class StaffPayrollAdviceSummaryReport(models.AbstractModel):
 	_name = 'report.hr_payroll_ext.staff_payroll_advice_summary_report'
@@ -21,7 +23,7 @@ class StaffPayrollAdviceSummaryReport(models.AbstractModel):
 		}	
 
 	@api.model
-	def get_report_values(self, docids, data=None):
+	def _get_report_values(self, docids, data=None):
 		if not data.get('form'):
 			raise UserError(_("Form content is missing, this report cannot be printed."))
 		advice_id = data['form']['advice_id'] and data['form']['advice_id'][0]
