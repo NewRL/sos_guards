@@ -296,7 +296,7 @@ class sos_weapon_dispatch_line(models.Model):
 
 
 	product_id = fields.Many2one('product.product',string='Product')
-	product_uom = fields.Many2one('uom.uom', 'Product Unit of Measure', required=True, default=_get_uom_id)
+	product_uom = fields.Many2one('uom.uom', 'Product Unit of Measure', required=True)
 	stock_qty = fields.Float(string='Stock Qty')
 	product_qty = fields.Integer(string='Qty',default=1,)
 	weapon_demand_id = fields.Many2one('sos.weapon.demand', string='Lines', index=True)

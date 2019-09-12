@@ -4,7 +4,7 @@ from datetime import timedelta
 from dateutil import relativedelta
 
 from odoo import models, fields, api, _
-from odoo.exceptions import except_orm, Warning, RedirectWarning
+from odoo.exceptions import except_orm, Warning, RedirectWarning, UserError
 from odoo.tools import float_compare
 import odoo.addons.decimal_precision as dp
 
@@ -116,7 +116,7 @@ class sos_uniform_demand(models.Model):
 	@api.multi
 	def demand_admin(self):
 		for demand in self:
-			demand.sudo().write({'state':'adm'})	
+			demand.sudo().write({'state':'adm'})
 	
 	@api.multi	
 	def demand_dispatch(self):
@@ -197,7 +197,6 @@ class sos_uniform_demand(models.Model):
 					act = 'Safety'
 				else:
 					act = 'New'
-				
 					
 				for product in item.item_id.product_id:
 					vals = {
@@ -288,7 +287,7 @@ class sos_uniform_demand(models.Model):
 				for line in demand.uniform_demand_line:
 					vals = {
 						'product_id' : line.item_id.product_id.id,
-						#'product_uom' : line._get_uom_id,
+						'product_uom' : line.item_id.product_id.uom_id and line.item_id.product_id.uom_id.id or False,
 						#'stock_qty' : 0,
 						'product_qty' : line.approved_qty,
 						'uniform_demand_id' : demand.id,
@@ -348,8 +347,7 @@ class sos_uniform_demand_line(models.Model):
 	def _compute_stock_lines(self):
 		related_recordset = self.env["stock.move"].search([('emp_id','=',self.guard_id.id)])
 		self.stock_lines = related_recordset.ids
-	
-	
+
 	item_id = fields.Many2one('sos.uniform.items',string='Item')
 	qty = fields.Integer(string='Qty',default=1,)
 	req_size = fields.Boolean(string='Size Required?')
@@ -361,7 +359,6 @@ class sos_uniform_demand_line(models.Model):
 	state = fields.Selection([('draft','Draft'),('open','Open'),('review','Review'),('approve','Approve'),('dispatch','Dispatch'),('done','Delivered'),('reject','Reject'),('cancel','Cancel'),], string='Status', related='uniform_demand_id.state', store=True, readonly=True, copy=False,)
 	approved_qty = fields.Integer(string='Approved Qty')
 	stock_lines = fields.One2many('stock.move', 'emp_id', string='Inventory Lines',compute='_compute_stock_lines')
-	
 	rfid = fields.Char("RFID")
 	tracking = fields.Selection(related="item_id.product_id.tracking",string="Tracking")
 	
@@ -371,9 +368,17 @@ class sos_uniform_demand_line(models.Model):
 		vals.update({
 			'approved_qty': qty,
 		})		
-		return super(sos_uniform_demand_line, self).create(vals)	
-	
-	
+		return super(sos_uniform_demand_line, self).create(vals)
+
+	@api.model
+	def _get_uom_id(self):
+		pdb.set_trace()
+		try:
+			proxy = self.env['ir.model.data']
+			result = proxy.get_object_reference('product', 'product_uom_unit')
+			return result[1]
+		except Exception:
+			return False
 	
 	@api.one	
 	def unlink(self):
@@ -392,14 +397,15 @@ class sos_uniform_demand_line(models.Model):
 		item = self.env['sos.uniform.items'].search([('id' ,'=', self.item_id.id)])			
 		res['value'].update({'req_size': item.req_size})
 		return res
-	
+
+
 class sos_uniform_dispatch_line(models.Model):		
 	_name = "sos.uniform.dispatch.line"
 	_description = "Uniform Dispatch Line"
-	
+
+
 	def _get_uom_id(self):
 		try:
-
 			proxy = self.env['ir.model.data']
 			result = proxy.get_object_reference('product', 'product_uom_unit')
 			return result[1]
@@ -407,7 +413,7 @@ class sos_uniform_dispatch_line(models.Model):
 			return False
 			
 	product_id = fields.Many2one('product.product',string='Product')
-	product_uom = fields.Many2one('uom.uom', 'Product Unit of Measure', required=True, default=_get_uom_id)
+	product_uom = fields.Many2one('uom.uom', 'Product Unit of Measure', required=True)
 	stock_qty = fields.Float(string='Stock Qty')
 	product_qty = fields.Integer(string='Qty')
 	todo_qty = fields.Integer(string="To Do")
