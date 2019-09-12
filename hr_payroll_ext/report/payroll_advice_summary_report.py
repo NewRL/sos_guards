@@ -11,8 +11,7 @@ class StaffPayrollAdviceSummaryReport(models.AbstractModel):
 	_description = 'HR Advice Summary Report'
 	
 	def get_date_formate(self,sdate):
-		ss = datetime.strptime(sdate,'%Y-%m-%d')
-		return ss.strftime('%d %B %Y')
+		return sdate.strftime('%d %B %Y')
 		
 	def _get_header_info(self, data=None):
 		advice = self.env['hr.payroll.advice'].search([('id','=',data['form']['advice_id'][0])])		
