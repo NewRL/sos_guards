@@ -334,9 +334,8 @@ class sos_attendance_close(models.Model):
 				for center_id in center_ids:
 					center_id.attendance_min_date = m_date + relativedelta(days=+1)
 					center_id.attendance_max_date = m_date + relativedelta(days=+1)
-					
-		
-		
+
+
 ## Attendance Testing Class ##
 class sos_guard_attendance1(models.Model):
 	_name = "sos.guard.attendance1"
@@ -396,24 +395,20 @@ class sos_guard_attendance1(models.Model):
 		device_code = vals.get('device_id',False)
 		employee_id = False
 		device_id = False
-		
+
+		if device_code and not vals.get('employee_id', False):
+			device_id = self.env['sos.attendance.device'].sudo().search([('device_number', '=', device_code)])
+		if device_code and vals.get('employee_id', False):
+			device_id = self.env['sos.attendance.device'].sudo().search([('id', '=', vals.get('device_id'))])
+
 		if code:
 			employee_id = self.env['hr.employee'].search([('code','=',code)])
-		
-		#if it is manual Attendance not pushed by the device	
+		#if it is manual Attendance not pushed by the device
 		if not code and vals.get('employee_id',False):
 			employee_id = self.env['hr.employee'].search([('id','=',vals.get('employee_id'))])
-			
-		if device_code:
-			device_id = self.env['sos.attendance.device'].search([('device_number','=',device_code)])
-		
-		#if it is Manual Attendance not Pushed By the Device
-		if not device_code and vals.get('device_id',False):
-			device_id = self.env['sos.attendance.device'].search([('id','=',vals.get('device_id'))])
-		
+
 		if not device_id and employee_id.current_post_id:
 			device_id = self.env['sos.attendance.device'].search([('post_id','=',employee_id.current_post_id.id)])
-
 			
 		if employee_id:
 			# if record already exist...then
@@ -434,9 +429,9 @@ class sos_guard_attendance1(models.Model):
 			else:
 				vals['employee_id'] = employee_id.id
 				vals['device_id'] = device_id and device_id.id or False
-				vals['project_id'] = device_id.project_id and device_id.project_id.id or False
-				vals['center_id'] = device_id.center_id and device_id.center_id.id or False
-				vals['post_id'] = device_id.post_id and device_id.post_id.id or False
+				vals['project_id'] = employee_id.project_id and employee_id.project_id.id or False
+				vals['center_id'] = employee_id.center_id and employee_id.center_id.id or False
+				vals['post_id'] = employee_id.current_post_id and employee_id.current_post_id.id or False
 				vals['department_id'] = employee_id.department_id and employee_id.department_id.id or False
 				vals['action'] = vals.get('action','in')
 				vals['current_action'] = 'present'
@@ -492,11 +487,11 @@ class sos_guard_attendance1(models.Model):
 			if device_id:
 				self.device_id = device_id.id
 	
-	@api.onchange('device_id')
-	def onchange_device(self):
-		self.project_id = self.device_id.project_id and self.device_id.project_id.id or False
-		self.center_id = self.device_id.center_id and self.device_id.center_id.id or False
-		self.post_id = self.device_id.post_id and self.device_id.post_id.id or False
+	# @api.onchange('device_id')
+	# def onchange_device(self):
+	# 	self.project_id = self.device_id.project_id and self.device_id.project_id.id or False
+	# 	self.center_id = self.device_id.center_id and self.device_id.center_id.id or False
+	# 	self.post_id = self.device_id.post_id and self.device_id.post_id.id or False
 	
 	@api.multi
 	def action_verify(self):
@@ -600,7 +595,6 @@ class sos_guard_attendance1(models.Model):
 						rec.duty_status = 'intime'
 					else:
 						rec.duty_status = 'late'
-				
 
 			
 class SOSPssAttendance(models.Model):
@@ -608,8 +602,6 @@ class SOSPssAttendance(models.Model):
 	_inherit = ['mail.thread']
 	_description = "PSS Attendance"
 	_order = 'id desc'
-	_track = {
-		}				
 	
 	name = fields.Datetime('Date', required=False,track_visibility='onchange')
 	device_datetime = fields.Datetime('Device Date', required=False,track_visibility='onchange')
@@ -636,7 +628,3 @@ class SOSPssAttendance(models.Model):
 		if atts:
 			for att in atts:
 				att.center_id = att.pss_id.center_id and att.pss_id.center_id.id or False
-					
-		
-		
-	
