@@ -487,11 +487,11 @@ class sos_guard_attendance1(models.Model):
 			if device_id:
 				self.device_id = device_id.id
 	
-	# @api.onchange('device_id')
-	# def onchange_device(self):
-	# 	self.project_id = self.device_id.project_id and self.device_id.project_id.id or False
-	# 	self.center_id = self.device_id.center_id and self.device_id.center_id.id or False
-	# 	self.post_id = self.device_id.post_id and self.device_id.post_id.id or False
+	@api.onchange('device_id')
+	def onchange_device(self):
+		self.project_id = self.device_id.project_id and self.device_id.project_id.id or False
+		self.center_id = self.device_id.center_id and self.device_id.center_id.id or False
+		self.post_id = self.device_id.post_id and self.device_id.post_id.id or False
 	
 	@api.multi
 	def action_verify(self):
