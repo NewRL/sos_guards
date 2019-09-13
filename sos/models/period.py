@@ -60,12 +60,12 @@ class sos_fiscalyear(models.Model):
 		fy = self
 		period_obj = self.env['sos.period']
 		
-		ds = datetime.strptime(fy.date_start, '%Y-%m-%d')
-		while ds.strftime('%Y-%m-%d') < fy.date_stop:
+		ds = fy.date_start
+		while ds < fy.date_stop:
 			de = ds + relativedelta(months=interval, days=-1)
 
-			if de.strftime('%Y-%m-%d') > fy.date_stop:
-				de = datetime.strptime(fy.date_stop, '%Y-%m-%d')
+			if de > fy.date_stop:
+				de = fy.date_stop
 
 			period_obj.create({
 				'name': ds.strftime('%m/%Y'),

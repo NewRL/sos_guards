@@ -6,7 +6,7 @@ import itertools
 from lxml import etree
 
 from odoo import models, fields, api, _
-from odoo.exceptions import except_orm, Warning, RedirectWarning
+from odoo.exceptions import Warning, RedirectWarning, UserError
 from odoo.tools import float_compare
 import odoo.addons.decimal_precision as dp
 
@@ -15,8 +15,6 @@ class sos_stationery_demand(models.Model):
 	_name = "sos.stationery.demand"
 	_description = "SOS Stationery"
 	_inherit = ['mail.thread']
-	_track = {
-	}
 	
 	@api.one
 	@api.depends('move_id','state')
@@ -30,8 +28,7 @@ class sos_stationery_demand(models.Model):
 		self.move_value = 0
 		lines = self.env['account.move.line'].search([('move_id', '=', self.move_id.id),('debit', '>', 0)])
 		self.move_value = sum(line.debit for line in lines)
-		
-	
+
 	center_id = fields.Many2one('sos.center', string='Center',required=True, index=True)
 	employee_id = fields.Many2one('hr.employee', string = "Requested By", domain=[('active','=',True)], required=True, index= True)           
 	name = fields.Char(string='Demand Number', readonly=True,size=16)
@@ -58,7 +55,6 @@ class sos_stationery_demand(models.Model):
 			'name': st_number,
 		})
 		return super(sos_stationery_demand, self).create(vals)
-
 		
 	@api.multi	
 	def write(self,vals):
@@ -83,8 +79,7 @@ class sos_stationery_demand(models.Model):
 		context = self._context or {}
 		for demand in self:	
 			demand.write({'state':'review'})
-	
-	
+
 	@api.multi
 	def demand_approve(self):
 		context = self._context or {}
@@ -151,7 +146,7 @@ class sos_stationery_demand(models.Model):
 				'name': demand.name,
 				'journal_id': 9,  # Stock Journal
 				'date': dispatch_date,
-				'narration': demand.name + ":Regular:" + demand.date,
+				'narration': demand.name + ":Regular:" + str(demand.date),
 			}		
 			move_id = move_obj.sudo().create(move)	
 			
@@ -191,8 +186,7 @@ class sos_stationery_demand(models.Model):
 	
 	@api.multi
 	def demand_required_item_dispatch(self):
-		for demand in self:	
-			#pdb.set_trace()
+		for demand in self:
 			if not demand.stationery_dispatch_line:
 				for line in demand.stationery_demand_line:
 					prd = False
@@ -203,97 +197,86 @@ class sos_stationery_demand(models.Model):
 							'product_id' : prd.id,
 							'product_qty' : line.qty,
 							'stationery_demand_id' : demand.id,
+							'product_uom' : prd.uom_id and prd.uom_id.id or False,
 							}
 						dispatch_line = self.env['sos.stationery.dispatch.line'].create(vals)	
 			else:
-				raise Warning(_('Dispatched Items Already Entered.'))		
-			
-	
-		
-	class sos_stationery_items(models.Model):		
-		_name = "sos.stationery.items"
-		_description = "Stationery Items"
-
-		name = fields.Char('Item Name')
-		req_size = fields.Boolean(string='Size Required?')
-		product_ids = fields.Many2many('product.product','sos_stationery_product', 'item_id', 'product_id', string='Items')
-		
-		
-
-	class sos_stationery_demand_line(models.Model):		
-		_name = "sos.stationery.demand.line"
-		_description = "SOS Stationery Line"
-
-		item_id = fields.Many2one('sos.stationery.items',string='Item')
-		qty = fields.Integer(string='Qty',default=1,)
-		req_size = fields.Boolean(string='Size Required?')
-		size = fields.Char(string='Size')
-		action = fields.Selection([('safety','Use Safety Stock'),('dispatch','Dispatch')], string='Action', default='dispatch', copy=False,) 
-		stationery_demand_id = fields.Many2one('sos.stationery.demand', string='Stationery Lines', index=True)
+				raise Warning(_('Dispatched Items Already Entered.'))
 
 		
-		@api.onchange('item_id')
-		def onchange_item_id(self):
-			res = {'value': {'req_size': False}}
-			if not self.item_id:
-				return res
-				
-			item = self.env['sos.stationery.items'].search([('id', '=', self.item_id.id)])			
-			res['value'].update({'req_size': item.req_size})
+class SOSStationeryItems(models.Model):
+	_name = "sos.stationery.items"
+	_description = "Stationery Items"
+
+	name = fields.Char('Item Name')
+	req_size = fields.Boolean(string='Size Required?')
+	product_ids = fields.Many2many('product.product','sos_stationery_product', 'item_id', 'product_id', string='Items')
+		
+
+class sos_stationery_demand_line(models.Model):
+	_name = "sos.stationery.demand.line"
+	_description = "SOS Stationery Line"
+
+	item_id = fields.Many2one('sos.stationery.items',string='Item')
+	qty = fields.Integer(string='Qty',default=1,)
+	req_size = fields.Boolean(string='Size Required?')
+	size = fields.Char(string='Size')
+	action = fields.Selection([('safety','Use Safety Stock'),('dispatch','Dispatch')], string='Action', default='dispatch', copy=False,)
+	stationery_demand_id = fields.Many2one('sos.stationery.demand', string='Stationery Lines', index=True)
+
+	@api.onchange('item_id')
+	def onchange_item_id(self):
+		res = {'value': {'req_size': False}}
+		if not self.item_id:
 			return res
 
+		item = self.env['sos.stationery.items'].search([('id', '=', self.item_id.id)])
+		res['value'].update({'req_size': item.req_size})
+		return res
 
-		@api.one
-		def unlink(self):
-			if self.stationery_demand_id.state != 'draft':
-				raise UserError(('You can delete the Entry whose demand is in the in Draft State.'))
-			ret = super(sos_stationery_demand_line, self).unlink()
-			return ret	
-	
+	@api.one
+	def unlink(self):
+		if self.stationery_demand_id.state != 'draft':
+			raise UserError('You can delete the Entry whose demand is in the in Draft State.')
+		ret = super(sos_stationery_demand_line, self).unlink()
+		return ret
 
 
+class sos_stationery_dispatch_line(models.Model):
+	_name = "sos.stationery.dispatch.line"
+	_description = "Stationery Dispatch Line"
 
+	def _get_uom_id(self):
+		try:
+			proxy = self.env['ir.model.data']
+			result = proxy.get_object_reference('product', 'product_uom_unit')
+			return result[1]
+		except Exception:
+			return False
 
+	product_id = fields.Many2one('product.product',string='Product')
+	product_uom = fields.Many2one('uom.uom', 'Product Unit of Measure', required=True)
+	stock_qty = fields.Float(string='Stock Qty')
+	product_qty = fields.Integer(string='Qty',default=1,)
+	stationery_demand_id = fields.Many2one('sos.stationery.demand', string='Lines', index=True)
 
-	
-	class sos_stationery_dispatch_line(models.Model):		
-		_name = "sos.stationery.dispatch.line"
-		_description = "Stationery Dispatch Line"
-		
-		def _get_uom_id(self):
-			try:
-				proxy = self.env['ir.model.data']
-				result = proxy.get_object_reference('product', 'product_uom_unit')
-				return result[1]
-			except Exception:
-				return False
-	
-	
-		product_id = fields.Many2one('product.product',string='Product')
-		product_uom = fields.Many2one('uom.uom', 'Product Unit of Measure', required=True)
-		stock_qty = fields.Float(string='Stock Qty')
-		product_qty = fields.Integer(string='Qty',default=1,)
-		stationery_demand_id = fields.Many2one('sos.stationery.demand', string='Lines', index=True)
-		
-		
-		@api.one
-		@api.onchange('product_id')
-		def onchange_product_id(self):
-			product_obj = self.env['product.product']
-			self.with_context(location='12')
-			context = self._context or {}
-			res = {'value': {'price_unit': 0.0}}
-			if not self.product_id:
-				return res
-				
-			product = self.env['product.product'].search([('id', '=', self.product_id.id)])
-			# - set a domain on product_uom
-			res['domain'] = {'product_uom': [('category_id','=',product.uom_id.category_id.id)]}
-	
-			uom_id = product.uom_id.id
-			res['value'].update({'product_uom': uom_id})
-			
-			stock_qty = product._product_available()[product.id]['qty_available']
-			res['value'].update({'stock_qty': stock_qty})
+	@api.one
+	@api.onchange('product_id')
+	def onchange_product_id(self):
+		product_obj = self.env['product.product']
+		self.with_context(location='12')
+		context = self._context or {}
+		res = {'value': {'price_unit': 0.0}}
+		if not self.product_id:
 			return res
-			
+
+		product = self.env['product.product'].search([('id', '=', self.product_id.id)])
+		# - set a domain on product_uom
+		res['domain'] = {'product_uom': [('category_id','=',product.uom_id.category_id.id)]}
+
+		uom_id = product.uom_id.id
+		res['value'].update({'product_uom': uom_id})
+
+		stock_qty = product._product_available()[product.id]['qty_available']
+		res['value'].update({'stock_qty': stock_qty})
+		return res

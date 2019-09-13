@@ -2,6 +2,7 @@ import time
 import pdb
 from odoo import api, fields, models, _
 
+
 class BiometricAttendanceWizard(models.TransientModel):
 	_name = "biometric.attendance.wizard"
 	_description = "BioMetric Attendance Report"
@@ -25,8 +26,3 @@ class BiometricAttendanceWizard(models.TransientModel):
 			'form': data
 		}
 		return self.env.ref('sos_reports.action_report_biometric_attendance_summary').with_context(landscape=True).report_action(self, data=datas, config=False)
-
-
-		
-		
-		
