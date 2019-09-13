@@ -265,7 +265,7 @@ class sos_uniform_demand(models.Model):
 				'journal_id': 9,  # Stock Journal
 				'date': delivery_date,
 				'post_id': demand.post_id.id,
-				'narration': demand.name + ":Regular:" + demand.date,
+				'narration': demand.name + ":Regular:" + str(demand.date),
 				'state': 'draft',
 				'line_ids': move_lines,					
 			}																

@@ -14,9 +14,7 @@ class sos_jacket_demand(models.Model):
 	_description = "Jackets Demand"
 	_inherit = ['mail.thread']
 	_order = "date desc"
-	_track = {
-	}
-	
+
 	@api.one
 	@api.depends('new_guards', 'existing_guards')
 	def _compute_total(self):
@@ -35,7 +33,6 @@ class sos_jacket_demand(models.Model):
 	name = fields.Char(string='Demand Number', readonly=True,size=16)
 	
 	new_posts = fields.Boolean(string='New Post', track_visibility='onchange')
-	
 	new_guards = fields.Integer(string='New Guards', track_visibility='onchange')
 	existing_guards = fields.Integer(string='Existing Guards', track_visibility='onchange')
 	no_of_guards = fields.Integer(string='Total Guards', compute='_compute_total',readonly=True)
@@ -52,10 +49,7 @@ class sos_jacket_demand(models.Model):
 	move_id = fields.Many2one('account.move', string='Accounting Entry', readonly=True,)
 	dispatch_ids = fields.Many2many('stock.move', string='Dispatch Moves', compute='_compute_dispatch_lines')
 	dispatch_date = fields.Date('Dispatch Date',readonly=True,)
-	
-	dm_type = fields.Selection([('new_deployment','New Deployment'),('complain','Complain'),('additional_guard','Additional Guard'),('replacement','Replacement')], string='Type') 
-
-
+	dm_type = fields.Selection([('new_deployment','New Deployment'),('complain','Complain'),('additional_guard','Additional Guard'),('replacement','Replacement')], string='Type')
 
 	@api.multi
 	@api.depends('name')
@@ -75,7 +69,6 @@ class sos_jacket_demand(models.Model):
 			'name': st_number,
 		})		
 		return super(sos_jacket_demand, self).create(vals)
-	
 	
 	@api.multi	
 	def demand_recommended(self):
@@ -155,9 +148,7 @@ class sos_jacket_demand(models.Model):
 				}				
 				stock_move_id = stock_move.create(vals) 
 				stock_move_id._action_done()
-								
 		self.write({'state':'dispatch','dispatch_date':dispatch_date})
-
 	
 	@api.multi	
 	def demand_delivered(self):
@@ -171,7 +162,6 @@ class sos_jacket_demand(models.Model):
 			for line in demand.jacket_demand_line:
 				if not line.guard_id:
 					raise Warning(_('Please Enter the Guard Names.'))
-		
 		delivery_date = demand.delivery_date
 	
 		amount = 0
@@ -196,11 +186,10 @@ class sos_jacket_demand(models.Model):
 					'emp_id': item.guard_id.id,
 					'uniform_demand_id': demand.id,
 				}
-				
 				stock_move_id = stock_move.create(vals) 
 				stock_move_id._action_done()
 				amount += item.qty * product.list_price
-		
+
 		move_lines=[]
 		move_lines.append((0,0,{
 			'name': demand.name,
@@ -214,9 +203,7 @@ class sos_jacket_demand(models.Model):
 			'a5_id' : demand.post_id.partner_id.analytic_code_id and demand.post_id.partner_id.analytic_code_id.id or False, #Post
 			'a3_id' : demand.post_id.project_id.analytic_project_id and demand.post_id.project_id.analytic_project_id.id or False, #Project
 			'a4_id' : demand.post_id.region_id.analytic_region_id and demand.post_id.region_id.analytic_region_id.id or False, #Region
-
 		}))
-		
 		move_lines.append((0,0,{
 			'name': demand.name,
 			'debit': 0.0,
@@ -225,8 +212,7 @@ class sos_jacket_demand(models.Model):
 			'journal_id': 9,  # Stock Journal			
 			'date': delivery_date,
 			'jacket_demand_id': demand.id,
-			'post_id': demand.post_id.id,				
-
+			'post_id': demand.post_id.id,
 		}))
 		move = {
 			'ref': demand.name,
@@ -234,15 +220,13 @@ class sos_jacket_demand(models.Model):
 			'journal_id': 9,  # Stock Journal
 			'date': delivery_date,
 			'post_id': demand.post_id.id,
-			'narration': demand.name + ":Regular:" + demand.date,
+			'narration': demand.name + ":Regular:" + str(demand.date),
 			'line_ids': move_lines,					
 		}
-																		
+
 		move_id = move_obj.sudo().create(move)
 		move_id.state = 'posted'		
-		demand.write({'state':'done','move_id':move_id.id})		
-	
-	
+		demand.write({'state':'done','move_id':move_id.id})
 	
 	@api.multi
 	def demand_rejected(self):
@@ -265,11 +249,7 @@ class sos_jacket_demand(models.Model):
 						}
 					dispatch_line = self.env['sos.jacket.dispatch.line'].create(vals)	
 			else:
-				raise Warning(_('Dispatched Items Already Entered.'))	
-
-
-
-
+				raise Warning(_('Dispatched Items Already Entered.'))
 
 
 class sos_jacket_demand_line(models.Model):		
@@ -310,5 +290,3 @@ class sos_jacket_dispatch_line(models.Model):
 	stock_qty = fields.Float(string='Stock Qty')
 	product_qty = fields.Integer(string='Qty')
 	jacket_demand_id = fields.Many2one('sos.jacket.demand', string='Lines', index=True)
-	
-	

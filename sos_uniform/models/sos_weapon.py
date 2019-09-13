@@ -8,7 +8,7 @@ import itertools
 from lxml import etree
 
 from odoo import models, fields, api, _
-from odoo.exceptions import except_orm, Warning, RedirectWarning
+from odoo.exceptions import  Warning, RedirectWarning, UserError
 from odoo.tools import float_compare
 import odoo.addons.decimal_precision as dp
 
@@ -18,9 +18,7 @@ class sos_weapon_demand(models.Model):
 	_description = "SOS Weapons"
 	_inherit = ['mail.thread']
 	_order = "date desc"
-	_track = {
-		}
-	
+
 	@api.one
 	@api.depends('move_id','state')
 	def _compute_dispatch(self):
@@ -55,8 +53,7 @@ class sos_weapon_demand(models.Model):
 			'name': st_number,
 		})		
 		return super(sos_weapon_demand, self).create(vals)
-	
-	
+
 	@api.multi
 	def write(self,vals):
 		obj_seq = self.env['ir.sequence']
@@ -68,7 +65,6 @@ class sos_weapon_demand(models.Model):
 					'name': st_number,
 				})	
 		return super(sos_weapon_demand, self).write(vals)
-		
 	
 	@api.multi
 	def demand_open(self):
@@ -127,8 +123,7 @@ class sos_weapon_demand(models.Model):
 				stock_move_id._action_done()
 			demand.write({'state':'dispatch','dispatch_date':dispatch_date})
 		return True
-	
-	
+
 	@api.multi
 	def demand_delivered(self):
 		stock_move = self.env['stock.move']
@@ -180,7 +175,7 @@ class sos_weapon_demand(models.Model):
 				'journal_id': 9,  # Stock Journal
 				'date': dispatch_date,
 				'post_id': demand.post_id.id,
-				'narration': demand.name + ":Regular:" + demand.date,
+				'narration': demand.name + ":Regular:" + str(demand.date),
 			}														
 			move_id = move_obj.sudo().create(move)	
 			
@@ -228,20 +223,19 @@ class sos_weapon_demand(models.Model):
 							'product_id' : prd.id,
 							'product_qty' : line.qty,
 							'weapon_demand_id' : demand.id,
+							'product_uom' : prd.uom_id and prd.uom_id.id or False,
 							}
 						dispatch_line = self.env['sos.weapon.dispatch.line'].create(vals)	
 			else:
-				raise Warning(_('Dispatched Items Already Entered.'))		
-				
-			
-
+				raise Warning(_('Dispatched Items Already Entered.'))
 
 	@api.multi
 	def demand_reject(self):
 		context = self._context or {}
 		for demand in self:		
 			demand.write({'state':'reject'})
-		
+
+
 class sos_weapon_items(models.Model):		
 	_name = "sos.weapon.items"
 	_description = "Weapon Items"
@@ -249,6 +243,7 @@ class sos_weapon_items(models.Model):
 	name = fields.Char('Item Name')
 	req_size = fields.Boolean(string='Size Required?')
 	product_ids = fields.Many2many('product.product','sos_weapon_product', 'item_id', 'product_id', string='Items')
+
 
 class sos_weapon_demand_line(models.Model):		
 	_name = "sos.weapon.demand.line"
@@ -272,12 +267,11 @@ class sos_weapon_demand_line(models.Model):
 		item = self.env['sos.weapon.items'].search([('id', '=', self.item_id.id)])			
 		res['value'].update({'req_size': item.req_size})
 		return res
-	
 
 	@api.one	
 	def unlink(self):
 		if self.weapon_demand_id.state != 'draft':
-			raise UserError(('You can delete the Entry whose demand is in the in Draft State.'))
+			raise UserError('You can delete the Entry whose demand is in the in Draft State.')
 		ret = super(sos_weapon_demand_line, self).unlink()
 		return ret		
 
@@ -294,31 +288,23 @@ class sos_weapon_dispatch_line(models.Model):
 		except Exception:
 			return False
 
-
 	product_id = fields.Many2one('product.product',string='Product')
 	product_uom = fields.Many2one('uom.uom', 'Product Unit of Measure', required=True)
 	stock_qty = fields.Float(string='Stock Qty')
 	product_qty = fields.Integer(string='Qty',default=1,)
 	weapon_demand_id = fields.Many2one('sos.weapon.demand', string='Lines', index=True)
-	
-	
+
 	@api.onchange('product_id')
 	def onchange_product_id(self):
 		context = self._context or {}
-				
 		res = {'value': {'price_unit': 0.0}}
 		if not self.product_id:
 			return res
-			
 		product = self.env['product.product'].search([('id', '=', self.product_id.id)])
 		# - set a domain on product_uom
 		res['domain'] = {'product_uom': [('category_id','=',product.uom_id.category_id.id)]}
-
 		uom_id = product.uom_id.id
 		res['value'].update({'product_uom': uom_id})
-	
 		stock_qty = product.qty_available
 		res['value'].update({'stock_qty': stock_qty})
-		return res	
-		
-		
+		return res
