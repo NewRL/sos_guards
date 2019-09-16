@@ -20,11 +20,15 @@ class sos_general_approval(models.Model):
 	_inherit = ['mail.thread']
 	_order = "id desc"
 
-	@api.onchange('approval_lines')
+	@api.multi
+	@api.depends('approval_lines','approval_line.amount')
 	def _compute_total(self):
-		for line in self.approval_lines:
-			self.total += line.amount or 0
-			
+		for rec in self:
+			total = 0
+			for line in rec.approval_lines:
+				total += line.amount or 0
+			rec.total = 0
+
 	@api.onchange('state')
 	def _compute_status(self):
 		if self.state == 'coordinator':
@@ -50,7 +54,7 @@ class sos_general_approval(models.Model):
 
 	state = fields.Selection([('coordinator','Coordinator'),('hoc','H.O.C'),('audit_dept','Audit Dept.'),('cfo','CFO'),('mi','M&I Dept.'),('paid','Paid'),('done','Done'),('reject','Rejected')], string='Status', index=True, readonly=True, default='coordinator',track_visibility='always', copy=False,)
 	approval_type = fields.Selection([('travelling_adv','Advance Against Travelling'),('salary_adv','Advance against salary'),('expense_adv','Advance against Expenses/Assets'),('loan_request','Loan request'),('expense_claim','Expenses Claim'),('vender_payment','Vendor Payments'),('other','Other')], string='Approval Type', index=True, readonly=True, default='travelling_adv',track_visibility='always', copy=False,)
-	total = fields.Float(string='Total',compute='_compute_total',readonly='True')
+	total = fields.Float(string='Total',compute='_compute_total',store=True)
 	approval_lines = fields.One2many('sos.general.approval.line', 'approval_id', string='Approval Lines') 
 	remarks = fields.Text(string='Remarks', track_visibility='onchange', readonly=False, states={'paid': [('readonly', False)],'reject': [('readonly', True)]})
 	status = fields.Char('Status', compute='_compute_status')
