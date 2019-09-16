@@ -27,7 +27,7 @@ class sos_general_approval(models.Model):
 			total = 0
 			for line in rec.approval_lines:
 				total += line.amount or 0
-			rec.total = 0
+			rec.total = total
 
 	@api.onchange('state')
 	def _compute_status(self):
@@ -59,8 +59,7 @@ class sos_general_approval(models.Model):
 	remarks = fields.Text(string='Remarks', track_visibility='onchange', readonly=False, states={'paid': [('readonly', False)],'reject': [('readonly', True)]})
 	status = fields.Char('Status', compute='_compute_status')
 	move_id = fields.Many2one('account.move', string='Accounting Entry', readonly=True,)
-	
-	
+
 	@api.model
 	def create(self, vals):
 		vals['name'] = self.env['ir.sequence'].next_by_code('sos.general.approval')
@@ -70,70 +69,64 @@ class sos_general_approval(models.Model):
 	@api.one	
 	def unlink(self):
 		if self.state != 'coordinator':
-			raise UserError(('You can not delete Approval which are in Draft State. Please Shift First in  Coordinator state then delete it.'))
+			raise UserError(('You can not delete Approval which are in Draft State. Please Shift First in  \
+							Coordinator state then delete it.'))
 		ret = super(sos_general_approval, self).unlink()
-		return ret	
-	
+		return ret
 			
 	@api.multi		
 	def approval_hoc(self):
 		if self.approval_lines:
-			self.date = datetime.today().strftime('%Y-%m-%d')
+			self.date = fields.Date.today()
 			self.write({'state':'audit_dept'})
 		else:
-			raise UserError(('Please, First Create it Lines'))	
+			raise UserError('Please, First Create it Lines')
 		
 	@api.multi		
 	def approval_admin(self):
-		self.date = datetime.today().strftime('%Y-%m-%d')
+		self.date = fields.Date.today()
 		self.write({'state':'audit_dept'})
 
 	@api.multi		
 	def approval_audit_dept(self):
-		self.date = datetime.today().strftime('%Y-%m-%d')
+		self.date = fields.Date.today()
 		self.write({'state':'cfo'})
 		
 	@api.multi		
 	def approval_cfo(self):
-		self.date = datetime.today().strftime('%Y-%m-%d')
+		self.date = fields.Date.today()
 		self.write({'state':'paid'})
 	
 	@api.multi		
 	def approval_mi(self):
-		self.date = datetime.today().strftime('%Y-%m-%d')
+		self.date = fields.Date.today()
 		self.write({'state':'paid'})
 	
 	@api.multi		
 	def approval_paid(self):
-		self.date = datetime.today().strftime('%Y-%m-%d')
+		self.date = fields.Date.today()
 		self.write({'state':'done'})
-								
-	
+
 	@api.multi		
 	def approval_reject(self):
-		self.date = datetime.today().strftime('%Y-%m-%d')
-		self.write({'state':'reject'})	
-		
+		self.date = fields.Date.today()
+		self.write({'state':'reject'})
+
 		
 class sos_general_approval_line(models.Model):		
 	_name = "sos.general.approval.line"
 	_description = "SOS General Approval Lines"
 	_inherit = ['mail.thread']
 	_order = "id desc"
-	
-	
-	approval_id = fields.Many2one('sos.general.approval', string = "Approval", index= True,)
+
+	approval_id = fields.Many2one('sos.general.approval', string = "Approval", index= True)
 	serial = fields.Char('Sr.')
 	description = fields.Char('Description')
 	amount = fields.Float('Amount')
 
 
-class account_move(models.Model):
+class AccountMove(models.Model):
 	_name = "account.move"
 	_inherit = "account.move"
 	
-	approval_id = fields.Many2one('sos.general.approval', string='Approval')	
-	 
-	
-			
-				
+	approval_id = fields.Many2one('sos.general.approval', string='Approval')
