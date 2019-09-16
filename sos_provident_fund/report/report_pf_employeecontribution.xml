@@ -28,15 +28,18 @@
 						 </div>
 						 
 						<table class="table table-bordered">
-							<thead>
+							<thead style="font-size:14px;font-weight:bold;">
 								<th>SR# </th>
 								<th>ERP Ref. </th>
 								<th>Employee </th>
-								<th>CNIC </th>						
+								<th>CNIC </th>
+								<th>Joining Date</th>
+								<th>Termination Date</th>
+								<th>Months</th>
 								<th>Guard Status </th>
 								<th class="text-right">Balance </th>
 							</thead>
-							<tbody>
+							<tbody style="font-size:14px;">
 								<t t-foreach="recs" t-as="rec">
 									<tr style="font-size:14px;font-weight:bold;">
 										<td colspan="6"><span t-esc="rec['project']"/> </td>
@@ -57,6 +60,15 @@
 												<span t-esc="ln['cnic']" />
 											</td>
 											<td class="text-left">
+												<span t-esc="ln['joining_date']" />
+											</td>
+											<td class="text-left">
+												<span t-esc="ln['termination_date']" />
+											</td>
+											<td class="text-right">
+												<span t-esc="ln['months']" />
+											</td>
+											<td class="text-left">
 												<t t-if="ln['status']">
 													Current
 												</t>
@@ -71,11 +83,14 @@
 									</t>
 								
 									<tr>
-										<td colspan="5"></td>
+										<td colspan="8"></td>
 										<td class="text-right" style="font-size:14px;font-weight:bold;"><span t-esc="'{0:,.1f}'.format(rec['total'])" /></td>
 									</tr>
-									
 								</t>
+								<tr>
+									<td colspan="8"  style="font-size:14px;font-weight:bold;">Grand Total</td>
+									<td class="text-right" style="font-size:14px;font-weight:bold;"><span t-esc="'{0:,.1f}'.format(grand_total)" /></td>
+								</tr>
 							</tbody>	
 						</table>
 					
