@@ -21,7 +21,7 @@ class sos_general_approval(models.Model):
 	_order = "id desc"
 
 	@api.multi
-	@api.depends('approval_lines','approval_line.amount')
+	@api.depends('approval_lines','approval_lines.amount')
 	def _compute_total(self):
 		for rec in self:
 			total = 0
