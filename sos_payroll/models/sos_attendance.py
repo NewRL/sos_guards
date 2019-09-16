@@ -108,6 +108,7 @@ class sos_guard_shortfall(models.Model):
 
 		self.state = 'done'
 
+
 class sos_center_attendance(models.Model):
 	_name = "sos.center.attendance"
 	_description = "Center Attendance"
@@ -216,7 +217,8 @@ class sos_center_attendance(models.Model):
 		res = super(sos_center_attendance, self).unlink()
 		self._update_cron()
 		return res         		
-		
+
+
 class sos_guard_attendance(models.Model):
 	_name = "sos.guard.attendance"
 	_description = "Attendance"
@@ -309,7 +311,6 @@ class hr_guard(models.Model):
 	replacement_count = fields.Integer('Replacement', compute='_replacement_count')
 	attendance_count = fields.Integer('Attendance Count', compute='_attendance_count')
 	
-	
 
 class sos_attendance_close(models.Model):
 	_name ="sos.attendance.close"
@@ -387,6 +388,7 @@ class sos_guard_attendance1(models.Model):
 	present_reason = fields.Selection([('on_field', 'Field'), ('out_station', 'Out Station'), ('visit', ' Visit/Official Duty')], string = 'Present Reason')							
 	remarks = fields.Char('Remarks')
 	staff_slip_id = fields.Many2one('hr.payslip','Staff Pay Slip')
+	source = fields.Selection([('auto', 'Auto'), ('manual', 'Manual')], string='Source')
 	
 	
 	@api.model
@@ -395,11 +397,14 @@ class sos_guard_attendance1(models.Model):
 		device_code = vals.get('device_id',False)
 		employee_id = False
 		device_id = False
+		source = ''
 
 		if device_code and not vals.get('employee_id', False):
 			device_id = self.env['sos.attendance.device'].sudo().search([('device_number', '=', device_code)])
+			source = 'auto'
 		if device_code and vals.get('employee_id', False):
 			device_id = self.env['sos.attendance.device'].sudo().search([('id', '=', vals.get('device_id'))])
+			source = 'manual'
 
 		if code:
 			employee_id = self.env['hr.employee'].search([('code','=',code)])
@@ -435,6 +440,7 @@ class sos_guard_attendance1(models.Model):
 				vals['department_id'] = employee_id.department_id and employee_id.department_id.id or False
 				vals['action'] = vals.get('action','in')
 				vals['current_action'] = 'present'
+				vals['source'] = source
 				
 				##if Guards then shift starts from 7:00 a.m
 				if employee_id.department_id.id == 29: 

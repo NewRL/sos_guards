@@ -26,7 +26,7 @@
 					<field name="create_date" readonly="1" invisible="1"/>
 					<field name="create_uid" readonly="1" invisible="1"/>
 					<field name="remarks" readonly="1"/>
-			
+					<field name="source" readonly="1"/>
 			
 				</tree>
 			</field>
@@ -63,6 +63,7 @@
 								<field name="action" attrs="{'readonly': [('state','!=', 'draft')]}"/>
 								<field name="duty_status" attrs="{'readonly': [('state','!=', 'draft')]}"/>
 								<field name="late_time" attrs="{'readonly': [('state','!=', 'draft')]}" />
+								<field name="source" attrs="{'readonly': [('state','!=', 'draft')]}" />
 								<field name="remarks" attrs="{'readonly': [('state','!=', 'draft')]}" />
 								<field name="month_att" attrs="{'readonly':[('state','!=', 'draft')],'invisible': [('state','=', 'draft')]}"/>
 					 		</group>
@@ -94,7 +95,10 @@
 					<filter icon="terp-go-today" string="Leave" name="leave" domain="[('current_action','=','leave')]" />
 					<filter icon="terp-go-today" string="Extra" name="extra" domain="[('current_action','=','extra')]" />
 					<filter icon="terp-go-today" string="Extra_Double" name="extra_double" domain="[('current_action','=','extra_double')]" />
-			
+					<separator/>
+					<filter icon="terp-go-today" string="Auto" name="auto" domain="[('source','=','auto')]" />
+					<filter icon="terp-go-today" string="Manual" name="manual" domain="[('source','=','manual')]" />
+
 					<field name="employee_id"/>
 					<field name="project_id"/>
 					<field name="post_id"/>
@@ -122,6 +126,7 @@
 						<filter name="duty_status" string="Duty Status" icon="terp-personal" domain="[]" context="{'group_by':'duty_status'}"/>
 						<filter name="action" string="Action" icon="terp-personal" domain="[]" context="{'group_by':'action'}"/>
 						<filter name="absent_reason" string="Absent Reason" icon="terp-personal" domain="[]" context="{'group_by':'absent_reason'}"/>
+						<filter name="group_source" string="Source" icon="terp-personal" domain="[]" context="{'group_by':'source'}"/>
 					</group>
 				</search>
 			</field>
