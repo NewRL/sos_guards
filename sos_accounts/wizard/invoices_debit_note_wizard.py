@@ -6,8 +6,8 @@ from odoo import api, fields, models, _
 
 
 class InvoicesDebitNoteWizard(models.TransientModel):
-	_name ='invoices.debit.note.wizard'
-	_description ="Generate Invoices Debit Note Entries"
+	_name = 'invoices.debit.note.wizard'
+	_description = "Generate Invoices Debit Note Entries"
 	
 	@api.multi
 	@api.depends('debit_line_ids')
@@ -19,16 +19,15 @@ class InvoicesDebitNoteWizard(models.TransientModel):
 			rec.total = total	
 	
 	name = fields.Char("Name")
-	date_from = fields.Date("Date From",default=lambda *a: str(datetime.now() + relativedelta.relativedelta(day=1))[:10])
-	date_to = fields.Date("Date To",default=lambda *a: str(datetime.now() + relativedelta.relativedelta(day=31))[:10])
+	date_from = fields.Date("Date From", default=lambda *a: str(datetime.now() + relativedelta.relativedelta(day=1))[:10])
+	date_to = fields.Date("Date To", default=lambda *a: str(datetime.now() + relativedelta.relativedelta(day=31))[:10])
 	due_date = fields.Date("Due Date")
 	for_month = fields.Char('Invoice Month', size=32)
-	debit_line_ids = fields.One2many("invoices.debit.note.lines.wizard","debit_id","Lines")
-	total = fields.Float("Total Amount",compute="_get_amount")
+	debit_line_ids = fields.One2many("invoices.debit.note.lines.wizard", "debit_id", "Lines")
+	total = fields.Float("Total Amount", compute="_get_amount")
 	
 	@api.one
 	def generate_debit_entries(self):
-		#pdb.set_trace()
 		invoice_pool = self.env['account.invoice']
 		invoice_ids = self.env['account.invoice']
 		tax_obj = self.env['account.tax']
@@ -40,9 +39,9 @@ class InvoicesDebitNoteWizard(models.TransientModel):
 			
 			partner_id = line.post_id.partner_id.id
 			post = self.env['sos.post'].search([('partner_id', '=', partner_id)])
-			ds = datetime.strptime(self.date_from, '%Y-%m-%d')
-			dt = datetime.strptime(self.date_to, '%Y-%m-%d')
-			month_days = ((dt-ds).days)+1
+			ds = self.date_from
+			dt = self.date_to
+			month_days = (dt-ds).days +1
 			for_month = dt.strftime('%B-%Y')
 			
 			res = {
@@ -53,14 +52,12 @@ class InvoicesDebitNoteWizard(models.TransientModel):
 				'account_id': 48,  # Receivable
 				'payment_term_id': False,
 				'fiscal_position_id': False,
-				
 				'partner_id': line.post_id.partner_id.id,
 				'post_id': line.post_id.id,
 				'project_id': line.post_id.project_id.id,
 				'center_id': line.post_id.center_id.id,
-
 				'for_month': for_month,
-				'date_invoice': dt or datetime.today().strftime('%Y-%m-%d'),
+				'date_invoice': dt or fields.Date.today(),
 				'date_due':  self.due_date or str(datetime.now() + relativedelta.relativedelta(day=31))[:10],
 				'date_from': ds,
 				'date_to': dt,
@@ -69,7 +66,6 @@ class InvoicesDebitNoteWizard(models.TransientModel):
 			invoice = invoice_pool.create(res)
 			taxes_grouped = invoice.get_taxes_values()
 			tax_grouped = {}
-			
 			invoice_line_vals.append({
 				'invoice_id': invoice.id,
 				'name': 'Debit Note of ' + post.name + ' of ' + for_month,					
@@ -98,17 +94,12 @@ class InvoicesDebitNoteWizard(models.TransientModel):
 					tax_grouped[key] = val
 				else:
 				    tax_grouped[key]['amount'] += val['amount']
-
 			invoice_lines = invoice.invoice_line_ids.browse([])
-			
 			for invoice_line in invoice_line_vals:
 				invoice_lines += invoice_lines.new(invoice_line)
-			
 			tax_lines = invoice.tax_line_ids.browse([])
 			for tax in tax_grouped.values():
-				tax_lines += tax_lines.new(tax)	
-			
-			###	
+				tax_lines += tax_lines.new(tax)
 			invoice.tax_line_ids = tax_lines
 			invoice.invoice_line_ids = invoice_lines
 
