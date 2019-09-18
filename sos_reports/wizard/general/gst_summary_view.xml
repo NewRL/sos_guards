@@ -6,8 +6,7 @@
             <field name="model">gst.summary</field>
             <field name="arch" type="xml">
             <form string="GST Summary">
-            	<!--SARFRAZ-->
-            <!--   <label string="This wizard will print report which displays Summary of the GST."/> -->
+                <p>This wizard will print report which displays Summary of the GST.</p>
                 <footer>
                     <button name="print_report" string="Print Report" type="object" class="oe_highlight"/>
                     <button string="Cancel" class="oe_link" special="cancel" />

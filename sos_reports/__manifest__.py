@@ -27,7 +27,7 @@
     	#Directory:- General
     	#'wizard/general/sos_guards_working_detail_wizard_view.xml',
     	#'wizard/general/bankcharges_summary_view.xml',
-    	#'wizard/general/gst_summary_view.xml',
+    	'wizard/general/gst_summary_view.xml',
     	#'wizard/general/payslip_summary_view.xml',
     	#'wizard/general/profitability_summary_view.xml',
 		#'wizard/general/report_post_ledger_view.xml',
@@ -59,10 +59,10 @@
 		'report/invoices/report_invoices_verification.xml',
 		
 		#Directory:- General
-		#'report/general/report_gst_summaryproject.xml',
-		#'report/general/report_gst_summarycenter.xml',
-    	#'report/general/report_gst_summarypost.xml',
-    	#'report/general/report_gst_summarypercentage.xml',
+		'report/general/report_gst_summaryproject.xml',
+		'report/general/report_gst_summarycenter.xml',
+    	'report/general/report_gst_summarypost.xml',
+    	'report/general/report_gst_summarypercentage.xml',
     	#'report/general/report_post_ledger.xml',
 		#'report/general/report_profitability_summarycenter.xml',
 		#'report/general/report_profitability_summarycenterproject.xml',
@@ -88,7 +88,7 @@
     	 
     	 
        	'report/attendance/report.xml',
-       	#'report/general/report.xml',
+       	'report/general/report.xml',
        	'report/invoices/report.xml',
        	#'report/recovery/report.xml',
        	'report/salary/report.xml',
