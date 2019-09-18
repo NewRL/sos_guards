@@ -8,7 +8,6 @@ from dateutil import relativedelta
 from openerp import api, fields, models
 
 class gst_summary(models.TransientModel):
-
 	_name = "gst.summary"
 	_description = 'GST Report'
 
@@ -40,16 +39,15 @@ class gst_summary(models.TransientModel):
 		report_name =  data['form']['report_name']
 		
 		if report_name == 'gst_summary_project_aeroo':
-			rep = 'sos_reports.report_gst_summaryproject'
+			rep = 'sos_reports.action_report_gst_summaryproject'
 		
 		if report_name == 'gst_summary_center_aeroo':
-			rep = 'sos_reports.report_gst_summarycenter'
+			rep = 'sos_reports.action_report_gst_summarycenter'
 			
 		if report_name == 'gst_summary_post_aeroo':
-			rep = 'sos_reports.report_gst_summarypost'
+			rep = 'sos_reports.action_report_gst_summarypost'
 			
 		if report_name == 'gst_summary_percentage_aeroo':
-			rep = 'sos_reports.report_gst_summarypercentage'			
+			rep = 'sos_reports.action_report_gst_summarypercentage'
 
-		return self.env['report'].with_context(landscape=False).get_action(self, rep, data=data)
-				
+		return self.env.ref(rep).with_context(landscape=True).report_action(self, data=data,config=False)

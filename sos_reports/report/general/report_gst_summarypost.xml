@@ -2,7 +2,7 @@
 <openerp>
 	<data>	
 		<template id ="sos_reports.report_gst_summarypost">
-			<t t-call="report.html_container">
+			<t t-call="web.html_container">
 				<div class="page">
 					<div class="row">
 					 	 <div class="col-xs-4">
@@ -15,14 +15,14 @@
 					 	 	SECURITY ORGANIZING SYSTEM (PVT) LIMITED
 					 	 </div>
 					 </div>			
-					 <div class="row" style="font-size:14px; font-weight:bold; text-align:center; align:left;">
+					<div class="row" style="font-size:14px; font-weight:bold; text-align:center; align:left;">
 					 	<div class="col-xs-12">
 					 		GST Report – Post Wise  From
 					 			<span t-esc="get_date_formate(data['date_from'])"/> To <span t-esc="get_date_formate(data['date_to'])"/>
 					 	</div>
 					 </div>
 					 
-					 <table class="table table-bordered">
+					<table class="table table-bordered">
 					 	<thead>
 					 		<tr style="font-size:10px; font-weight:bold;background-color:#A6ACAF;">
 					 			<th>Sr#.</th>
@@ -32,11 +32,8 @@
 					 			<th>Pending GST</th>
 					 			<th>Received GST</th>
 					 		</tr>
-					 		
 					 	</thead>
-					 	
 					 	<tbody>
-					 		
 					 		<t t-foreach="Centers" t-as="center">
 					 			<tr style="font-size:14px; font-weight:bold;">
 					 				<td class="text-left" colspan="6">
@@ -90,13 +87,9 @@
 								<td class="text-left">
 									<span t-esc="Received and '{0:,.0f}'.format(int(Received)) or '-'" />
 								</td>
-										
-							</tr>	
-					 		
+							</tr>
 					 	</tbody>
-					 	
 					 </table>
-					 
 				</div>	 
 			</t>
 		</template>

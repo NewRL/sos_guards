@@ -7,8 +7,9 @@ from dateutil import relativedelta
 from pytz import timezone
 import pytz, datetime
 from dateutil import tz
-from openerp import api, fields, models, _
-from openerp.exceptions import UserError
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
+
 
 class ReportGSTPostSummary(models.AbstractModel):
 	_name = 'report.sos_reports.report_gst_summarypost'
@@ -17,9 +18,8 @@ class ReportGSTPostSummary(models.AbstractModel):
 		ss = datetime.datetime.strptime(sdate,'%Y-%m-%d')
 		return ss.strftime('%d %b %Y')
 			
-	@api.multi
-	def render_html(self, data=None):
-		
+	@api.model
+	def _get_report_values(self, docids, data=None):
 		date_from = data['form']['date_from'] and data['form']['date_from']
 		date_to = data['form']['date_to'] and data['form']['date_to']
 		center_ids = data['form']['center_ids'] and data['form']['center_ids'] or False
@@ -62,7 +62,7 @@ class ReportGSTPostSummary(models.AbstractModel):
 							received_data = self.env.cr.dictfetchall()[0]
 							
 							received = 0
-							if received_data['amount'] > 0:
+							if received_data['amount'] and received_data['amount'] > 0:
 								received = int(0 if received_data['amount'] is None else received_data['amount']) - withheld
 
 							self.env.cr.execute("select sum(credit) as amount from account_invoice ai, account_move_line aml where ai.id = aml.invoice_id and ai.state='open' and aml.account_id = 147 \
@@ -95,11 +95,9 @@ class ReportGSTPostSummary(models.AbstractModel):
 						"projects" : project_lines,
 						})
 				center_lines.append(center_line)
-			res = center_lines or False	
-		
-			
-		report_obj = self.env['report']
-		report = report_obj._get_report_from_name('sos_reports.report_gst_summarypost')
+			res = center_lines or False
+
+		report = self.env['ir.actions.report']._get_report_from_name('sos_reports.report_gst_summarypost')
 		docargs = {
 			"doc_ids": self._ids,
 			"doc_model": report.model,
@@ -113,6 +111,4 @@ class ReportGSTPostSummary(models.AbstractModel):
 			"Received" : received_amount or 0,
 			"get_date_formate" : self.get_date_formate,
 		}
-		
-		return report_obj.render('sos_reports.report_gst_summarypost', docargs)
-		
+		return docargs
