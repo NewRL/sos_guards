@@ -109,7 +109,7 @@
 				            	</tr>
 				            	
 				            	<tr style="border: 1px solid black;">
-				            		<td style="border: 1px solid black;">Bike Maintenance Allowance </td>
+				            		<td style="border: 1px solid black;">Vehicle Maintenance Allowance </td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('SBIKA')"/></td>
 				            		<td style="border: 1px solid black;"></td>
 				            		<td style="border: 1px solid black;"></td>
