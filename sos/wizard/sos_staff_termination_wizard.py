@@ -27,11 +27,12 @@ class sos_staff_termination_wizard(models.TransientModel):
 	
 	@api.one
 	def staff_termination(self):
-		# 25 = HR Director
-		# 94 = Adviser
+		# 98 = HR Manager
+		# 97 = HR Officer
 		# 42 = HR Master
+		# 25 = Adviser
 		flag = False
-		access_ids = [125,25,42,94]
+		access_ids = [25,42,97,98]
 		group_ids = self.env.user.groups_id.ids or False
 		resource_id = self.employee_id.resource_id.id
 		
