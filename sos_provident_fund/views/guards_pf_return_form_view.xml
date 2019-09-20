@@ -112,9 +112,9 @@
                             <field name="total" attrs="{'readonly': [('state' , '=', 'paid')]}"/>
                         </group>
                          <group>
-                              <field name="journal_id" required="1" attrs="{'readonly': [('state' , '=', 'paid')]}"/>
-                             <field name="debit_account_id" required="1" attrs="{'readonly': [('state' , '=', 'paid')]}"/>
-                             <field name="credit_account_id" required="1" domain="[('user_type_id.name','=','Bank and Cash')]" attrs="{'readonly': [('state' , '=', 'paid')]}"/>
+                              <field name="journal_id" attrs="{'readonly': [('state' , '=', 'paid')],  'required' : [('state','=','approved')]}"/>
+                             <field name="debit_account_id" attrs="{'readonly': [('state' , '=', 'paid')],  'required' : [('state','=','approved')]}"/>
+                             <field name="credit_account_id" domain="[('user_type_id.name','=','Bank and Cash')]" attrs="{'readonly': [('state' , '=', 'paid')], 'required' : [('state','=','approved')]}"/>
                              <field name="move_id" readonly="1"/>
                          </group>
                     </group>
