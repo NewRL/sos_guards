@@ -22,7 +22,7 @@
 			name="sos_provident_fund.report_pf_employercontribution"
 		/>
 		
-		 <!--PF Employee Statement Report -->
+		<!--PF Employee Statement Report -->
 		<report
 			id="report_pf_employee_statement"
 			string= "PF Employee Statement Report"
@@ -30,6 +30,16 @@
 			report_type="qweb-pdf"
 			file="sos_provident_fund.report_pf_employeestatement"
 			name="sos_provident_fund.report_pf_employeestatement"
+		/>
+
+		<!-- Terminated Guards 3X interval PF Report -->
+		<report
+			id="action_terminated_guards_3x_interval_pf_report"
+			string= "Terminated Guards 3X Interval PF Report"
+			model = "sos_provident_fund.terminated.guards.3x.interval.pf.wizard"
+			report_type="qweb-pdf"
+			file="sos_provident_fund.terminated_guards_3x_pf_report"
+			name="sos_provident_fund.terminated_guards_3x_pf_report"
 		/>
 		  
 	</data>
