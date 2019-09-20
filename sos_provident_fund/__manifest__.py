@@ -18,11 +18,13 @@
 		'wizard/pf_employer_contribution_wizard_view.xml',
 		'wizard/pf_employee_statement_wizard_view.xml',
         'wizard/terminated_guards_3x_interval_pf_wizard_view.xml',
+        'wizard/month_wise_pf_wizard_view.xml',
 		
 		'report/report_pf_employeecontribution.xml',
 		'report/report_pf_employercontribution.xml',
 		'report/report_pf_employeestatement.xml',
         'report/terminated_guards_3x_interval_pf_report.xml',
+        'report/month_wise_pf_report.xml',
 		
 		'views/purchase_order_ext_view.xml',
         'views/guards_pf_return_form_view.xml',

@@ -41,6 +41,16 @@
 			file="sos_provident_fund.terminated_guards_3x_pf_report"
 			name="sos_provident_fund.terminated_guards_3x_pf_report"
 		/>
+
+		<!-- Month Wise PF Report -->
+		<report
+			id="action_month_wise_pf_report"
+			string= "Month Wise PF Report"
+			model = "sos_provident_fund.month.wise.pf.wizard"
+			report_type="qweb-pdf"
+			file="sos_provident_fund.month_wise_pf_report"
+			name="sos_provident_fund.month_wise_pf_report"
+		/>
 		  
 	</data>
 </openerp>
