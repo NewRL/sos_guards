@@ -40,6 +40,7 @@ class SOSGuardsPFReturnForm(models.Model):
 			joining_post = self.env['sos.guard.post'].search([('employee_id','=',rec.employee_id.id)], order='fromdate', limit=1)
 			rec.joining_post = joining_post.post_id.id or False
 
+
 	name = fields.Char('Name')
 	center_id = fields.Many2one('sos.center', string='Center',required=True, index=True, readonly=True, states={'draft': [('readonly', False)]},track_visibility='onchange')
 	project_id = fields.Many2one('sos.project', required=True, string = 'Project', index=True, readonly=True, states={'draft': [('readonly', False)]},track_visibility='onchange')
@@ -69,6 +70,15 @@ class SOSGuardsPFReturnForm(models.Model):
 	
 	@api.model	
 	def create(self,vals):
+		#IF Guard is Current, Do not Create the PF Refund Form
+		if vals.get('current', False):
+			raise UserError('Guard is Currently Active, PF Return can be generated only for Terminated Guards.')
+
+		#Duplication Entry not allowed
+		already_exit = self.search([('employee_id','=',vals.get('employee_id')),('state','!=','reject')])
+		if already_exit:
+				raise UserError("This Guard has already PF refund Form in the System.Duplication is not allowed.")
+
 		obj_seq = self.env['ir.sequence']
 		st_number = obj_seq.next_by_code('sos.guards.pf.return.form')
 		vals.update({
@@ -76,27 +86,43 @@ class SOSGuardsPFReturnForm(models.Model):
 		})
 		new_rec = super(SOSGuardsPFReturnForm, self).create(vals)
 		total_deduction = 0
-		slip_lines = self.env['guards.payslip.line'].search([('employee_id','=',new_rec.employee_id.id),('code','=','GPROF')], order='date_from')
-		if slip_lines:
-			for line in slip_lines:
-				total_deduction += abs(line.total)
-				line_vals = {
-					'name' : new_rec.name,
-					'employee_id' : new_rec.employee_id.id,
-					'slip_id' : line.slip_id and line.slip_id.id or False,
-					'number' : line.slip_id and line.slip_id.number or '',
-					'slip_line_id' : line.id,
-					'slip_date_from' : line.date_from,
-					'slip_date_to' : line.date_to,
-					'deducted_amount' : abs(line.total),
-					'employer_amount' : abs(line.total),
-					'pf_return_id' : new_rec.id,
-					'state' : new_rec.state,
-				}
-				self.env['sos.guards.pf.return.form.line'].create(line_vals)
-			new_rec.total_deduction = total_deduction
-			new_rec.total_employer = total_deduction
-			new_rec.total = new_rec.total_deduction + new_rec.total_employer
+		total_employer_deduction = 0
+
+		#IF Terminated after 3 Months
+		diff = 0
+		diff = (new_rec.termination_date - new_rec.appointment_date)
+		days = diff.days
+
+		if 0 < days < 90:
+			new_rec.remarks = "Terminated Within 3 Months"
+		if 90 < days < 180:
+			new_rec.remarks = "Terminated within 6 Months"
+		if days > 180:
+			new_rec.remarks = "Terminated After 6 Months"
+
+		if days > 90:
+			slip_lines = self.env['guards.payslip.line'].search([('employee_id','=',new_rec.employee_id.id),('code','=','GPROF')], order='date_from')
+			if slip_lines:
+				for line in slip_lines:
+					total_deduction += abs(line.total)
+					total_employer_deduction += abs(line.total) if days > 180 else 0
+					line_vals = {
+						'name' : new_rec.name,
+						'employee_id' : new_rec.employee_id.id,
+						'slip_id' : line.slip_id and line.slip_id.id or False,
+						'number' : line.slip_id and line.slip_id.number or '',
+						'slip_line_id' : line.id,
+						'slip_date_from' : line.date_from,
+						'slip_date_to' : line.date_to,
+						'deducted_amount' : abs(line.total),
+						'employer_amount' : abs(line.total) if days > 180 else 0,
+						'pf_return_id' : new_rec.id,
+						'state' : new_rec.state,
+					}
+					self.env['sos.guards.pf.return.form.line'].create(line_vals)
+				new_rec.total_deduction = total_deduction
+				new_rec.total_employer = total_employer_deduction
+				new_rec.total = new_rec.total_deduction + new_rec.total_employer
 		return new_rec
 	
 	@api.multi
