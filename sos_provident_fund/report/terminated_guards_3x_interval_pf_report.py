@@ -12,7 +12,7 @@ from odoo.exceptions import UserError
 
 class TerminatedGuards3XPFReport(models.AbstractModel):
 	_name = 'report.sos_provident_fund.terminated_guards_3x_pf_report'
-	_description = 'PF Employer Contribution'
+	_description = 'Terminated Guards (3x Interval) PF Report'
 	
 	def get_date_formate(self,sdate):
 		ss = datetime.datetime.strptime(sdate[:10],'%Y-%m-%d')
