@@ -16,6 +16,8 @@
 						<field name="category" />
 						<field name="from_resign_date"  attrs="{'invisible': [('category', '=', 'Current')], 'required': [('category', '=', 'Inactive')]}"/>
 						<field name="to_resign_date"  attrs="{'invisible': [('category', '=', 'Current')], 'required': [('category', '=', 'Inactive')]}"/>
+						<field name="all_projects" />
+            			<field name="all_centers" />
 					</group>
             		<group>	
     				</group>	

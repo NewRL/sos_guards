@@ -23,10 +23,22 @@ class PFEmployeeContributionWizard(models.TransientModel):
 	from_resign_date = fields.Date('From Resign Date', default=fields.Date.today())
 	to_resign_date = fields.Date('To Resign Date', default=fields.Date.today())
 
+	all_projects = fields.Boolean('Include All Projects?')
+	all_centers = fields.Boolean('Include All Centers?')
+
+	@api.onchange('all_projects')
+	def onchange_all_projects(self):
+		if self.all_projects:
+			self.all_centers = False
+
+	@api.onchange('all_centers')
+	def onchange_all_centers(self):
+		if self.all_centers:
+			self.all_projects = False
+
 	@api.multi
 	def print_report(self):
 		self.ensure_one()
-		
 		[data]=self.read()
 		datas={
 			'ids': [],
