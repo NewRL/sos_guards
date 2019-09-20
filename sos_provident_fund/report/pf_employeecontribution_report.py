@@ -23,6 +23,7 @@ class ReportPFEmployeeContribution(models.AbstractModel):
 	def _get_report_values(self, docids, data=None):
 		date_from = data['form']['date_from']
 		date_to = data['form']['date_to']
+		project_recs = False
 		
 		project_ids = data['form']['project_ids'] and data['form']['project_ids'] or False
 		center_ids = data['form']['center_ids'] and data['form']['center_ids'] or False
@@ -32,22 +33,32 @@ class ReportPFEmployeeContribution(models.AbstractModel):
 		report_category = data['form']['category'] and data['form']['category'] or False
 		from_resign_date = data['form']['from_resign_date'] and data['form']['from_resign_date'] or False
 		to_resign_date = data['form']['to_resign_date'] and data['form']['to_resign_date'] or False
+		all_projects = data['form']['all_projects']
+		all_centers = data['form']['all_centers']
 		
 		data_recs = []
 		res = {}
 		grand_total = 0
 		if not report_category:
 			raise UserError("Please Select the Report Cateogry, Current Employee or Inactive Employee")
-		
-		#Projects
-		if project_ids:
-			for project_id in project_ids:
+
+		if all_projects:
+			project_recs = self.env['sos.project'].search([])
+		if not all_projects and project_ids:
+			project_recs = self.env['sos.project'].search([('id','in',project_ids)])
+
+		if all_centers:
+			center_recs = self.env['sos.center'].search([])
+		if not all_centers and center_ids:
+			center_recs = self.env['sos.center'].search([('id','in',center_ids)])
+
+		if project_recs:
+			for project_id in project_recs:
 				emp_ids = False
 				recs = False
 				total = 0
-				
-				project = self.env['sos.project'].search([('id','=',project_id)])
-				post_ids = self.env['sos.post'].search([('project_id','=', project_id),'|',('active','=',True),'&',('enddate' ,'>=', data['form']['date_from'] ),('enddate', '<=',  data['form']['date_to'])])
+
+				post_ids = self.env['sos.post'].search([('project_id','=', project_id.id),'|',('active','=',True),'&',('enddate' ,'>=', data['form']['date_from'] ),('enddate', '<=',  data['form']['date_to'])])
 
 				if report_category == 'Current':
 					emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids),('current','=',True)])
@@ -64,7 +75,7 @@ class ReportPFEmployeeContribution(models.AbstractModel):
 					self.env.cr.execute("""select sum(abs(pl.amount)) as total from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
 					where pl.code='GPROF' and pl.date_from >=%s and pl.date_to <=%s and pl.slip_id = p.id and pl.employee_id in %s and pl.employee_id = e.id and e.guard_id = g.id""" ,(date_from,date_to,tuple(emp_ids.ids),))
 					total = self.env.cr.dictfetchall()[0]['total']
-					grand_total = grand_total + total
+					grand_total = grand_total + (total if total is not None else 0)
 					
 					if recs:
 						for rec in recs:
@@ -83,18 +94,17 @@ class ReportPFEmployeeContribution(models.AbstractModel):
 							rec['months'] = (years * 12 + months) + 1
 
 						project_line =({
-							'project' : project.name,
+							'project' : project_id.name,
 							'recs' : recs,
 							'total' : total,
 							})
 						data_recs.append(project_line)
-		#Centers		
-		elif center_ids:
-			for center_id in center_ids:
+		#Centers
+		elif center_recs:
+			for center_id in center_recs:
 				emp_ids = False
 				recs = False
-				center = self.env['sos.center'].search([('id','=',center_id)])
-				post_ids = self.env['sos.post'].search([('center_id','=', center_id),'|',('active','=',True),'&',('enddate' ,'>=', data['form']['date_from'] ),('enddate', '<=',  data['form']['date_to'])])
+				post_ids = self.env['sos.post'].search([('center_id','=', center_id.id),'|',('active','=',True),'&',('enddate' ,'>=', data['form']['date_from'] ),('enddate', '<=',  data['form']['date_to'])])
 
 				if report_category == 'Current':
 					emp_ids = self.env['hr.employee'].search([('current_post_id','in',post_ids.ids),('current','=',True)])
@@ -111,7 +121,7 @@ class ReportPFEmployeeContribution(models.AbstractModel):
 					self.env.cr.execute("""select sum(abs(pl.amount)) as total from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
 					where pl.code='GPROF' and pl.date_from >=%s and pl.date_to <=%s and pl.slip_id = p.id and pl.employee_id in %s and pl.employee_id = e.id and e.guard_id = g.id""" ,(date_from,date_to,tuple(emp_ids.ids),))
 					total = self.env.cr.dictfetchall()[0]['total']
-					grand_total = grand_total + total
+					grand_total = grand_total + (total if total is not None else 0)
 					
 					if recs:
 						for rec in recs:
@@ -130,7 +140,7 @@ class ReportPFEmployeeContribution(models.AbstractModel):
 							rec['months'] = (years * 12 + months) + 1
 
 						project_line =({
-							'project' : center.name,
+							'project' : center_id.name,
 							'recs' : recs,
 							'total' : total,
 							})
@@ -158,7 +168,7 @@ class ReportPFEmployeeContribution(models.AbstractModel):
 					self.env.cr.execute("""select sum(abs(pl.amount)) as total from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
 					where pl.code='GPROF' and pl.date_from >=%s and pl.date_to <=%s and pl.slip_id = p.id and pl.employee_id in %s and pl.employee_id = e.id and e.guard_id = g.id""" ,(date_from,date_to,tuple(emp_ids.ids),))
 					total = self.env.cr.dictfetchall()[0]['total']
-					grand_total = grand_total + total
+					grand_total = grand_total + (total if total is not None else 0)
 					
 					if recs:
 						for rec in recs:
@@ -197,7 +207,7 @@ class ReportPFEmployeeContribution(models.AbstractModel):
 				self.env.cr.execute("""select sum(abs(pl.amount)) as total from guards_payslip_line pl,guards_payslip p,hr_employee e,hr_guard g 
 				where pl.code='GPROF' and pl.date_from >=%s and pl.date_to <=%s and pl.slip_id = p.id and pl.employee_id = %s and pl.employee_id = e.id and e.guard_id = g.id""" ,(date_from,date_to,guard_id))
 				total = self.env.cr.dictfetchall()[0]['total']
-				grand_total = grand_total + total
+				grand_total = grand_total + (total if total is not None else 0)
 				
 				if recs:
 					for rec in recs:
