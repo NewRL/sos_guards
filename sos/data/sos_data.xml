@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-	<!--
-		<record model="ir.sequence.type" id="seq_type_guard_id">
-		    <field name="name">Guard Number</field>
-		    <field name="code">hr.employee</field>
-		</record>
-	-->	
 	
 		<record model="ir.sequence" id="seq_guard_id">
 		    <field name="name">Guard Number</field>
@@ -86,7 +80,6 @@
     	</record>
 
 		<!-- Group For Changing Account# and Account User Name -->
-		
 		<record id="group_bank_account_info" model="res.groups">
 			<field name="name">Bank Account Info</field>
 			<field name="comment">the user will have an access For Changing the Account Related Info of Guards.</field>
@@ -94,8 +87,16 @@
 			<field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
 			<field name="users" eval="[(4, ref('base.user_root'))]"/>
     	</record>
-    	
-    	
+
+		<!-- Salary Disbursement  Group-->
+		<record id="group_salary_disbursement" model="res.groups">
+			<field name="name">Salary Disbursement</field>
+			<field name="comment">the user will have an access For Salary Models.</field>
+			<field name="category_id" ref="module_category_guards_management"/>
+			<field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+			<field name="users" eval="[(4, ref('base.user_root'))]"/>
+    	</record>
+
     	
     	<!-- Sequence of Weapon -->
     	<record model="ir.sequence" id="seq_sos_weapon">

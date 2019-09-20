@@ -34,9 +34,9 @@
 				<form string="Guards PF Return Form">
 					<header>
 						<button name="action_verify" type="object" states="draft" string="Verify" class="oe_highlight" groups="account.group_account_manager" />
-                        <button name="action_approved" type="object" states="verify" string="Approved" class="oe_highlight" groups="account.group_account_manager" />
-						<button name="action_paid" type="object" states="approved" string="Paid" class="oe_highlight" groups="account.group_account_manager" />
-						<button name="action_reject" type="object" states="draft" string="Reject" class="oe_highlight" groups="account.group_account_manager" />
+                        <button name="action_approved" type="object" states="verify" string="Approved" class="oe_highlight" groups="sos.group_account_auditor" />
+						<button name="action_paid" type="object" states="approved" string="Paid" class="oe_highlight" groups="sos.group_salary_disbursement" />
+						<button name="action_reject" type="object" states="draft" string="Reject" class="oe_highlight" groups="account.group_account_manager,sos.group_salary_disbursement" />
                         <field name="state" widget="statusbar" nolabel="1" />
 					</header>
 					<sheet>

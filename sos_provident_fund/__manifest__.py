@@ -12,7 +12,7 @@
     'data': [
         'data/sos_data.xml',
         'security/ir.model.access.csv',
-		#'security/sos_security.xml',
+		'security/sos_security.xml',
 
     	'wizard/pf_employee_contribution_wizard_view.xml',
 		'wizard/pf_employer_contribution_wizard_view.xml',
