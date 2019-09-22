@@ -39,6 +39,9 @@
     	
     	#Directory:- Recovery
     	#'wizard/recovery/pending_recovery_wizard_view.xml',
+
+		#Directory:- Taxes
+		'wizard/taxes/tax_at_source_wiz_view.xml',
 		
 		#***** Reports *****#
 		#*******************#
@@ -85,13 +88,17 @@
     	#'report/new_reports/center_report_pendingrecovery.xml',
     	#'report/new_reports/post_report_pendingrecovery.xml',
     	#'report/new_reports/guards_working_detail_report.xml',
-    	 
-    	 
+
+		#Directory:- Taxes
+		'report/taxes/tax_at_source_report.xml',
+
+
        	'report/attendance/report.xml',
        	'report/general/report.xml',
        	'report/invoices/report.xml',
        	#'report/recovery/report.xml',
        	'report/salary/report.xml',
+		'report/taxes/report.xml',
 
         'menu/sos_report_menu.xml',
         

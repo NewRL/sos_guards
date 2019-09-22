@@ -68,7 +68,7 @@
 						<separator/>
 						<filter name="employee" string="Employee" icon="terp-personal" domain="[]" context="{'group_by':'employee_id'}"/>
 						<separator/>
-						<filter name='group_month' string="Month" icon="terp-go-today" domain="[]" context="{'group_by':'date:month'}"/>
+						<filter name='group_month' string="Date" icon="terp-go-today" domain="[]" context="{'group_by':'date'}"/>
 						<separator/>
 						<filter name="status" string="Status" icon="terp-personal" domain="[]" context="{'group_by':'state'}"/>
 					</group>
