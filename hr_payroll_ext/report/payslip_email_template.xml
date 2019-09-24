@@ -7,17 +7,13 @@
 				    <t t-call="web.external_layout">
 				        <div class="page">
 				            <h2>Pay Slip</h2>
-				            
-				            <div class="row">
-				            	 <div class="col-xs-6">
-				            	 	<strong>
-		                        		<span t-field="o.name"/>
-		                        	</strong>	 
-		                        </div>
-		                    	<div class="col-xs-6 text-right">
-		                    		<span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')"/>  
-				                </div>
-				            </div>
+
+							<p style="font-size:13;font-weight:bold;">
+								<span t-field="o.name"/>
+							</p>
+							<p style="font-size:13;font-weight:bold;">
+								Time:<span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')"/>
+							</p>
 
 				            <table class="table table-condensed table-bordered">
 				                 <tr>
@@ -26,7 +22,7 @@
 				                 	<td colspan="2" style="text-align:center;background-color:#FFEBCD;border: 1px solid black;"><strong>Location Details</strong></td>
 				                  </tr>
 				                  
-				                <tr>
+				                <tr style="font-size:14px;">
 				                    <td>Name</td>
 				                    <td><span t-field="o.employee_id.name"/></td>
 				                    <td>Bank Name</td>
@@ -34,7 +30,7 @@
 				                     <td>Center/Region</td>
 				                    <td><span t-field="o.employee_id.center_id.name"/></td>
 				                </tr>
-				                <tr>
+				                <tr style="font-size:14px;">
 				                    <td>Emp. No.</td>
 				                    <td><span t-field="o.employee_id.code"/></td>
 				                    <td>Account Number</td>
@@ -42,7 +38,7 @@
 				                    <td>NTN/CNIC</td>
 				                    <td><span t-field="o.employee_id.cnic"/></td>
 				                </tr>
-				                <tr>
+				                <tr style="font-size:14px;">
 				                    <td>Designation</td>
 				                    <td><span t-field="o.employee_id.job_id.name"/></td>
 				                    <td>Date of Joining</td>
@@ -61,66 +57,72 @@
 				            		<td style="border: 1px solid black;"><strong>Amount</strong></td>
 				            	</tr>
 				            	
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Basic</td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('BASIC')"/></td>
 				            		<td style="border: 1px solid black;">Tax Deduction At Source</td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('TAXD')"/></td>
 				            	</tr>
 				            	
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Home Rent Allowance </td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('SHRAMN')"/></td>
 				            		<td style="border: 1px solid black;">Professional Tax</td>
 				            		<td style="border: 1px solid black;">-</td>
 				            	</tr>
 				            	
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Conveyance Allowance </td>
 				            		<td style="border: 1px solid black;">-</td>
 				            		<td style="border: 1px solid black;">Employee's PF Contribution</td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('SPROF')"/></td>
 				            	</tr>
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Fuel/POL Allowance</td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('SFALW')"/></td>
 				            		<td style="border: 1px solid black;">Loan/Advance</td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('ADV')"/></td>
 				            	</tr>
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Outstation Allowance </td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('OSSA')"/></td>
 				            		<td style="border: 1px solid black;">Mobile</td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('MOBD')"/></td>
 				            	</tr>
 				            	
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Mobile Allowance </td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('MALW')"/></td>
 				            		<td style="border: 1px solid black;">Insurance</td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('INSD')"/></td>
 				            	</tr>
 				            	
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Special Allowance </td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('SSPA')"/></td>
 				            		<td style="border: 1px solid black;">Late/Fine Deduction</td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('FINE')"/></td>
 				            	</tr>
 				            	
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Vehicle Maintenance Allowance </td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('SBIKA')"/></td>
 				            		<td style="border: 1px solid black;"></td>
 				            		<td style="border: 1px solid black;"></td>
 				            	</tr>
 				            	
-				            	<tr style="border: 1px solid black;">
+				            	<tr style="border: 1px solid black;font-size:13px;">
 				            		<td style="border: 1px solid black;">Arrears </td>
 				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('ARRE')"/></td>
 				            		<td style="border: 1px solid black;"></td>
 				            		<td style="border: 1px solid black;"></td>
-				            	</tr>						
+				            	</tr>
+								<tr style="border: 1px solid black;font-size:13px;">
+				            		<td style="border: 1px solid black;">Food Allowance </td>
+				            		<td style="border: 1px solid black;"><span t-esc="o.get_line_salary('SFC')"/></td>
+				            		<td style="border: 1px solid black;"></td>
+				            		<td style="border: 1px solid black;"></td>
+				            	</tr>
 				            	
 				            	<tr style="border: 1px solid black;">
 				            		<td style="border: 1px solid black;"><strong> Total Earnings </strong></td>
