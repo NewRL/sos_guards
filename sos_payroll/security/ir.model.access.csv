@@ -21,6 +21,8 @@ access_sos_hr_rule_input,access_sos_hr_rule_input,hr_payroll.model_hr_rule_input
 sos_advances_access_right,sos_advances_access_right,model_sos_advances,account.group_account_invoice,1,1,1,0
 guards_arrears_access_right,guards_arrears_access_right,model_guards_arrears,account.group_account_invoice,1,1,1,0
 guards_arrears_regional_access_,guards_arrears_regional_access,model_guards_arrears,sos.group_regional_manager,1,0,1,0
+sos_guards_payslip_line_special_right,sos_guards_payslip_line_special_right,model_guards_payslip_line,sos.group_special,1,1,1,0
+
 
 sos_employee_access_region_right,sos_employee_access_region_right,model_hr_employee,sos.group_regional_manager,1,1,1,0
 
