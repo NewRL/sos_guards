@@ -44,9 +44,8 @@ class SOSProject(models.Model):
 		for invoice in invoices:
 			total = total + invoice.residual
 		self.aged_balance = total	
-	
-	
-	name = fields.Char('Project Name', size=128)
+
+	name = fields.Char('Project Name', size=256)
 	accountno = fields.Char('Account', size=64) 
 	active = fields.Boolean('Active')
 	project_coordinator_id = fields.Many2one('hr.employee','Project Coordinator',domain=[('is_guard','=',False)])
@@ -59,7 +58,6 @@ class SOSProject(models.Model):
 	post_ids = fields.One2many('sos.post', 'project_id', string = 'Posts', help = 'Posts related to this Project')
 	coordinator_ids = fields.Many2many('res.users', 'sos_project_user_rel', 'project_id', 'user_id', 'Coordinators')
 	employee_ids = fields.One2many('hr.employee','project_id', domain=[('current', '=', True)], string='Project Guards')
-	# remark by Numan
 	start_date = fields.Date('Project Start Date') 
 	
 	## For Salary Rate Report ##
@@ -72,8 +70,7 @@ class SOSProject(models.Model):
 			if post_ids:
 				final_centers.append(center)
 		return final_centers
-	
-	
+
 	## For Salary Rate Report ##	
 	def get_center_project_posts(self, center_id, project_id):
 		post_obj = self.env['sos.post']
@@ -103,5 +100,3 @@ class SOSProject(models.Model):
 			'supervisor' : supervisor,
 		})
 		return res
-		
-		

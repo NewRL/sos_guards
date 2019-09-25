@@ -319,15 +319,14 @@
 
 
 		<!-- projects -->
-
 		<record model="ir.ui.view" id="sos_project_tree_view">
 			   <field name="name">sos.project.tree.view</field>
 			   <field name="model">sos.project</field>
 			   <field name="type">tree</field>
 			   <field name="arch" type="xml">
 				   <tree string="Projects">
-					   <field name="name"/>
-					   <field name="accountno" placeholder="Account No..." groups="base.group_no_one"/>
+					   <field name="name" string="Project Name"/>
+					   <field name="accountno" placeholder="Account No..."/>
 					   <field name="post_ids" />
 					   <field name="start_date" />
 					   <field name="coordinator_ids" />
@@ -342,11 +341,11 @@
 			   <field name="model">sos.project</field>
 			   <field name="type">form</field>
 			   <field name="arch" type="xml">
-				   <form string="Admission Form">
+				   <form string="Guards Project  Form">
 					   <sheet>
 						   <group>
 							   <group>
-								   <field name="name" placeholder="Guard Name..."/>
+								   <field name="name" string="Project Name" readonly="0"/>
 								   <field name="accountno" placeholder="Account No..."/>
 								   <field name="centralized" />
 									<field name="start_date" />
