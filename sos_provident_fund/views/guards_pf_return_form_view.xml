@@ -137,21 +137,38 @@
 		<field name="model">sos.guards.pf.return.form</field>
 		<field name="arch" type="xml">
 			<search string="Guards PF Returns Form Filter">
+				<field name="name"/>
+				<field name="cnic"/>
+				<field name="code"/>
 				<field name="termination_date"/>
 				<field name="employee_id"/>
 				<field name="code"/>
 				<field name="bankacctitle"/>
 				<field name="bankacc"/>
 				<field name="accowner"/>
-				<field name="cnic"/>
 				<separator/>
 
+				<filter icon="terp-go-today" string="Date" name="date" date="date"/>
+				<filter icon="terp-go-today" string="Termination Date" name="termination_date" date="termination_date"/>
+
 				<group expand="0" string="Group By">
+					<filter string="Status" name="groupby_state" icon="terp-partner" domain="[]" context="{'group_by':'state'}"/>
+
+					<separator/>
+					<filter string="Month" name="groupby_month" icon="terp-partner" domain="[]" context="{'group_by':'date'}"/>
+					<filter string="Day" name="groupby_day" icon="terp-partner" domain="[]" context="{'group_by':'date'}"/>
 					<filter string="Termination Date" name="termination_date" icon="terp-partner" domain="[]" context="{'group_by':'termination_date'}"/>
+
+					<separator/>
 					<filter string="Project" name="project_id" icon="terp-partner" domain="[]" context="{'group_by':'project_id'}"/>
 					<filter string="Center" name="center_id" icon="terp-partner" domain="[]" context="{'group_by':'center_id'}"/>
 					<filter string="Post" name="post_id" icon="terp-partner" domain="[]" context="{'group_by':'post_id'}"/>
 					<filter string="Bank" name="bank_id" icon="terp-partner" domain="[]" context="{'group_by':'bank_id'}"/>
+
+					<separator/>
+					<filter string="Bank" name="groupby_bank" icon="terp-partner" domain="[]" context="{'group_by':'bank_id'}"/>
+					<filter string="Account Owner" name="groupby_accountowner" icon="terp-partner" domain="[]" context="{'group_by':'accowner'}"/>
+
 				</group>
 			</search>
 		</field>
