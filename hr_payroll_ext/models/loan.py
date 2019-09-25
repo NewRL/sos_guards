@@ -218,7 +218,7 @@ class hr_loan(models.Model):
 		
 		loan_line.search([('loan_id','=',self.id)]).unlink()
 		for loan in self:
-			date_start_str = datetime.strptime(loan.date_payment,'%Y-%m-%d')
+			date_start_str = loan.date_payment
 			counter = 1
 			amount_per_time = loan.amount / loan.num_quotas
 			for i in range(1, loan.num_quotas + 1):
