@@ -14,9 +14,6 @@ class hr_staff_advance(models.Model):
 	_name = 'hr.staff.advance'
 	_inherit = ['mail.thread']
 	_description = "Advances To Staff"
-	_track = {
-	
-	}
 	
 	name = fields.Char("Description",size=128, required=True, readonly=True, states={'draft': [('readonly',False)]})
 	employee_id = fields.Many2one('hr.employee', 'Employee', required=True, readonly=True, states={'draft': [('readonly',False)]}, track_visibility='onchange')
@@ -36,7 +33,7 @@ class hr_staff_advance(models.Model):
 	def unlink(self):
 		for rec in self:
 			if rec.state != 'draft':
-				 raise ValidationError(_('You can only delete Entries that are in draft state .'))
+				raise ValidationError(_('You can only delete Entries that are in draft state .'))
 		return super(hr_staff_advance, self).unlink()
 			
 	@api.multi        
