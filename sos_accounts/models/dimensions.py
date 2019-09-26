@@ -12,6 +12,7 @@ from odoo import netsvc
 from lxml import etree
 from odoo.tools import config
 from odoo.addons.analytic_structure.MetaAnalytic import MetaAnalytic
+from odoo.osv import expression
 
 
 class SOSProject(models.Model, metaclass = MetaAnalytic):
@@ -26,9 +27,8 @@ class SOSProject(models.Model, metaclass = MetaAnalytic):
 		'rel_code' : 'accountno',
 		'rel_name' : 'accountno',		
 	}
-	
-	
-	
+
+
 class SOSRegion(models.Model, metaclass = MetaAnalytic):
 	_name = 'sos.region'
 	_inherit = 'sos.region'
@@ -40,6 +40,7 @@ class SOSRegion(models.Model, metaclass = MetaAnalytic):
 		'rel_code' : 'code',
 		'rel_name' : 'code',		
 	}
+
 
 class AccountAssetDepreciationLine(models.Model):
 	_name = 'account.asset.depreciation.line'
@@ -118,3 +119,73 @@ class AccountAssetDepreciationLine(models.Model):
 		if post_move and created_moves:
 			created_moves.post()
 		return [x.id for x in created_moves]
+
+
+class AccountReconciliation(models.AbstractModel):
+	_inherit = 'account.reconciliation.widget'
+
+	@api.model
+	def _domain_move_lines_for_reconciliation(self, st_line, aml_accounts, partner_id, excluded_ids=None,search_str=False):
+		""" Return the domain for account.move.line records which can be used for bank statement reconciliation.
+
+		   :param aml_accounts:  sarfraz
+		   :param partner_id:
+		   :param excluded_ids:
+		   :param search_str:
+		"""
+
+		# domain_reconciliation = [
+		#  '&', '&',
+		#  ('statement_line_id', '=', False),
+		#  ('account_id', 'in', aml_accounts),
+		#  ('payment_id', '<>', False)
+		# ]
+
+		# AARSOL changed the domain
+		domain_reconciliation = [
+			'&',
+			('statement_line_id', '=', False),
+			('account_id', 'in', aml_accounts),
+		]
+
+		# default domain matching
+		domain_matching = expression.AND([
+			[('reconciled', '=', False)],
+			[('account_id.reconcile', '=', True)]
+		])
+
+		domain = expression.OR([domain_reconciliation, domain_matching])
+		# AARSOL, Changed the line to if-else
+		#if st_line.journal_id.type in ['bank', 'cash']:
+		#	domain = domain_reconciliation
+		#else:
+		#	domain = expression.OR([domain_reconciliation, domain_matching])
+
+		if partner_id:
+			domain = expression.AND([domain, [('partner_id', '=', partner_id)]])
+
+		# Domain factorized for all reconciliation use cases
+		if search_str:
+			str_domain = self._domain_move_lines(search_str=search_str)
+			if not partner_id:
+				str_domain = expression.OR([
+					str_domain,
+					[('partner_id.name', 'ilike', search_str)]
+				])
+			domain = expression.AND([
+				domain,
+				str_domain
+			])
+
+		if excluded_ids:
+			domain = expression.AND([
+				[('id', 'not in', excluded_ids)],
+				domain
+			])
+		# filter on account.move.line having the same company as the statement line
+		domain = expression.AND([domain, [('company_id', '=', st_line.company_id.id)]])
+
+		if st_line.company_id.account_bank_reconciliation_start:
+			domain = expression.AND(
+				[domain, [('date', '>=', st_line.company_id.account_bank_reconciliation_start)]])
+		return domain

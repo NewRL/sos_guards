@@ -151,7 +151,7 @@
 			name="sos.report_staff_gross_salarysheet"
 		/>
 		
-<!-- Staff Payment Advice Report -->
+		<!-- Staff Payment Advice Report -->
 		<report
 			id="report_sos_staff_payment_advice"
 			string= "Staff Payment Advice"
@@ -160,6 +160,7 @@
 			file="sos.report_staff_payment_advice"
 			name="sos.report_staff_payment_advice"
 		/>
+		
 		<!-- Guard Profile Data Report -->
 		<report
 			id="report_sos_guarddocument"
@@ -169,6 +170,7 @@
 			file="sos.report_guarddocument"
 			name="sos.report_guarddocument"
 		/>
+		
 		<!-- Guards Bank Account Report -->
 		<report
 			id="report_guards_bankaccount"
@@ -178,6 +180,7 @@
 			file="sos.report_bankaccounts"
 			name="sos.report_bankaccounts"
 		/>
+		
 		<!-- Centers Salary Rates Report -->
 		<report
 			id="report_centers_salary_rates"
@@ -196,6 +199,7 @@
 			file="sos.report_centers_invoicerates"
 			name="sos.report_centers_invoicerates"
 		/>
+		
 		<!-- Centers Postwise Guards Details Report -->
 		<report
 			id="report_center_postwise_guard_details"
@@ -205,6 +209,7 @@
 			file="sos.report_center_postwiseguard_details"
 			name="sos.report_center_postwiseguard_details"
 		/>
+		
 		<!-- Guards Center / Project complete list  in Guards Menu -->
 		<report
 			id="report_guards_data"
@@ -254,6 +259,7 @@
 			file="sos.report_guards_docscomplaint"
 			name="sos.report_guards_docscomplaint"
 		/>
+		
 		<!-- Gaurds Exit Form Report From Exit Model -->
 		<report
 			id="report_guards_exit_form2"

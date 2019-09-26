@@ -248,7 +248,6 @@ class hr_employee(models.Model):
 	is_guard = fields.Boolean(string='Is Guard',default=True)
 	guard_id = fields.Many2one('hr.guard', 'Guard Info', required=True, ondelete="cascade", auto_join=True, index=True)
 	staff_info_id = fields.Many2one('hr.staff', 'Staff Info', required=True, ondelete="cascade", auto_join=True, index=True)
-
 	
 	emp_rf_ids = fields.One2many('employee.rfid', 'employee_id', 'RF IDS')
 	rejoin_ids = fields.One2many('sos.rejoin.guards', 'employee_id', 'Re-Joining IDS')
@@ -259,7 +258,7 @@ class hr_employee(models.Model):
 	def write(self, vals):
 		cnc = vals.get('cnic',False)
 		if cnc and self.env.user.id not in (1,5,10,90,83,39,125):
-			raise UserError(_('You are not Authorized to do this! Please Contact To Mr.Aamir Raza.'))
+			raise UserError(_('You are not Authorized to do this! Please Contact To Mr.Zahid Ashraf.'))
 		res = super(hr_employee, self).write(vals)
 		return res	
 			
