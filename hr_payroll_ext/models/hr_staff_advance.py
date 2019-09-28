@@ -55,7 +55,7 @@ class hr_staff_advance(models.Model):
 		auto_entries = self.env['auto.dimensions.entry'].search([('model_id','=',model_rec.id),('active','=',True)],order='sequence')
 				
 		for advance in self:
-			
+
 			## Create Entry in hr_salary_inputs
 			input_id = input_obj.create({
 				'employee_id': advance.employee_id.id,
@@ -116,7 +116,7 @@ class hr_staff_advance(models.Model):
 			
 			#Credit Entry If Payment mode is cash means to create entry directly in cashbook
 			if credit_account_id and advance.payment_channel == 'cash':
-				statement_rec = self.env['account.bank.statement'].search([('date','=',advance.date),('state','=', 'open')])
+				statement_rec = self.env['account.bank.statement'].search([('date','=',advance.date),('state','=', 'open'),('journal_id','=',7)])
 				if statement_rec:
 					line_vals = ({
 						'statement_id' : statement_rec.id,
