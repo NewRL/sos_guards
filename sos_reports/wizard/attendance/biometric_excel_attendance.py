@@ -106,7 +106,7 @@ class BiometricExcelAttendance(models.TransientModel):
 			domain.append(('department_id','in',self.department_ids.ids),)
 		
 		if self.employee_ids:
-			employees = self.env['hr.employee'].search([('id','in',self.employee_id.ids)])
+			employees = self.env['hr.employee'].search([('id','in',self.employee_ids.ids)])
 		if not self.employee_ids:
 			employees = self.env['hr.employee'].search(domain)				
 		
