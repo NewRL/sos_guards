@@ -16,7 +16,7 @@ class guards_payslips_cron_wizard(models.TransientModel):
 	employee_ids = fields.Many2many('hr.employee', string='Filter on Employees', help="Only selected Employees Salaries will be generated.")
 	post_ids = fields.Many2many('sos.post', string='Filter on Posts', help="Only selected Employees Salaries will be generated.")
 	exclude_project_ids = fields.Many2many('sos.project', 'payslip_cron_exclude_project_rel',string='Exclude Projects', help="Selected Projects Salaries will not be generated.",
-		default=lambda self: self.env['sos.project'].search([('id','in',[30,50,32])]))
+		default=lambda self: self.env['sos.project'].search([('id','in',[30])]))
 		
 
 	@api.multi
