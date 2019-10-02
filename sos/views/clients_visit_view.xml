@@ -90,10 +90,6 @@
 		</field>
 		</record>
 
-
-
-
-
 		<record id="sos_client_visit_action" model="ir.actions.act_window">
 			<field name="name">Client Visits</field>
 			<field name="res_model">sos.clients.visit</field>
@@ -106,7 +102,77 @@
 					Click to create a new Visit.
 				</p>
 			</field>
-	</record> 
+	</record>
+
+	<!-- App Message Form-->
+   <record id="view_app_message_form" model="ir.ui.view">
+       <field name="name">app.messsage.form</field>
+       <field name="model">app.message</field>
+       <field name="arch" type="xml">
+           <form string="App Messages">
+               <sheet>
+                    <group>
+                        <group>
+                            <field name="sender_id"/>
+                            <field name="date"/>
+                            <field name="message"/>
+                        </group>
+                        <group>
+                             <field name="receive_id"/>
+                             <field name="title"/>
+                            <field name="type"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- App Message  Tree-->
+   <record id="view_app_message_tree" model="ir.ui.view">
+       <field name="name">app.messsage.tree</field>
+       <field name="model">app.message</field>
+       <field name="arch" type="xml">
+           <tree string="App Messages">
+               <field name="sender_id"/>
+               <field name="receive_id"/>
+               <field name="date"/>
+               <field name="title"/>
+               <field name="message"/>
+               <field name="type"/>
+            </tree>
+        </field>
+    </record>
+
+   <!--  Search -->
+   <record id="view_app_message_filter" model="ir.ui.view">
+       <field name="name">app.message.filter.view</field>
+       <field name="model">app.message</field>
+       <field name="arch" type="xml">
+                <search>
+                   <field name="sender_id"/>
+                    <field name="receive_id"/>
+                    <field name="date"/>
+                    <field name="title"/>
+                     <field name="message"/>
+                <newline />
+                    <group expand="0" string="Group By...">
+                        <filter string="Date" domain="[]" name="group_date" context="{'group_by':'date'}" />
+                        <filter string="Type" domain="[]" name="group_typ" context="{'group_by':'type'}" />
+                    </group>
+                </search>
+            </field>
+       </record>
+
+       <record model="ir.actions.act_window" id="act_app_message">
+			<field name="name">App Message</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">app.message</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="search_view_id" ref="view_app_message_filter" />
+			<field name="domain">[]</field>
+       </record>
   
     </data>
 </odoo>
