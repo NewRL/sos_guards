@@ -396,7 +396,7 @@
 					<separator/>
 
 					<filter string="Terminated Gaurds Salary" name = 'terminated_guards' domain="[('date_from','>=',(context_today() - relativedelta(months=1)).strftime('%Y-%m-01')),
-														('date_to','&lt;=',(context_today() - relativedelta(months=1)).strftime('%Y-%m-31')),
+														('date_to','&lt;=',(context_today() - relativedelta(months=1)).strftime('%Y-%m-30')),
 														('employee_id.resigdate','>=',(context_today() - relativedelta(months=1)).strftime('%Y-%m-01')),
 														('employee_id.resigdate','&lt;=',(time.strftime('%Y-%m-01')))]"/>
 													
