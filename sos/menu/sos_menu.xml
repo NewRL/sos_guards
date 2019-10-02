@@ -58,7 +58,9 @@
 			<menuitem parent="menu_gms_configuration" id="menu_action_sos_period" name="Accounting Period"  sequence="122" action="action_sos_period"/>
 			<menuitem parent="menu_gms_configuration" id="menu_action_sos_region" name="Regions"  sequence="123" action="sos_region_action"/>
 			<menuitem parent="menu_gms_configuration" id="menu_action_sos_attendance_device" name="Attendance Device"  sequence="130" action="sos_attendance_device_action" groups="sos.group_superusers,sos.group_hr_master,sos.group_coordinator,account.group_account_invoice"/>
-		
+			<menuitem name="App Message" id="menu_app_message" parent="menu_gms_configuration" action="act_app_message" groups="base.group_user" sequence="135"/>
+
+
 		<!-- Menus in Other Modules-->
 			<!-- <menuitem name="Bank Account Logs" parent="sos_accounts.menu_account_customer" id="account_info_log_mi" sequence="65" action="sos_account_info_log_action"  groups="sos.group_superusers"/>      --> 
 			<menuitem name="Staff Salary Sheet" parent="hr.menu_hr_reporting_timesheet" sequence="3" action="act_sos_staff_salary_sheet_wizard" id="menu_staff_salary_report" groups="sos.group_hr_master,base.group_user"/>

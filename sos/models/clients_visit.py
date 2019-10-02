@@ -66,3 +66,15 @@ class SOSActionCategory(models.Model):
 	]
 
 
+class SOSAppMessage(models.Model):
+	_name = 'app.message'
+	_description = 'App Messages'
+
+	sender_id = fields.Char('Sender')
+	receive_id = fields.Char('Receiver')
+	date = fields.Datetime('Date')
+	title = fields.Char('Title')
+	message = fields.Char('Message')
+	type = fields.Selection([('normal','normal'),('urgent','urgent')], string='Type')
+
+
