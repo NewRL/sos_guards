@@ -78,3 +78,5 @@ class SOSAppMessage(models.Model):
 	type = fields.Selection([('normal','normal'),('urgent','urgent')], string='Type')
 
 
+
+
