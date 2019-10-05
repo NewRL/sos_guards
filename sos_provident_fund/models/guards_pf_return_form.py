@@ -41,7 +41,6 @@ class SOSGuardsPFReturnForm(models.Model):
 			joining_post = self.env['sos.guard.post'].search([('employee_id','=',rec.employee_id.id)], order='fromdate', limit=1)
 			rec.joining_post = joining_post.post_id.id or False
 
-
 	name = fields.Char('Name')
 	center_id = fields.Many2one('sos.center', string='Center',required=True, index=True, readonly=True, states={'draft': [('readonly', False)]},track_visibility='onchange')
 	project_id = fields.Many2one('sos.project', required=True, string = 'Project', index=True, readonly=True, states={'draft': [('readonly', False)]},track_visibility='onchange')
@@ -161,8 +160,8 @@ class SOSGuardsPFReturnForm(models.Model):
 
 			move_lines.append((0, 0, {
 				'name': "Provident Fund Payment of " + rec.code + "-" + rec.employee_id.name,
-				'debit': rec.total,
-				'credit': 0.0,
+				'debit': 0,
+				'credit': rec.total,
 				'account_id': rec.credit_account_id and rec.credit_account_id.id or False,
 				'journal_id': rec.journal_id and rec.journal_id.id or False,
 				'date': fields.Date.today(),
