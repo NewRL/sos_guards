@@ -132,7 +132,6 @@
 
 
  <!-- Payslip Runs -->
-
 <record id="guards_payslip_run_filter" model="ir.ui.view">
 	<field name="name">guards.payslip.run.search</field>
 	<field name="model">guards.payslip.run</field>

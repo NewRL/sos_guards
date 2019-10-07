@@ -2,6 +2,7 @@ import pdb
 from odoo import tools
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
+import re
 
 class sos_appointmentdate_wizard(models.TransientModel):
 	_name = 'sos.appointmentdate.wizard'
@@ -24,13 +25,10 @@ class sos_appointmentdate_wizard(models.TransientModel):
 		
 	@api.one
 	def change_appdate(self):
-		## aamir=5 Access Only for Aamir
 		## Zahid=10 Access Only for Zahid
-		## Sami = 29 For Appointment change
-		## Zegum = 83 For Appoinment change
-		## Akamal = 39 For Cnic Change
+		## Hassan Raza = 19 For Cnic Change
 		
-		if self.env.user.id in (125,5,10,29,83,39):
+		if self.env.user.id in (125,10,19):
 			if self.appointmentdate:
 				employee_id = self.env['hr.employee'].browse(self._context.get('active_id',False))
 				old_appdate = employee_id.appointmentdate
