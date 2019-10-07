@@ -16,7 +16,6 @@ account_checkbookline_access_full,account_checkbookline_access_full,model_accoun
 
 access_invoices_cron,access_invoices_cron,model_invoices_cron,account.group_account_invoice,1,0,0,0
 
-
 access_mail_followers_accounts,access_mail_followers_accounts,model_mail_followers,account.group_account_invoice,1,1,1,1
 access_mail_followers_accounts_manager,access_mail_followers_accounts_manager,mail.model_mail_followers,account.group_account_manager,1,1,1,1
 access_mail_followers_coordinator,access_mail_followers_coordinator,mail.model_mail_followers,sos.group_coordinator,1,1,1,1
